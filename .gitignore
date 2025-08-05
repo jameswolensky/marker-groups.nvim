@@ -1,0 +1,35 @@
+# Neovim
+*.tmp
+*.log
+
+# Plugin data directories (for testing)
+**/marker-groups-data/
+**/marker-groups-test*/
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Test artifacts
+/test_*.lua
+/debug_*.lua
+/quick_test_commands.vim
+
+# Logs
+*.log
+
+# Local development files
+/local_test/
+/dev/

@@ -1,0 +1,141 @@
+name: Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        neovim_version: ['v0.8.0', 'v0.9.0', 'stable', 'nightly']
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Install Neovim
+      uses: rhysd/action-setup-vim@v1
+      with:
+        neovim: true
+        version: ${{ matrix.neovim_version }}
+    
+    - name: Install dependencies
+      run: |
+        # Create plugins directory
+        mkdir -p ~/.local/share/nvim/site/pack/testing/start/
+        
+        # Install plenary.nvim (required for testing)
+        git clone https://github.com/nvim-lua/plenary.nvim \
+          ~/.local/share/nvim/site/pack/testing/start/plenary.nvim
+        
+        # Install telescope.nvim (optional, for full functionality)
+        git clone https://github.com/nvim-telescope/telescope.nvim \
+          ~/.local/share/nvim/site/pack/testing/start/telescope.nvim
+    
+    - name: Add plugin to runtime path
+      run: |
+        # Make the plugin available to Neovim
+        mkdir -p ~/.local/share/nvim/site/pack/testing/start/marker-groups.nvim
+        cp -r . ~/.local/share/nvim/site/pack/testing/start/marker-groups.nvim/
+    
+    - name: Run syntax check
+      run: |
+        # Basic Lua syntax check
+        find lua tests -name "*.lua" -exec nvim --headless -c "luafile {}" -c "qa!" \;
+    
+    - name: Run unit tests
+      run: |
+        nvim --headless --noplugin \
+          -c "set rtp+=~/.local/share/nvim/site/pack/testing/start/*" \
+          -c "lua require('tests.test_runner').run_unit({verbose=true,timeout=30000})" \
+          -c "qa!"
+    
+    - name: Run integration tests
+      run: |
+        nvim --headless --noplugin \
+          -c "set rtp+=~/.local/share/nvim/site/pack/testing/start/*" \
+          -c "lua require('tests.test_runner').run_integration({verbose=true,timeout=30000})" \
+          -c "qa!"
+    
+    - name: Run health check
+      run: |
+        nvim --headless --noplugin \
+          -c "set rtp+=~/.local/share/nvim/site/pack/testing/start/*" \
+          -c "lua require('marker-groups').setup()" \
+          -c "lua require('marker-groups.health').check()" \
+          -c "qa!"
+    
+    - name: Test plugin loading
+      run: |
+        # Test that plugin loads without errors
+        nvim --headless --noplugin \
+          -c "set rtp+=~/.local/share/nvim/site/pack/testing/start/*" \
+          -c "lua require('marker-groups').setup()" \
+          -c "lua print('Plugin loaded successfully')" \
+          -c "qa!"
+
+  lint:
+    name: Lint Code
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Install stylua
+      run: |
+        curl -L https://github.com/JohnnyMorganz/StyLua/releases/latest/download/stylua-linux.zip -o stylua.zip
+        unzip stylua.zip
+        chmod +x stylua
+        sudo mv stylua /usr/local/bin/
+    
+    - name: Check code formatting
+      run: |
+        stylua --check lua/ tests/
+    
+    - name: Install lua-language-server (optional)
+      run: |
+        # Download and install lua-language-server for additional checks
+        curl -L https://github.com/LuaLS/lua-language-server/releases/latest/download/lua-language-server-3.7.4-linux-x64.tar.gz -o luals.tar.gz
+        tar -xzf luals.tar.gz
+        # Note: Full setup would require additional configuration
+
+  compatibility:
+    name: Test Compatibility
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        neovim_version: ['stable']
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Install Neovim
+      uses: rhysd/action-setup-vim@v1
+      with:
+        neovim: true
+        version: ${{ matrix.neovim_version }}
+    
+    - name: Install dependencies
+      run: |
+        mkdir -p ~/.local/share/nvim/site/pack/testing/start/
+        git clone https://github.com/nvim-lua/plenary.nvim \
+          ~/.local/share/nvim/site/pack/testing/start/plenary.nvim
+    
+    - name: Test basic functionality
+      run: |
+        mkdir -p ~/.local/share/nvim/site/pack/testing/start/marker-groups.nvim
+        cp -r . ~/.local/share/nvim/site/pack/testing/start/marker-groups.nvim/
+        
+        nvim --headless --noplugin \
+          -c "set rtp+=~/.local/share/nvim/site/pack/testing/start/*" \
+          -c "lua require('marker-groups').setup()" \
+          -c "lua require('marker-groups.health').check()" \
+          -c "qa!"
