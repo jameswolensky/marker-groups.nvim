@@ -1,6 +1,6 @@
 # Makefile for marker-groups.nvim testing and development
 
-.PHONY: test test-unit test-integration test-watch test-file lint format clean install-deps docs help
+.PHONY: test test-unit test-integration test-watch test-file lint format format-check pre-commit clean install-deps help
 
 # Default target
 all: test
@@ -8,15 +8,15 @@ all: test
 # Test commands
 test: ## Run all tests
 	@echo "Running all marker-groups tests..."
-	@nvim --headless -c "lua require('tests.test_runner').run_all({verbose=true})" -c "qa!"
+	@nvim --headless --noplugin -u tests/minimal_init.lua -c "PlenaryBustedDirectory tests/" -c "qa"
 
 test-unit: ## Run unit tests only
 	@echo "Running unit tests..."
-	@nvim --headless -c "lua require('tests.test_runner').run_unit({verbose=true})" -c "qa!"
+	@nvim --headless --noplugin -u tests/minimal_init.lua -c "PlenaryBustedDirectory tests/unit/" -c "qa"
 
 test-integration: ## Run integration tests only
 	@echo "Running integration tests..."
-	@nvim --headless -c "lua require('tests.test_runner').run_integration({verbose=true})" -c "qa!"
+	@nvim --headless --noplugin -u tests/minimal_init.lua -c "PlenaryBustedDirectory tests/integration/" -c "qa"
 
 test-file: ## Run specific test file (usage: make test-file FILE=tests/unit/config_spec.lua)
 	@echo "Running test file: $(FILE)"
@@ -47,6 +47,23 @@ format: ## Format Lua code with stylua
 		echo "stylua not found. Install it with: cargo install stylua"; \
 	fi
 
+format-check: ## Check if Lua code is properly formatted (without modifying files)
+	@echo "Checking Lua code formatting..."
+	@if command -v stylua >/dev/null 2>&1; then \
+		if stylua --check lua/ tests/; then \
+			echo "✅ All Lua files are properly formatted"; \
+		else \
+			echo "❌ Formatting issues found. Run 'make format' to fix them"; \
+			exit 1; \
+		fi; \
+	else \
+		echo "stylua not found. Install it with: cargo install stylua"; \
+		exit 1; \
+	fi
+
+pre-commit: lint format-check ## Run all pre-commit checks (lint + format check)
+	@echo "✅ All pre-commit checks passed!"
+
 clean: ## Clean test artifacts and temporary files
 	@echo "Cleaning test artifacts..."
 	@find . -name "*.tmp" -delete
@@ -65,11 +82,6 @@ install-deps: ## Install test dependencies
 	@echo "Install plenary.nvim with your plugin manager:"
 	@echo "  - Lazy: { 'nvim-lua/plenary.nvim' }"
 	@echo "  - Packer: use 'nvim-lua/plenary.nvim'"
-
-# Documentation
-docs: ## Generate documentation
-	@echo "Documentation generation not yet implemented"
-	@echo "Consider using nvim-docs-generator or similar tools"
 
 # Utility commands
 check-health: ## Run health check
@@ -108,3 +120,4 @@ help: ## Show this help message
 	@echo "  make test                                    # Run all tests"
 	@echo "  make test-file FILE=tests/unit/config_spec.lua  # Run specific test"
 	@echo "  make test-watch                              # Watch mode"
+

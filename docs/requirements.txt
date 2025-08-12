@@ -1,0 +1,6 @@
+mkdocs==1.6.1
+mkdocs-material==9.6.16
+mkdocs-material-extensions
+pymdown-extensions
+mkdocs-simple-sitemap
+

@@ -2,12 +2,16 @@
 
 A powerful Neovim plugin for organizing and annotating code with grouped markers. Perfect for code reviews, debugging sessions, and project navigation.
 
+![Marker Groups.nvim — overview with drawer and markers](docs/assets/images/hero-overview.png)
+
+![Marker Groups.nvim common workflow demo — creating groups, adding markers, browsing the drawer, and using Telescope](docs/assets/gifs/overview.gif)
+
 ## ✨ Features
 
 - **📝 Smart Markers**: Add single-line or multi-line markers with annotations
 - **🗂️ Group Organization**: Organize markers into logical groups (features, bugs, todos, etc.)
 - **🎯 Visual Indicators**: See markers directly in your code with virtual text
-- **🪟 Floating Viewer**: Beautiful floating window to browse all markers
+- **🪟 Drawer Viewer**: Right-side drawer to browse all markers with context
 - **🔍 Telescope Integration**: Fuzzy search through markers and groups
 - **💾 Persistent Storage**: Markers survive Neovim restarts with automatic saving
 - **⌨️ Rich Keybindings**: Intuitive keymaps for all operations
@@ -19,7 +23,7 @@ A powerful Neovim plugin for organizing and annotating code with grouped markers
 
 ```lua
 {
-  "yourusername/marker-groups.nvim",
+  "jameswolensky/marker-groups.nvim",
   dependencies = {
     "nvim-lua/plenary.nvim", -- Required
     "nvim-telescope/telescope.nvim", -- Optional: for fuzzy search
@@ -36,7 +40,7 @@ A powerful Neovim plugin for organizing and annotating code with grouped markers
 
 ```lua
 use {
-  "yourusername/marker-groups.nvim",
+  "jameswolensky/marker-groups.nvim",
   requires = {
     "nvim-lua/plenary.nvim", -- Required
     "nvim-telescope/telescope.nvim", -- Optional
@@ -59,7 +63,7 @@ require("marker-groups").setup()
 -- Add a marker at current line
 :MarkerAdd Implement JWT token validation
 
--- View all markers in floating window
+-- View all markers in drawer viewer
 :MarkerGroupsView
 
 -- List all groups
@@ -71,13 +75,17 @@ require("marker-groups").setup()
 | Keymap | Action | Description |
 |--------|--------|-------------|
 | `<leader>ma` | Add marker | Add marker at cursor or visual selection |
-| `<leader>mv` | View markers | Open floating marker viewer |
+| `<leader>mv` | View markers | Toggle drawer marker viewer |
 | `<leader>mgc` | Create group | Create a new marker group |
 | `<leader>mgl` | List groups | List all marker groups |
 | `<leader>mgs` | Select group | Switch to a different group |
 | `<leader>mgr` | Rename group | Rename the current group |
 | `<leader>mgd` | Delete group | Delete a marker group |
-| `<leader>mt` | Telescope | Open Telescope marker search |
+| `<leader>mtg` | Telescope groups | Open Telescope marker groups picker |
+| `<leader>mtm` | Telescope markers | Open Telescope markers for active group |
+| `J/K` in drawer | — | — |
+| `E` in drawer | Edit annotation | Edit the selected marker's annotation in the drawer |
+| `D` in drawer | Delete marker | Delete the selected marker in the drawer |
 
 ## 📖 Commands
 
@@ -91,11 +99,11 @@ require("marker-groups").setup()
 ### Marker Operations
 - `:MarkerAdd [annotation]` - Add marker at cursor/selection
 - `:MarkerRemove` - Remove marker at cursor
-- `:MarkerList` - List markers in current group
-- `:MarkerJump <id>` - Jump to specific marker
+- `:MarkerList` - List markers in current buffer
+ 
 
 ### Viewing & Navigation
-- `:MarkerGroupsView` - Open floating marker viewer
+- `:MarkerGroupsView` - Open the drawer marker viewer
 - `:MarkerGroupsTelescope` - Open Telescope integration
 - `:MarkerGroupsHealth` - Run health checks
 
@@ -103,44 +111,75 @@ require("marker-groups").setup()
 
 ```lua
 require("marker-groups").setup({
-  -- Data directory for persistent storage
+  -- Persistence
   data_dir = vim.fn.stdpath("data") .. "/marker-groups",
-  
-  -- Enable debug logging
+
+  -- Logging
   debug = false,
-  
-  -- Log level: "debug", "info", "warn", "error"
-  log_level = "info",
-  
-  -- Virtual text configuration
-  virtual_text = {
-    enabled = true,
-    prefix = "📍 ",
-    suffix = "",
-    highlight = "Comment",
-  },
-  
-  -- Floating window configuration
-  floating = {
+  log_level = "info", -- "debug" | "info" | "warn" | "error"
+
+  -- Drawer viewer
+  drawer_config = {
+    width = 60,        -- 30..120
+    side = "right",    -- "left" | "right"
     border = "rounded",
-    width = 0.8,
-    height = 0.8,
-    context_lines = 2,
+    title_pos = "center",
   },
-  
-  -- Keybinding configuration
+
+  -- Context shown around markers in viewer/preview
+  context_lines = 2,
+
+  -- Virtual text display & highlight groups
+  max_annotation_display = 50, -- truncate long annotations
+  -- Customize highlight groups (names). These will be used for rendering.
+  -- Provide your own groups to integrate with your colorscheme.
+  highlight_groups = {
+    marker = "MarkerGroupsMarker",
+    annotation = "MarkerGroupsAnnotation",
+    context = "MarkerGroupsContext",
+    multiline_start = "MarkerGroupsMultilineStart",
+    multiline_end = "MarkerGroupsMultilineEnd",
+  },
+
+  -- Keybindings (declarative; override per entry or disable by setting to false)
   keymaps = {
     enabled = true,
     prefix = "<leader>m",
-  },
-  
-  -- Auto-save settings
-  auto_save = {
-    enabled = true,
-    interval = 5000, -- milliseconds
+    mappings = {
+      marker = {
+        add = { suffix = "a", mode = { "n", "v" }, desc = "Add marker" },
+        edit = { suffix = "e", desc = "Edit marker at cursor" },
+        delete = { suffix = "d", desc = "Delete marker at cursor" },
+        list = { suffix = "l", desc = "List markers in buffer" },
+        info = { suffix = "i", desc = "Show marker at cursor" },
+        
+      },
+      group = {
+        create = { suffix = "gc", desc = "Create marker group" },
+        select = { suffix = "gs", desc = "Select marker group" },
+        list = { suffix = "gl", desc = "List marker groups" },
+        rename = { suffix = "gr", desc = "Rename marker group" },
+        delete = { suffix = "gd", desc = "Delete marker group" },
+        info = { suffix = "gi", desc = "Show active group info" },
+        -- next/prev/toggle_last/cleanup removed
+        from_branch = { suffix = "gb", desc = "Create group from git branch" },
+      },
+      view = {
+        toggle = { suffix = "v", desc = "Toggle drawer marker viewer" },
+      },
+      telescope = {
+        groups = { suffix = "tg", desc = "Telescope: marker groups" },
+        markers = { suffix = "tm", desc = "Telescope: markers in active group" },
+      },
+    },
   },
 })
 ```
+
+### Limits
+
+- Annotations: up to 500 UTF‑8 characters. Inputs longer than this are truncated in command prompts/args.
+- Group names: up to 100 UTF‑8 characters. Longer names are truncated in command prompts/args.
 
 ## 🎯 Use Cases
 
@@ -174,12 +213,18 @@ require("marker-groups").setup({
 
 ## 🔍 Floating Window Navigation
 
-The floating marker viewer provides rich navigation:
+The drawer viewer provides rich, buffer-local navigation:
 
 - **`j/k`** or **`↑/↓`** - Navigate between markers
 - **`Enter`** - Jump to marker location
+  
+- **`E`** - Edit the selected marker’s annotation
+- **`D`** - Delete the selected marker
 - **`q/Esc`** - Close window
-- **`?`** - Show help
+ 
+
+Note:
+- `<leader>md` deletes the marker at cursor in regular file buffers. Inside the drawer, `<leader>md` is intentionally disabled; use `D` for delete and `E` for edit.
 
 ## 🧪 Health Checks
 
@@ -192,7 +237,7 @@ Run `:MarkerGroupsHealth` to verify:
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please see [DEVELOPMENT.md](DEVELOPMENT.md) for development setup and guidelines.
+Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for development setup and guidelines.
 
 ## 📄 License
 
@@ -203,7 +248,3 @@ MIT License - see [LICENSE](LICENSE) file for details.
 - Built with [plenary.nvim](https://github.com/nvim-lua/plenary.nvim)
 - Telescope integration via [telescope.nvim](https://github.com/nvim-telescope/telescope.nvim)
 - Inspired by various code annotation and marker plugins
-
----
-
-**marker-groups.nvim** - Organize your code, annotate your thoughts, navigate with purpose. 🎯
