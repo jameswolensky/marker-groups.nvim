@@ -1,0 +1,52 @@
+site_name: Marker Groups.nvim
+site_url: https://marker-groups.jameswolensky.com
+site_description: Manage and persist marks in Neovim with groups, quick navigation, and Telescope integration.
+site_author: James Wolensky
+
+theme:
+  name: material
+  features:
+    - navigation.top
+    - navigation.instant
+    - navigation.tracking
+    - navigation.footer
+    - content.code.copy
+    - content.action.edit
+    - toc.follow
+  palette:
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.snippets:
+      base_path:
+        - "."
+
+nav:
+  - Home: index.md
+  - Installation: installation.md
+  - Quick Start: quick-start.md
+  - Keybindings: keybindings.md
+  - Commands: commands.md
+  - Configuration: configuration.md
+
+plugins:
+  - search
+
+

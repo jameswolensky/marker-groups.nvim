@@ -1,0 +1,54 @@
+name: pre-release
+
+on:
+  workflow_dispatch:
+    inputs:
+      plugin_version:
+        description: "Plugin version (e.g., 1.0.0)"
+        required: true
+  push:
+    tags:
+      - 'pre/v*.*.*'
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  prepare_and_tag:
+    name: Prepare and Tag Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Derive version from pre/ tag (if tag push)
+        if: startsWith(github.ref, 'refs/tags/pre/v')
+        run: echo "PLUGIN_VERSION=${GITHUB_REF_NAME#pre/v}" >> $GITHUB_ENV
+
+      - name: Set version from input (if manual)
+        if: ${{ !startsWith(github.ref, 'refs/tags/pre/v') }}
+        run: echo "PLUGIN_VERSION=${{ inputs.plugin_version }}" >> $GITHUB_ENV
+
+      - name: Create release branch
+        run: |
+          echo "$PLUGIN_VERSION" > PLUGIN_VERSION
+
+      - name: Open pull request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          commit-message: "chore(release): v${{ env.PLUGIN_VERSION }}"
+          title: "chore(release): v${{ env.PLUGIN_VERSION }}"
+          body: |
+            This PR prepares the release v${{ env.PLUGIN_VERSION }} by updating PLUGIN_VERSION.
+          branch: release/v${{ env.PLUGIN_VERSION }}
+          base: main
+          add-paths: |
+            PLUGIN_VERSION
+
+      - name: Delete pre/ tag on remote (cleanup)
+        if: startsWith(github.ref, 'refs/tags/pre/v')
+        run: git push origin :refs/tags/${GITHUB_REF_NAME}
+

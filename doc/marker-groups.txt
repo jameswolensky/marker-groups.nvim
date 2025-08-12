@@ -25,7 +25,7 @@ code with grouped markers. It allows you to:
 - Add markers to lines or ranges of code with annotations
 - Organize markers into logical groups (features, bugs, todos, etc.)
 - View markers with visual indicators in your code
-- Browse markers in a beautiful floating window
+- Browse markers in a right-side drawer viewer with code context
 - Search markers with Telescope integration
 - Persist markers across Neovim sessions
 
@@ -34,7 +34,7 @@ code with grouped markers. It allows you to:
 
 Using lazy.nvim: >
     {
-      "yourusername/marker-groups.nvim",
+      "jameswolensky/marker-groups.nvim",
       dependencies = {
         "nvim-lua/plenary.nvim",
         "nvim-telescope/telescope.nvim", -- Optional
@@ -76,14 +76,14 @@ Group Management:
     Switch to a different group. If no name provided, shows interactive menu.
 
 :MarkerGroupsRename {old} {new}                      *:MarkerGroupsRename*
-    Rename a marker group.
+    Rename a marker group (new name up to 100 UTF-8 characters).
 
 :MarkerGroupsDelete {name}                           *:MarkerGroupsDelete*
     Delete a marker group and all its markers.
 
 Marker Operations:
 :MarkerAdd [{annotation}]                            *:MarkerAdd*
-    Add a marker at cursor position or visual selection.
+    Add a marker at cursor position or visual selection (annotation up to 500 UTF-8 characters).
 
 :MarkerRemove                                        *:MarkerRemove*
     Remove marker at current cursor position.
@@ -91,18 +91,37 @@ Marker Operations:
 :MarkerList                                          *:MarkerList*
     List all markers in the current group.
 
-:MarkerJump {id}                                     *:MarkerJump*
-    Jump to a specific marker by ID.
-
 Viewing & Navigation:
 :MarkerGroupsView                                    *:MarkerGroupsView*
-    Open the floating marker viewer window.
+    Open the drawer viewer showing all markers in the active group. The viewer
+    opens as a right-side vertical split by default.
+
+ 
 
 :MarkerGroupsTelescope                               *:MarkerGroupsTelescope*
-    Open Telescope integration for marker search.
+    Open Telescope group picker (if telescope.nvim is installed).
+
+:MarkerGroupsTelescopeMarkers                        *:MarkerGroupsTelescopeMarkers*
+    Open Telescope picker for markers in the active group.
 
 :MarkerGroupsHealth                                  *:MarkerGroupsHealth*
     Run health checks to verify plugin status.
+
+:MarkerGroupsInfo                                    *:MarkerGroupsInfo*
+    Show information about the active marker group.
+
+ 
+
+
+Drawer Controls:
+:MarkerGroupsCloseDrawer                             *:MarkerGroupsCloseDrawer*
+    Close all open drawer viewer windows.
+
+:MarkerGroupsDrawerWidth [width]                     *:MarkerGroupsDrawerWidth*
+    Get or set drawer width (30-120 columns).
+
+Development:
+ 
 
 ==============================================================================
 5. KEYBINDINGS                                    *marker-groups-keybindings*
@@ -110,60 +129,88 @@ Viewing & Navigation:
 Default keybindings (customizable):
 
 <leader>ma                  Add marker at cursor/selection
-<leader>mv                  Open floating marker viewer
+<leader>mv                  Toggle drawer marker viewer
 <leader>mgc                 Create new group
 <leader>mgl                 List all groups
 <leader>mgs                 Select/switch group
 <leader>mgr                 Rename current group
 <leader>mgd                 Delete group
-<leader>mt                  Open Telescope marker search
+<leader>mtg                 Telescope marker groups
+<leader>mtm                 Telescope markers in active group
 
-Floating Window Navigation:
+Drawer Window Navigation (buffer-local):
 j/k or ↑/↓                  Navigate between markers
 <Enter>                     Jump to marker location
+D                           Delete current marker
+E                           Edit current marker annotation
 q/<Esc>                     Close window
-?                           Show help
 
 ==============================================================================
 6. CONFIGURATION                                *marker-groups-configuration*
 
 Default configuration: >
     require("marker-groups").setup({
-      -- Data directory for persistent storage
+      -- Persistence
       data_dir = vim.fn.stdpath("data") .. "/marker-groups",
-      
-      -- Enable debug logging
+
+      -- Logging
       debug = false,
-      
-      -- Log level
       log_level = "info",
-      
-      -- Virtual text configuration
-      virtual_text = {
-        enabled = true,
-        prefix = "📍 ",
-        suffix = "",
-        highlight = "Comment",
-      },
-      
-      -- Floating window configuration
-      floating = {
+
+      -- Drawer viewer
+      drawer_config = {
+        width = 60,       -- 30..120
+        side = "right",   -- "left" | "right"
         border = "rounded",
-        width = 0.8,
-        height = 0.8,
-        context_lines = 2,
+        title_pos = "center",
       },
-      
-      -- Keybinding configuration
+
+      -- Context shown around markers in viewer/preview
+      context_lines = 2,
+
+      -- Virtual text display
+       max_annotation_display = 50,
+
+       -- Highlight groups used for rendering (override names to integrate with colorschemes)
+       highlight_groups = {
+         marker = "MarkerGroupsMarker",
+         annotation = "MarkerGroupsAnnotation",
+         context = "MarkerGroupsContext",
+         multiline_start = "MarkerGroupsMultilineStart",
+         multiline_end = "MarkerGroupsMultilineEnd",
+       },
+
+      -- Keybinding configuration (declarative)
       keymaps = {
         enabled = true,
         prefix = "<leader>m",
-      },
-      
-      -- Auto-save settings
-      auto_save = {
-        enabled = true,
-        interval = 5000,
+        mappings = {
+          marker = {
+            add = { suffix = "a", mode = { "n", "v" }, desc = "Add marker" },
+            edit = { suffix = "e", desc = "Edit marker at cursor" },
+            delete = { suffix = "d", desc = "Delete marker at cursor" },
+            list = { suffix = "l", desc = "List markers in buffer" },
+            info = { suffix = "j", desc = "Show marker at cursor" },
+          },
+          group = {
+            create = { suffix = "gc", desc = "Create marker group" },
+            select = { suffix = "gs", desc = "Select marker group" },
+            list = { suffix = "gl", desc = "List marker groups" },
+            rename = { suffix = "gr", desc = "Rename marker group" },
+            delete = { suffix = "gd", desc = "Delete marker group" },
+            info = { suffix = "gi", desc = "Show active group info" },
+            -- next/prev/toggle_last/cleanup removed
+            from_branch = { suffix = "gb", desc = "Create group from git branch" },
+          },
+          persistence = false,
+          view = {
+            toggle = { suffix = "v", desc = "Toggle drawer marker viewer" },
+          },
+          telescope = {
+            groups = { suffix = "tg", desc = "Telescope: marker groups" },
+            markers = { suffix = "tm", desc = "Telescope: markers in active group" },
+          },
+        },
       },
     })
 <
@@ -194,7 +241,11 @@ Problem: Markers not persisting across sessions
 Solution: Check data directory permissions and ensure auto-save is enabled.
 
 Problem: Virtual text not showing
-Solution: Verify virtual_text.enabled = true in configuration.
+Solution: Ensure the plugin is initialized and there are markers in the active
+group. If you previously disabled display, you can re-enable it via:
+>lua
+    require('marker-groups.ui.virtual_text').toggle_display(true)
+<
 
 Problem: Telescope integration not working
 Solution: Ensure telescope.nvim is installed and properly configured.

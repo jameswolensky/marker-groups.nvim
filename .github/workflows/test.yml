@@ -1,10 +1,13 @@
-name: Tests
+name: test
+
+permissions:
+  contents: read
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ main ]
   pull_request:
-    branches: [ main, develop ]
+    branches: [ main ]
 
 jobs:
   test:
@@ -12,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        neovim_version: ['v0.8.0', 'v0.9.0', 'stable', 'nightly']
+        neovim_version: ['v0.8.0', 'v0.9.0', 'v0.10.0', 'stable']
     
     steps:
     - name: Checkout code
@@ -89,7 +92,7 @@ jobs:
     
     - name: Install stylua
       run: |
-        curl -L https://github.com/JohnnyMorganz/StyLua/releases/latest/download/stylua-linux.zip -o stylua.zip
+        curl -L "https://github.com/JohnnyMorganz/StyLua/releases/download/v0.20.0/stylua-linux-x86_64.zip" -o stylua.zip
         unzip stylua.zip
         chmod +x stylua
         sudo mv stylua /usr/local/bin/
@@ -97,13 +100,6 @@ jobs:
     - name: Check code formatting
       run: |
         stylua --check lua/ tests/
-    
-    - name: Install lua-language-server (optional)
-      run: |
-        # Download and install lua-language-server for additional checks
-        curl -L https://github.com/LuaLS/lua-language-server/releases/latest/download/lua-language-server-3.7.4-linux-x64.tar.gz -o luals.tar.gz
-        tar -xzf luals.tar.gz
-        # Note: Full setup would require additional configuration
 
   compatibility:
     name: Test Compatibility
@@ -139,3 +135,10 @@ jobs:
           -c "lua require('marker-groups').setup()" \
           -c "lua require('marker-groups.health').check()" \
           -c "qa!"
+
+  ci:
+    name: CI Aggregate
+    runs-on: ubuntu-latest
+    needs: [test, lint, compatibility]
+    steps:
+      - run: echo "All required checks passed."
