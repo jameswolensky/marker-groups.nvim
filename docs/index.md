@@ -10,7 +10,7 @@ Use the sidebar to explore installation, quick start, keybindings, commands, con
 
 ![Overview of Marker Groups.nvim showing the drawer and annotated markers](assets/images/hero-overview.png)
 
-![Common workflow demo: creating groups, adding markers, browsing the drawer, and using Telescope](assets/videos/overview.mp4)
+![Common workflow demo: creating groups, adding markers, browsing the drawer, and using Telescope](assets/videos/overview.mov)
 
 Links:
 
