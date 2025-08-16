@@ -39,6 +39,7 @@ jobs:
       - name: Open pull request
         uses: peter-evans/create-pull-request@v6
         with:
+          token: ${{ secrets.RELEASE_PR_TOKEN || github.token }}
           commit-message: "chore(release): v${{ env.PLUGIN_VERSION }}"
           title: "chore(release): v${{ env.PLUGIN_VERSION }}"
           body: |

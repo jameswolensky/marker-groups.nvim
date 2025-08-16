@@ -4,7 +4,11 @@ A powerful Neovim plugin for organizing and annotating code with grouped markers
 
 ![Marker Groups.nvim — overview with drawer and markers](docs/assets/images/hero-overview.png)
 
-![Marker Groups.nvim common workflow demo — creating groups, adding markers, browsing the drawer, and using Telescope](docs/assets/videos/overview.mp4)
+<video controls autoplay loop width="100%" muted playsinline>
+  <source src="docs/assets/videos/overview.mp4" type="video/mp4" />
+  <a href="docs/assets/videos/overview.mp4">Download the video</a>.
+  Your browser does not support the video tag.
+</video>
 
 ## ✨ Features
 
