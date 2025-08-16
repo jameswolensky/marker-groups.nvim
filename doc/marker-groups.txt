@@ -1,0 +1,259 @@
+*marker-groups.txt*          Organize code with grouped markers         *marker-groups*
+
+Author: marker-groups.nvim
+License: MIT
+Version: 1.0.0
+
+==============================================================================
+CONTENTS                                               *marker-groups-contents*
+
+1. Introduction ...................... |marker-groups-introduction|
+2. Installation ...................... |marker-groups-installation|
+3. Quick Start ....................... |marker-groups-quickstart|
+4. Commands .......................... |marker-groups-commands|
+5. Keybindings ....................... |marker-groups-keybindings|
+6. Configuration ..................... |marker-groups-configuration|
+7. API ............................... |marker-groups-api|
+8. Troubleshooting ................... |marker-groups-troubleshooting|
+
+==============================================================================
+1. INTRODUCTION                                    *marker-groups-introduction*
+
+marker-groups.nvim is a powerful Neovim plugin for organizing and annotating
+code with grouped markers. It allows you to:
+
+- Add markers to lines or ranges of code with annotations
+- Organize markers into logical groups (features, bugs, todos, etc.)
+- View markers with visual indicators in your code
+- Browse markers in a right-side drawer viewer with code context
+- Search markers with Telescope integration
+- Persist markers across Neovim sessions
+
+==============================================================================
+2. INSTALLATION                                    *marker-groups-installation*
+
+Using lazy.nvim: >
+    {
+      "jameswolensky/marker-groups.nvim",
+      dependencies = {
+        "nvim-lua/plenary.nvim",
+        "nvim-telescope/telescope.nvim", -- Optional
+      },
+      config = function()
+        require("marker-groups").setup()
+      end,
+    }
+<
+
+==============================================================================
+3. QUICK START                                      *marker-groups-quickstart*
+
+Basic usage: >
+    -- Setup the plugin
+    require("marker-groups").setup()
+    
+    -- Create a group
+    :MarkerGroupsCreate my-feature
+    
+    -- Add a marker
+    :MarkerAdd This is important
+    
+    -- View markers
+    :MarkerGroupsView
+<
+
+==============================================================================
+4. COMMANDS                                          *marker-groups-commands*
+
+Group Management:
+:MarkerGroupsCreate {name}                           *:MarkerGroupsCreate*
+    Create a new marker group with the specified name.
+
+:MarkerGroupsList                                    *:MarkerGroupsList*
+    List all marker groups with statistics.
+
+:MarkerGroupsSelect [{name}]                         *:MarkerGroupsSelect*
+    Switch to a different group. If no name provided, shows interactive menu.
+
+:MarkerGroupsRename {old} {new}                      *:MarkerGroupsRename*
+    Rename a marker group (new name up to 100 UTF-8 characters).
+
+:MarkerGroupsDelete {name}                           *:MarkerGroupsDelete*
+    Delete a marker group and all its markers.
+
+Marker Operations:
+:MarkerAdd [{annotation}]                            *:MarkerAdd*
+    Add a marker at cursor position or visual selection (annotation up to 500 UTF-8 characters).
+
+:MarkerRemove                                        *:MarkerRemove*
+    Remove marker at current cursor position.
+
+:MarkerList                                          *:MarkerList*
+    List all markers in the current group.
+
+Viewing & Navigation:
+:MarkerGroupsView                                    *:MarkerGroupsView*
+    Open the drawer viewer showing all markers in the active group. The viewer
+    opens as a right-side vertical split by default.
+
+ 
+
+:MarkerGroupsTelescope                               *:MarkerGroupsTelescope*
+    Open Telescope group picker (if telescope.nvim is installed).
+
+:MarkerGroupsTelescopeMarkers                        *:MarkerGroupsTelescopeMarkers*
+    Open Telescope picker for markers in the active group.
+
+:MarkerGroupsHealth                                  *:MarkerGroupsHealth*
+    Run health checks to verify plugin status.
+
+:MarkerGroupsInfo                                    *:MarkerGroupsInfo*
+    Show information about the active marker group.
+
+ 
+
+
+Drawer Controls:
+:MarkerGroupsCloseDrawer                             *:MarkerGroupsCloseDrawer*
+    Close all open drawer viewer windows.
+
+:MarkerGroupsDrawerWidth [width]                     *:MarkerGroupsDrawerWidth*
+    Get or set drawer width (30-120 columns).
+
+Development:
+ 
+
+==============================================================================
+5. KEYBINDINGS                                    *marker-groups-keybindings*
+
+Default keybindings (customizable):
+
+<leader>ma                  Add marker at cursor/selection
+<leader>mv                  Toggle drawer marker viewer
+<leader>mgc                 Create new group
+<leader>mgl                 List all groups
+<leader>mgs                 Select/switch group
+<leader>mgr                 Rename current group
+<leader>mgd                 Delete group
+<leader>mtg                 Telescope marker groups
+<leader>mtm                 Telescope markers in active group
+
+Drawer Window Navigation (buffer-local):
+j/k or ↑/↓                  Navigate between markers
+<Enter>                     Jump to marker location
+D                           Delete current marker
+E                           Edit current marker annotation
+q/<Esc>                     Close window
+
+==============================================================================
+6. CONFIGURATION                                *marker-groups-configuration*
+
+Default configuration: >
+    require("marker-groups").setup({
+      -- Persistence
+      data_dir = vim.fn.stdpath("data") .. "/marker-groups",
+
+      -- Logging
+      debug = false,
+      log_level = "info",
+
+      -- Drawer viewer
+      drawer_config = {
+        width = 60,       -- 30..120
+        side = "right",   -- "left" | "right"
+        border = "rounded",
+        title_pos = "center",
+      },
+
+      -- Context shown around markers in viewer/preview
+      context_lines = 2,
+
+      -- Virtual text display
+       max_annotation_display = 50,
+
+       -- Highlight groups used for rendering (override names to integrate with colorschemes)
+       highlight_groups = {
+         marker = "MarkerGroupsMarker",
+         annotation = "MarkerGroupsAnnotation",
+         context = "MarkerGroupsContext",
+         multiline_start = "MarkerGroupsMultilineStart",
+         multiline_end = "MarkerGroupsMultilineEnd",
+       },
+
+      -- Keybinding configuration (declarative)
+      keymaps = {
+        enabled = true,
+        prefix = "<leader>m",
+        mappings = {
+          marker = {
+            add = { suffix = "a", mode = { "n", "v" }, desc = "Add marker" },
+            edit = { suffix = "e", desc = "Edit marker at cursor" },
+            delete = { suffix = "d", desc = "Delete marker at cursor" },
+            list = { suffix = "l", desc = "List markers in buffer" },
+            info = { suffix = "j", desc = "Show marker at cursor" },
+          },
+          group = {
+            create = { suffix = "gc", desc = "Create marker group" },
+            select = { suffix = "gs", desc = "Select marker group" },
+            list = { suffix = "gl", desc = "List marker groups" },
+            rename = { suffix = "gr", desc = "Rename marker group" },
+            delete = { suffix = "gd", desc = "Delete marker group" },
+            info = { suffix = "gi", desc = "Show active group info" },
+            -- next/prev/toggle_last/cleanup removed
+            from_branch = { suffix = "gb", desc = "Create group from git branch" },
+          },
+          persistence = false,
+          view = {
+            toggle = { suffix = "v", desc = "Toggle drawer marker viewer" },
+          },
+          telescope = {
+            groups = { suffix = "tg", desc = "Telescope: marker groups" },
+            markers = { suffix = "tm", desc = "Telescope: markers in active group" },
+          },
+        },
+      },
+    })
+<
+
+==============================================================================
+7. API                                                    *marker-groups-api*
+
+Lua API for programmatic access:
+
+require("marker-groups").setup({opts})               *marker-groups.setup()*
+    Initialize the plugin with configuration options.
+
+require("marker-groups.groups").create_group(name)   *marker-groups.groups.create_group()*
+    Create a new marker group.
+
+require("marker-groups.markers").add_marker(annotation, group) *marker-groups.markers.add_marker()*
+    Add a marker programmatically.
+
+require("marker-groups.state").get_state()           *marker-groups.state.get_state()*
+    Get the current plugin state.
+
+==============================================================================
+8. TROUBLESHOOTING                              *marker-groups-troubleshooting*
+
+Common issues and solutions:
+
+Problem: Markers not persisting across sessions
+Solution: Check data directory permissions and ensure auto-save is enabled.
+
+Problem: Virtual text not showing
+Solution: Ensure the plugin is initialized and there are markers in the active
+group. If you previously disabled display, you can re-enable it via:
+>lua
+    require('marker-groups.ui.virtual_text').toggle_display(true)
+<
+
+Problem: Telescope integration not working
+Solution: Ensure telescope.nvim is installed and properly configured.
+
+Problem: Keybindings not working
+Solution: Check for conflicts and ensure keymaps.enabled = true.
+
+Run :MarkerGroupsHealth for comprehensive diagnostics.
+
+==============================================================================
+vim:tw=78:ts=8:ft=help:norl:

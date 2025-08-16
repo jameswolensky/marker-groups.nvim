@@ -1,0 +1,6 @@
+# yaml-language-server: $schema=https://json.schemastore.org/github-issue-config.json
+blank_issues_enabled: false
+contact_links:
+  - name: 📚 Documentation
+    url: https://github.com/jameswolensky/marker-groups.nvim#readme
+    about: Check the README for usage instructions
