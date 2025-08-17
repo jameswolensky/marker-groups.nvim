@@ -1,0 +1,8 @@
+# This file defines code owners who are automatically requested for review
+# when a pull request modifies matching files.
+# Docs: https://docs.github.com/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# All files in the repository
+* @jameswolensky
+
+
