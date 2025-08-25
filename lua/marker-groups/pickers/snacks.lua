@@ -5,22 +5,31 @@ local state = require "marker-groups.state"
 local groups = require "marker-groups.groups"
 
 local function ensure()
-  local ok, snacks = pcall(require, "snacks")
-  if not ok or not snacks then
+  local ok_snacks, snacks = pcall(require, "snacks")
+  if not ok_snacks then
     feedback.warning("Snacks Picker", "snacks.nvim not available")
-    return nil
+    return nil, nil
   end
-  if not snacks.picker then
-    feedback.warning("Snacks Picker", "snacks.picker not available")
-    return nil
+
+  -- Try both field and module forms
+  local picker = snacks and snacks.picker or nil
+  local ok_mod, picker_mod = pcall(require, "snacks.picker")
+  if ok_mod and picker_mod then
+    picker = picker or picker_mod
   end
-  return snacks
+
+  if not picker then
+    feedback.warning("Snacks Picker", "picker API not found (snacks.picker)")
+    return snacks, nil
+  end
+
+  return snacks, picker
 end
 
 function M.show_groups(opts)
   opts = opts or {}
-  local snacks = ensure()
-  if not snacks then
+  local snacks, picker = ensure()
+  if not snacks or not picker then
     return state.Result.error("snacks.nvim not available", "NO_SNACKS")
   end
 
@@ -58,10 +67,14 @@ function M.show_groups(opts)
     end,
   }
 
-  if type(snacks.picker) == "function" then
-    snacks.picker(picker_opts)
-  elseif snacks.picker.open then
-    snacks.picker.open(picker_opts)
+  if type(picker) == "function" then
+    picker(picker_opts)
+  elseif type(picker) == "table" and type(picker.open) == "function" then
+    picker.open(picker_opts)
+  elseif type(picker) == "table" and type(picker.pick) == "function" then
+    picker.pick(picker_opts)
+  elseif type(picker) == "table" and type(picker.start) == "function" then
+    picker.start(picker_opts)
   else
     feedback.warning("Snacks Picker", "Unsupported snacks.picker API")
     return state.Result.error("Unsupported snacks.picker API", "SNACKS_API")
@@ -72,8 +85,8 @@ end
 
 function M.show_markers(opts)
   opts = opts or {}
-  local snacks = ensure()
-  if not snacks then
+  local snacks, picker = ensure()
+  if not snacks or not picker then
     return state.Result.error("snacks.nvim not available", "NO_SNACKS")
   end
 
@@ -110,10 +123,14 @@ function M.show_markers(opts)
     end,
   }
 
-  if type(snacks.picker) == "function" then
-    snacks.picker(picker_opts)
-  elseif snacks.picker.open then
-    snacks.picker.open(picker_opts)
+  if type(picker) == "function" then
+    picker(picker_opts)
+  elseif type(picker) == "table" and type(picker.open) == "function" then
+    picker.open(picker_opts)
+  elseif type(picker) == "table" and type(picker.pick) == "function" then
+    picker.pick(picker_opts)
+  elseif type(picker) == "table" and type(picker.start) == "function" then
+    picker.start(picker_opts)
   else
     feedback.warning("Snacks Picker", "Unsupported snacks.picker API")
     return state.Result.error("Unsupported snacks.picker API", "SNACKS_API")

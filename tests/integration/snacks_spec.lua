@@ -57,4 +57,21 @@ describe("snacks picker API compatibility", function()
     local res = picker.show_groups { prompt = "Select" }
     assert.is_true(res.success)
   end)
+
+  it("supports snacks.picker module API (require 'snacks.picker')", function()
+    package.loaded["snacks"] = {}
+    package.loaded["snacks.picker"] = {
+      open = function(opts)
+        assert.is_table(opts)
+        assert.is_table(opts.items)
+        if opts.action then
+          opts.action(opts.items[1])
+        end
+      end,
+    }
+
+    local picker = require "marker-groups.pickers.snacks"
+    local res = picker.show_groups { prompt = "Select" }
+    assert.is_true(res.success)
+  end)
 end)
