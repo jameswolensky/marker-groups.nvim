@@ -11,8 +11,8 @@ title: Keybindings
 | `<leader>mgs` | Select group | Switch to a different group |
 | `<leader>mgr` | Rename group | Rename the current group |
 | `<leader>mgd` | Delete group | Delete a marker group |
-| `<leader>mtg` | Telescope groups | Open Telescope marker groups picker |
-| `<leader>mtm` | Telescope markers | Open Telescope markers for active group |
+| `<leader>mpg` | Picker groups | Open configured picker for groups |
+| `<leader>mpm` | Picker markers | Open configured picker for active group |
 | `J/K` in drawer | — | — |
 | `E` in drawer | Edit annotation | Edit the selected marker's annotation in the drawer |
 | `D` in drawer | Delete marker | Delete the selected marker in the drawer |

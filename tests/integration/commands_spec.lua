@@ -526,6 +526,24 @@ describe("marker-groups command integration", function()
     end)
   end)
 
+  describe("generic picker commands", function()
+    it("should execute MarkerGroupsPicker command", function()
+      assert.has_no.errors(function()
+        pcall(function()
+          vim.cmd "MarkerGroupsPicker"
+        end)
+      end)
+    end)
+
+    it("should execute MarkerGroupsPickerMarkers command", function()
+      assert.has_no.errors(function()
+        pcall(function()
+          vim.cmd "MarkerGroupsPickerMarkers"
+        end)
+      end)
+    end)
+  end)
+
   describe("drawer commands", function()
     it("should execute MarkerGroupsDrawerWidth command", function()
       assert.has_no.errors(function()

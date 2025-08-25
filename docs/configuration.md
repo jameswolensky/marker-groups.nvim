@@ -7,6 +7,9 @@ require("marker-groups").setup({
   data_dir = vim.fn.stdpath("data") .. "/marker-groups",
   debug = false,
   log_level = "info",
+  picker = {
+    provider = "auto", -- auto|telescope|snacks|mini|vim
+  },
   drawer_config = {
     width = 60,
     side = "right",
@@ -40,9 +43,9 @@ require("marker-groups").setup({
         delete = { suffix = "gd", desc = "Delete marker group" },
       },
       view = { toggle = { suffix = "v", desc = "Toggle drawer marker viewer" } },
-      telescope = {
-        groups = { suffix = "tg", desc = "Telescope: marker groups" },
-        markers = { suffix = "tm", desc = "Telescope: markers in active group" },
+      picker = {
+        groups = { suffix = "pg", desc = "Picker: marker groups" },
+        markers = { suffix = "pm", desc = "Picker: markers in active group" },
       },
     },
   },

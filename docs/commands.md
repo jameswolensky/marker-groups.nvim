@@ -19,6 +19,8 @@ title: Commands
 ## Viewing & Navigation
 
 - `:MarkerGroupsView` — Open drawer marker viewer
-- `:MarkerGroupsTelescope` — Telescope integration
+- `:MarkerGroupsPicker` — Open configured picker (auto/telescope/snacks/mini)
+- `:MarkerGroupsPickerMarkers` — Open configured picker for active group markers
+- removed Telescope-specific keymaps; use generic picker commands
 - `:MarkerGroupsHealth` — Run health checks
 

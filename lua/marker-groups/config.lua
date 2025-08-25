@@ -10,6 +10,13 @@ local INTERNAL = {
 local defaults = {
   data_dir = vim.fn.stdpath "data" .. "/marker-groups",
 
+  -- Picker integration
+  -- provider: "auto" | "telescope" | "snacks" | "mini" | "vim"
+  -- - "auto" will prefer telescope if available, then snacks, then mini, then vim.ui
+  picker = {
+    provider = "auto",
+  },
+
   signs = {
     marker = "●",
     multiline_start = "┌",
@@ -62,10 +69,14 @@ local defaults = {
         toggle = { suffix = "v", desc = "Toggle drawer marker viewer" },
       },
 
-      telescope = {
-        groups = { suffix = "tg", desc = "Telescope: marker groups" },
-        markers = { suffix = "tm", desc = "Telescope: markers in active group" },
+      -- Open the configured picker provider (default: auto-detected)
+      picker = {
+        groups = { suffix = "pg", desc = "Picker: marker groups" },
+        markers = { suffix = "pm", desc = "Picker: markers in active group" },
       },
+
+      -- Telescope-specific keymaps removed in favor of generic picker keymaps
+      telescope = false,
     },
   },
 

@@ -391,12 +391,8 @@ function M.select_group_interactive(opts)
     return state.Result.error("No groups available", "NO_GROUPS")
   end
 
-  local has_telescope, telescope = pcall(require, "telescope")
-  if has_telescope then
-    return M.select_group_with_telescope(groups_info, opts)
-  else
-    return M.select_group_with_vim_ui(groups_info, opts)
-  end
+  local picker = require "marker-groups.picker"
+  return picker.show_groups(opts)
 end
 
 function M.select_group_with_telescope(groups_info, opts)

@@ -272,26 +272,28 @@ function M.setup()
   )
 
   map(
-    km.telescope and km.telescope.groups,
+    km.picker and km.picker.groups,
     "n",
-    compute_lhs(prefix, km.telescope and km.telescope.groups),
+    compute_lhs(prefix, km.picker and km.picker.groups),
     safe_call(function()
-      local telescope = require "marker-groups.telescope"
-      telescope.show_groups()
-    end, "Telescope groups"),
-    "Telescope: marker groups"
+      local picker = require "marker-groups.picker"
+      picker.show_groups()
+    end, "Picker groups"),
+    "Picker: marker groups"
   )
 
   map(
-    km.telescope and km.telescope.markers,
+    km.picker and km.picker.markers,
     "n",
-    compute_lhs(prefix, km.telescope and km.telescope.markers),
+    compute_lhs(prefix, km.picker and km.picker.markers),
     safe_call(function()
-      local telescope = require "marker-groups.telescope"
-      telescope.show_markers()
-    end, "Telescope markers"),
-    "Telescope: markers in active group"
+      local picker = require "marker-groups.picker"
+      picker.show_markers()
+    end, "Picker markers"),
+    "Picker: markers in active group"
   )
+
+  -- Telescope-specific keymaps removed; use generic picker keymaps instead
 end
 
 function M.defaults()

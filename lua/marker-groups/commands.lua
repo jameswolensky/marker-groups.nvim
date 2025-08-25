@@ -319,6 +319,17 @@ function M.setup()
     desc = "Open Telescope picker for markers in active group",
   })
 
+  -- Generic picker commands that respect configured provider
+  vim.api.nvim_create_user_command("MarkerGroupsPicker", function()
+    local picker = require "marker-groups.picker"
+    picker.show_groups()
+  end, { desc = "Open configured picker for marker groups" })
+
+  vim.api.nvim_create_user_command("MarkerGroupsPickerMarkers", function()
+    local picker = require "marker-groups.picker"
+    picker.show_markers()
+  end, { desc = "Open configured picker for markers in active group" })
+
   vim.api.nvim_create_user_command("MarkerGroupsDrawerWidth", function(args)
     local drawer = require "marker-groups.ui.drawer"
 

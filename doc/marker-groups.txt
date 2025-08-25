@@ -37,7 +37,9 @@ Using lazy.nvim: >
       "jameswolensky/marker-groups.nvim",
       dependencies = {
         "nvim-lua/plenary.nvim",
-        "nvim-telescope/telescope.nvim", -- Optional
+        "nvim-telescope/telescope.nvim", -- Optional: Telescope
+        "folke/snacks.nvim",             -- Optional: Snacks picker
+        "echasnovski/mini.pick",         -- Optional: mini.pick
       },
       config = function()
         require("marker-groups").setup()
@@ -98,6 +100,12 @@ Viewing & Navigation:
 
  
 
+:MarkerGroupsPicker                                  *:MarkerGroupsPicker*
+    Open configured picker (auto/telescope/snacks/mini or fallback to vim.ui).
+
+:MarkerGroupsPickerMarkers                           *:MarkerGroupsPickerMarkers*
+    Open configured picker for markers in the active group.
+
 :MarkerGroupsTelescope                               *:MarkerGroupsTelescope*
     Open Telescope group picker (if telescope.nvim is installed).
 
@@ -135,8 +143,8 @@ Default keybindings (customizable):
 <leader>mgs                 Select/switch group
 <leader>mgr                 Rename current group
 <leader>mgd                 Delete group
-<leader>mtg                 Telescope marker groups
-<leader>mtm                 Telescope markers in active group
+<leader>mpg                 Picker: marker groups
+<leader>mpm                 Picker: markers in active group
 
 Drawer Window Navigation (buffer-local):
 j/k or ↑/↓                  Navigate between markers
@@ -156,6 +164,11 @@ Default configuration: >
       -- Logging
       debug = false,
       log_level = "info",
+
+      -- Picker
+      picker = {
+        provider = "auto",  -- auto|telescope|snacks|mini|vim
+      },
 
       -- Drawer viewer
       drawer_config = {
@@ -206,6 +219,10 @@ Default configuration: >
           view = {
             toggle = { suffix = "v", desc = "Toggle drawer marker viewer" },
           },
+          picker = {
+            groups = { suffix = "pg", desc = "Picker: marker groups" },
+            markers = { suffix = "pm", desc = "Picker: markers in active group" },
+          },
           telescope = {
             groups = { suffix = "tg", desc = "Telescope: marker groups" },
             markers = { suffix = "tm", desc = "Telescope: markers in active group" },
@@ -247,8 +264,8 @@ group. If you previously disabled display, you can re-enable it via:
     require('marker-groups.ui.virtual_text').toggle_display(true)
 <
 
-Problem: Telescope integration not working
-Solution: Ensure telescope.nvim is installed and properly configured.
+Problem: Picker integration not working
+Solution: Ensure your chosen provider is installed. Supported: telescope.nvim, snacks.nvim (picker), mini.pick. Otherwise it falls back to vim.ui.
 
 Problem: Keybindings not working
 Solution: Check for conflicts and ensure keymaps.enabled = true.
