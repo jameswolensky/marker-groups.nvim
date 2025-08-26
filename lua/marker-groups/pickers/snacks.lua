@@ -43,7 +43,7 @@ function M.show_groups(opts)
   local by_text = {}
   for _, gi in ipairs(infos) do
     local text = gi.name
-    table.insert(items, { text = text, value = gi.name })
+    table.insert(items, text)
     by_text[text] = gi.name
   end
 
@@ -84,15 +84,9 @@ function M.show_groups(opts)
       if not item then
         return
       end
-      if type(item) == "table" and item.value then
-        groups.select_group(item.value)
-        return
-      end
-      if type(item) == "string" then
-        local name = by_text[item]
-        if name then
-          groups.select_group(name)
-        end
+      local name = (type(item) == "string" and by_text[item]) or (type(item) == "table" and item.value)
+      if name then
+        groups.select_group(name)
       end
     end,
   }

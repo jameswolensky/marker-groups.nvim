@@ -30,7 +30,10 @@ describe("picker groups list shows all groups", function()
     package.loaded["snacks"] = {
       picker = function(opts)
         for _, it in ipairs(opts.items or {}) do
-          seen[it.text] = true
+          local label = (type(it) == "string" and it) or (type(it) == "table" and it.text)
+          if label then
+            seen[label] = true
+          end
         end
       end,
     }
