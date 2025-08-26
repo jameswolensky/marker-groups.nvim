@@ -56,26 +56,18 @@ function M.show_groups(opts)
       local lines = preview.build_group_preview_lines(group_name, { context_lines = 2, max_markers = 5 })
       return table.concat(lines, "\n")
     end,
-    -- Most compatible selection handlers across Snacks versions
-    -- (newer builds prefer 'accept', some examples use 'action')
-    accept = function(item)
-      if not item then
-        return
-      end
-      local name = item.value or item.text or item.label or item.display
-      if name then
-        require("marker-groups.groups").select_group(name)
-      end
-    end,
-    action = function(item)
-      if not item then
-        return
-      end
-      local name = item.value or item.text or item.label or item.display
-      if name then
-        groups.select_group(name)
-      end
-    end,
+    -- Disable default accept to avoid file/buf requirement and bind our own <CR>
+    actions = { accept = false },
+    keys = {
+      ["<CR>"] = function(p)
+        local it = p:current()
+        local name = it and (it.value or it.text or it.label or it.display)
+        if name then
+          require("marker-groups.groups").select_group(name)
+        end
+        p:close()
+      end,
+    },
   }
 
   if type(picker) == "function" then
