@@ -42,7 +42,7 @@ function M.show_groups(opts)
   local items = {}
   local by_text = {}
   for _, gi in ipairs(infos) do
-    local text = groups.format_group_info(gi, "short")
+    local text = gi.name
     table.insert(items, { text = text, value = gi.name })
     by_text[text] = gi.name
   end

@@ -30,16 +30,17 @@ describe("picker group preview content", function()
     markers.add_marker "hello"
   end)
 
-  it("snacks group preview points to a file and renders markers", function()
+  it("snacks group preview renders markers via preview function", function()
     local pickermod = require "marker-groups.pickers.snacks"
 
     local opened = {}
     package.loaded["snacks"] = {
       picker = function(opts)
         assert.is_table(opts.items)
-        -- The first item should have a file for preview
+        assert.is_function(opts.preview)
         local it = opts.items[1]
-        assert.is_truthy(it.file)
+        local text = opts.preview(it)
+        assert.is_truthy(text:match "📌 Markers:")
         -- Pretend we opened; trigger action to ensure no crash
         if opts.action then
           opts.action(it)
