@@ -180,59 +180,12 @@ function M.show_groups(opts)
       },
       sorter = conf.generic_sorter(opts),
       previewer = previewers.new_buffer_previewer {
-        title = "Group Info",
+        title = "Group Preview",
         define_preview = function(self, entry, status)
           local group = entry.value
-          local group_data = state_data.marker_groups[group.name]
-
-          local preview_text = {
-            "📁 Group: " .. group.name,
-            "═══════════════════════════════════",
-            "",
-            "📊 Statistics:",
-            "  • Markers: " .. group.marker_count,
-            "  • Created: " .. format_date(group.created_at),
-            "  • Modified: " .. format_date(group.modified_at),
-            "  • Age: " .. relative_time(group.created_at),
-            "",
-          }
-
-          if group.is_active then
-            table.insert(preview_text, "✨ This is the active group")
-            table.insert(preview_text, "")
-          end
-
-          if group.marker_count > 0 and group_data and group_data.markers then
-            table.insert(preview_text, "📌 Recent Markers:")
-
-            local marker_count = math.min(5, group.marker_count)
-            for i = 1, marker_count do
-              local marker = group_data.markers[i]
-              if marker then
-                local file_name = vim.fn.fnamemodify(marker.buffer_path, ":t")
-                local line_info = marker.start_line
-                if marker.start_line ~= marker.end_line then
-                  line_info = marker.start_line .. "-" .. marker.end_line
-                end
-
-                table.insert(
-                  preview_text,
-                  string.format("  %d. %s:%s - %s", i, file_name, line_info, string.sub(marker.annotation, 1, 30))
-                )
-              end
-            end
-
-            if group.marker_count > 5 then
-              table.insert(preview_text, "  ... and " .. (group.marker_count - 5) .. " more")
-            end
-          else
-            table.insert(preview_text, "📝 No markers in this group")
-          end
-
-          table.insert(preview_text, "")
-          table.insert(preview_text, "🎯 Press <Enter> to select this group")
-
-          vim.api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, preview_text)
+          local preview = require "marker-groups.ui.preview"
+          local lines = preview.build_group_preview_lines(group.name, { context_lines = 2, max_markers = 5 })
+          vim.api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, lines)
         end,
       },
       attach_mappings = function(prompt_bufnr, map)

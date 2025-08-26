@@ -40,7 +40,9 @@ describe("picker group preview content", function()
         assert.is_function(opts.preview)
         local it = opts.items[1]
         local text = opts.preview(it)
-        assert.is_truthy(text:match "📌 Markers:")
+        assert.is_truthy(text:match "📁 Group:")
+        assert.is_truthy(text:match "📍")
+        assert.is_truthy(text:match "💬")
         -- Pretend we opened; trigger action to ensure no crash
         if opts.action then
           opts.action(it)
@@ -54,7 +56,7 @@ describe("picker group preview content", function()
     assert.is_truthy(opened[1])
   end)
 
-  it("mini.pick group preview returns marker list text", function()
+  it("mini.pick group preview returns context blocks and annotation", function()
     require("marker-groups.config").update { picker = { provider = "mini" } }
     package.loaded["mini.pick"] = {
       start = function(opts)
@@ -63,7 +65,9 @@ describe("picker group preview content", function()
         assert.is_function(src.preview)
         local first = src.items and src.items[1]
         local text = src.preview(first)
-        assert.is_truthy(text:match "📌 Markers:")
+        assert.is_truthy(text:match "📁 Group:")
+        assert.is_truthy(text:match "📍")
+        assert.is_truthy(text:match "💬")
       end,
     }
 
