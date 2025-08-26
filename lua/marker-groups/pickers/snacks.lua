@@ -43,7 +43,7 @@ function M.show_groups(opts)
   local by_text = {}
   for _, gi in ipairs(infos) do
     local text = gi.name
-    table.insert(items, text)
+    table.insert(items, { text = text, value = gi.name })
     by_text[text] = gi.name
   end
 
@@ -51,7 +51,7 @@ function M.show_groups(opts)
     title = opts.prompt or "Select Marker Group",
     items = items,
     preview = function(item, _)
-      local group_name = (type(item) == "table" and item.value) or by_text[item]
+      local group_name = item and item.value
       local state_data = require("marker-groups.state").get_state()
       local group_data = state_data and state_data.marker_groups and state_data.marker_groups[group_name]
       local lines = {
@@ -84,9 +84,8 @@ function M.show_groups(opts)
       if not item then
         return
       end
-      local name = (type(item) == "string" and by_text[item]) or (type(item) == "table" and item.value)
-      if name then
-        groups.select_group(name)
+      if item.value then
+        groups.select_group(item.value)
       end
     end,
   }
