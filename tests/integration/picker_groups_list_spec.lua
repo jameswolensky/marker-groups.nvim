@@ -81,11 +81,12 @@ describe("picker groups list shows all groups", function()
         return tbl
       end,
     }
-    package.loaded["telescope.config"] = { values = {
-      generic_sorter = function()
-        return function() end
-      end,
-    } }
+    package.loaded["telescope.config"] =
+      { values = {
+        generic_sorter = function()
+          return function() end
+        end,
+      } }
     package.loaded["telescope.actions"] = { select_default = { replace = function() end }, close = function() end }
     package.loaded["telescope.actions.state"] = {
       get_selected_entry = function()
