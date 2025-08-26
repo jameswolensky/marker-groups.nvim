@@ -65,8 +65,12 @@ function M.show_groups(opts)
         for i = 1, max do
           local m = group_data.markers[i]
           local file_name = vim.fn.fnamemodify(m.buffer_path or "", ":t")
-          local line_info = (m.start_line == m.end_line) and tostring(m.start_line) or (m.start_line .. "-" .. m.end_line)
-          table.insert(lines, string.format("  %d. %s:%s - %s", i, file_name, line_info, string.sub(m.annotation or "", 1, 30)))
+          local line_info = (m.start_line == m.end_line) and tostring(m.start_line)
+            or (m.start_line .. "-" .. m.end_line)
+          table.insert(
+            lines,
+            string.format("  %d. %s:%s - %s", i, file_name, line_info, string.sub(m.annotation or "", 1, 30))
+          )
         end
         if #group_data.markers > 5 then
           table.insert(lines, "  ... and " .. (#group_data.markers - 5) .. " more")
