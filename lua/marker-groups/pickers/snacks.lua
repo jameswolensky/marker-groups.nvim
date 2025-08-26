@@ -43,51 +43,39 @@ function M.show_groups(opts)
   local by_text = {}
   for _, gi in ipairs(infos) do
     local text = groups.format_group_info(gi, "short")
-    -- Build preview content file listing markers in this group
-    local state_data = require("marker-groups.state").get_state()
-    local group_data = state_data and state_data.marker_groups and state_data.marker_groups[gi.name]
-    local preview_lines = {
-      "📁 Group: " .. gi.name,
-      "═══════════════════════════════════",
-      "",
-    }
-    if group_data and group_data.markers and #group_data.markers > 0 then
-      table.insert(preview_lines, "📌 Markers:")
-      local max = math.min(5, #group_data.markers)
-      for i = 1, max do
-        local m = group_data.markers[i]
-        local file_name = vim.fn.fnamemodify(m.buffer_path or "", ":t")
-        local line_info = (m.start_line == m.end_line) and tostring(m.start_line) or (m.start_line .. "-" .. m.end_line)
-        table.insert(
-          preview_lines,
-          string.format("  %d. %s:%s - %s", i, file_name, line_info, string.sub(m.annotation or "", 1, 30))
-        )
-      end
-      if #group_data.markers > 5 then
-        table.insert(preview_lines, "  ... and " .. (#group_data.markers - 5) .. " more")
-      end
-    else
-      table.insert(preview_lines, "📝 No markers in this group")
-    end
-
-    local data_dir = require("marker-groups.config").get_value "data_dir"
-    local safe_name = gi.name:gsub("[^%w%._-]", "_")
-    local preview_file = data_dir .. "/snacks_preview_group_" .. safe_name .. ".txt"
-    pcall(function()
-      local f = io.open(preview_file, "w")
-      if f then
-        f:write(table.concat(preview_lines, "\n"))
-        f:close()
-      end
-    end)
-
-    table.insert(items, { text = text, value = gi.name, file = preview_file })
+    table.insert(items, { text = text, value = gi.name })
     by_text[text] = gi.name
   end
 
   local picker_opts = {
     title = opts.prompt or "Select Marker Group",
     items = items,
+    preview = function(item, _)
+      local group_name = (type(item) == "table" and item.value) or by_text[item]
+      local state_data = require("marker-groups.state").get_state()
+      local group_data = state_data and state_data.marker_groups and state_data.marker_groups[group_name]
+      local lines = {
+        "📁 Group: " .. (group_name or ""),
+        "═══════════════════════════════════",
+        "",
+      }
+      if group_data and group_data.markers and #group_data.markers > 0 then
+        table.insert(lines, "📌 Markers:")
+        local max = math.min(5, #group_data.markers)
+        for i = 1, max do
+          local m = group_data.markers[i]
+          local file_name = vim.fn.fnamemodify(m.buffer_path or "", ":t")
+          local line_info = (m.start_line == m.end_line) and tostring(m.start_line) or (m.start_line .. "-" .. m.end_line)
+          table.insert(lines, string.format("  %d. %s:%s - %s", i, file_name, line_info, string.sub(m.annotation or "", 1, 30)))
+        end
+        if #group_data.markers > 5 then
+          table.insert(lines, "  ... and " .. (#group_data.markers - 5) .. " more")
+        end
+      else
+        table.insert(lines, "📝 No markers in this group")
+      end
+      return table.concat(lines, "\n")
+    end,
     action = function(item)
       if not item then
         return
