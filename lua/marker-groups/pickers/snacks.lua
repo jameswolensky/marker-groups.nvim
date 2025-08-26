@@ -54,7 +54,7 @@ function M.show_groups(opts)
       local group_name = item and (item.value or item.text or item.label or item.display)
       local preview = require "marker-groups.ui.preview"
       local lines = preview.build_group_preview_lines(group_name, { context_lines = 2, max_markers = 5 })
-      return table.concat(lines, "\n")
+      return { title = "Group Preview", lines = lines, ft = "marker-groups" }
     end,
     action = function(item)
       if not item then
