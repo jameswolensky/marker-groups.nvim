@@ -16,24 +16,27 @@ function M.prompt_with_limit(opts, max_chars, callback)
     )
   )
 
-  vim.ui.input(opts, function(input)
-    if input == nil then
-      logger.debug "prompt_with_limit: input=nil (cancelled)"
-      callback(nil)
-      return
-    end
+  -- Defer opening the input to avoid immediate cancellation with some UI overrides
+  vim.schedule(function()
+    vim.ui.input(opts, function(input)
+      if input == nil then
+        logger.debug "prompt_with_limit: input=nil (cancelled)"
+        callback(nil)
+        return
+      end
 
-    local trimmed = vim.trim(input)
-    local limited = vim.fn.strcharpart(trimmed, 0, limit)
-    logger.debug(
-      string.format(
-        "prompt_with_limit: received input len=%d trimmed_len=%d limited_len=%d",
-        vim.fn.strchars(input),
-        vim.fn.strchars(trimmed),
-        vim.fn.strchars(limited)
+      local trimmed = vim.trim(input)
+      local limited = vim.fn.strcharpart(trimmed, 0, limit)
+      logger.debug(
+        string.format(
+          "prompt_with_limit: received input len=%d trimmed_len=%d limited_len=%d",
+          vim.fn.strchars(input),
+          vim.fn.strchars(trimmed),
+          vim.fn.strchars(limited)
+        )
       )
-    )
-    callback(limited)
+      callback(limited)
+    end)
   end)
 end
 
