@@ -39,15 +39,29 @@ function M.show_groups(opts)
     return state.Result.error("No groups", "NO_GROUPS")
   end
 
+  local tmp_files = {}
+  local tmp_bufs = {}
+
   local items = {}
   local by_text = {}
   for _, gi in ipairs(infos) do
     local text = gi.name
-    table.insert(items, { text = text, label = text, display = text, value = gi.name })
+    -- Create a tiny temp file so Snacks default previewer can always show something
+    local tmp = vim.fn.tempname() .. "_mg_group_" .. text .. ".txt"
+    local lines = { "Group:", text }
+    pcall(vim.fn.writefile, lines, tmp)
+    table.insert(tmp_files, tmp)
+    table.insert(items, {
+      text = text,
+      label = text,
+      display = text,
+      value = gi.name,
+      file = tmp,
+      lnum = 1,
+      col = 1,
+    })
     by_text[text] = gi.name
   end
-
-  local tmp_files = {}
 
   local function cleanup_tmp_files()
     for _, path in ipairs(tmp_files) do
@@ -60,13 +74,30 @@ function M.show_groups(opts)
     tmp_files = {}
   end
 
+  local function cleanup_tmp_bufs()
+    for _, b in ipairs(tmp_bufs) do
+      pcall(function()
+        if vim.api.nvim_buf_is_valid(b) then
+          vim.api.nvim_buf_delete(b, { force = true })
+        end
+      end)
+    end
+    tmp_bufs = {}
+  end
+
   local picker_opts = {
     title = opts.prompt or "Select Marker Group",
     items = items,
-    -- Simplified preview: just show the group name as plain text
-    preview = function(item, _)
+    -- Show a simple scratch-buffer preview with the group name
+    preview = function(item)
       local name = item and (item.value or item.text or item.label or item.display) or ""
-      return "Group: " .. name .. "\n" .. name
+      local buf = vim.api.nvim_create_buf(false, true)
+      vim.api.nvim_buf_set_option(buf, "bufhidden", "wipe")
+      vim.api.nvim_buf_set_option(buf, "modifiable", true)
+      local lines = { "Group:", name }
+      vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
+      table.insert(tmp_bufs, buf)
+      return { buf = buf, title = "Group: " .. name }
     end,
     -- Disable default accept (which expects file/buf) and provide our own handlers
     actions = { accept = false },
@@ -92,6 +123,7 @@ function M.show_groups(opts)
             require("marker-groups.groups").select_group(name)
           end
           cleanup_tmp_files()
+          cleanup_tmp_bufs()
           p:close()
         end,
         mode = { "n", "i" },
@@ -100,6 +132,7 @@ function M.show_groups(opts)
     -- Best-effort cleanup if the picker closes without selection
     on_close = function()
       cleanup_tmp_files()
+      cleanup_tmp_bufs()
     end,
   }
 
