@@ -60,29 +60,8 @@ function M.show_groups(opts)
     -- Preview wrapper to support both ctx-based and legacy item-based signatures
     preview = function(arg1)
       local function build_lines(group_name)
-        local lines = { "Group: " .. group_name, "" }
-        local g = state.get_group(group_name)
-        if g and g.markers and #g.markers > 0 then
-          table.insert(lines, "Markers:")
-          local max = math.min(5, #g.markers)
-          for i = 1, max do
-            local m = g.markers[i]
-            local file = vim.fn.fnamemodify(m.buffer_path or "", ":t")
-            local line_info = (m.start_line == m.end_line) and tostring(m.start_line)
-              or (m.start_line .. "-" .. m.end_line)
-            local annotation = m.annotation or ""
-            if #annotation > 60 then
-              annotation = annotation:sub(1, 57) .. "..."
-            end
-            table.insert(lines, string.format("  %d. %s:%s - %s", i, file, line_info, annotation))
-          end
-          if #g.markers > 5 then
-            table.insert(lines, string.format("  ... and %d more", #g.markers - 5))
-          end
-        else
-          table.insert(lines, "No markers in this group")
-        end
-        return lines
+        local preview_builder = require "marker-groups.ui.preview"
+        return preview_builder.build_group_preview_lines(group_name, { context_lines = 2, max_markers = 5 })
       end
 
       -- New API: preview(ctx)
@@ -138,6 +117,17 @@ function M.show_groups(opts)
           p:close()
         end,
         mode = { "n", "i" },
+      },
+    },
+    -- Preview window options: remove line numbers/signs
+    win = {
+      preview = {
+        wo = {
+          number = false,
+          relativenumber = false,
+          signcolumn = "no",
+          foldcolumn = "0",
+        },
       },
     },
   }
