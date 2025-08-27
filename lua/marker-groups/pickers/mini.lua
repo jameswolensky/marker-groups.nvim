@@ -34,17 +34,30 @@ function M.show_groups(opts)
     name_by_text[text] = gi.name
   end
 
+  local function win_config()
+    local height = math.floor(0.618 * vim.o.lines)
+    local width = math.floor(0.618 * vim.o.columns)
+    return {
+      anchor = "NW",
+      height = height,
+      width = width,
+      row = math.floor(0.5 * (vim.o.lines - height)),
+      col = math.floor(0.5 * (vim.o.columns - width)),
+    }
+  end
+
   pick.start {
     source = {
       items = vim.tbl_map(function(i)
         return i.text
       end, items),
       name = opts.prompt or "Select Marker Group",
-      preview = function(item)
+      -- Use buffer-backed preview per mini.pick API: (buf_id, item, opts)
+      preview = function(buf_id, item, _)
         local group_name = name_by_text[item]
         local preview_builder = require "marker-groups.ui.preview"
         local lines = preview_builder.build_group_preview_lines(group_name, { context_lines = 2, max_markers = 5 })
-        return table.concat(lines, "\n")
+        vim.api.nvim_buf_set_lines(buf_id, 0, -1, false, lines)
       end,
       choose = function(item)
         for _, it in ipairs(items) do
@@ -55,6 +68,7 @@ function M.show_groups(opts)
         end
       end,
     },
+    window = { config = win_config },
   }
 
   return state.Result.ok { message = "mini.pick group picker opened" }
@@ -82,61 +96,44 @@ function M.show_markers(opts)
     map[label] = m
   end
 
+  local function win_config_markers()
+    local height = math.floor(0.618 * vim.o.lines)
+    local width = math.floor(0.618 * vim.o.columns)
+    return {
+      anchor = "NW",
+      height = height,
+      width = width,
+      row = math.floor(0.5 * (vim.o.lines - height)),
+      col = math.floor(0.5 * (vim.o.columns - width)),
+    }
+  end
+
   pick.start {
     source = {
       items = display,
       name = "Markers",
-      preview = function(item)
+      -- Use MiniPick.default_preview for file/pos context
+      preview = function(buf_id, item, _)
         local m = map[item]
         if not m or not m.buffer_path or m.buffer_path == "" then
-          return "No preview"
+          vim.api.nvim_buf_set_lines(buf_id, 0, -1, false, { "No preview" })
+          return
         end
-        -- Read lines from loaded buffer if available, else from file
-        local function get_lines(path)
-          for _, buf in ipairs(vim.api.nvim_list_bufs()) do
-            if vim.api.nvim_buf_is_valid(buf) and vim.api.nvim_buf_is_loaded(buf) then
-              if vim.api.nvim_buf_get_name(buf) == path then
-                return vim.api.nvim_buf_get_lines(buf, 0, -1, false)
-              end
-            end
-          end
-          local lines = {}
-          local f = io.open(path, "r")
-          if f then
-            for l in f:lines() do
-              table.insert(lines, l)
-            end
-            f:close()
-          end
-          return lines
-        end
-
-        local context_lines = 2
-        local file_lines = get_lines(m.buffer_path)
-        local start_line = math.max(m.start_line - context_lines, 1)
-        local end_line = math.min(m.end_line + context_lines, #file_lines)
-
-        local out = {}
-        table.insert(
-          out,
-          string.format(
+        local ok, MiniPickMod = pcall(require, "mini.pick")
+        if ok and MiniPickMod and MiniPickMod.default_preview then
+          MiniPickMod.default_preview(buf_id, { file = m.buffer_path, pos = { m.start_line, 0 } }, {
+            n_context_lines = 2,
+            line_position = "center",
+          })
+        else
+          -- Fallback: simple header if default_preview unavailable
+          local header = string.format(
             "📍 %s:%s",
             vim.fn.fnamemodify(m.buffer_path or "", ":t"),
             (m.start_line == m.end_line) and tostring(m.start_line) or (m.start_line .. "-" .. m.end_line)
           )
-        )
-        table.insert(out, "   " .. (m.buffer_path or ""))
-        table.insert(out, string.rep("─", 40))
-        for i = start_line, end_line do
-          local prefix = (i >= m.start_line and i <= m.end_line) and "► " or "  "
-          local content = file_lines[i] or ""
-          table.insert(out, string.format("%s%-4d: %s", prefix, i, content))
+          vim.api.nvim_buf_set_lines(buf_id, 0, -1, false, { header })
         end
-        table.insert(out, string.rep("─", 40))
-        if m.annotation and m.annotation ~= "" then
-          table.insert(out, "💬 " .. m.annotation)
-        end
-        return table.concat(out, "\n")
       end,
       choose = function(item)
         local m = map[item]
@@ -147,6 +144,7 @@ function M.show_markers(opts)
         pcall(vim.api.nvim_win_set_cursor, 0, { m.start_line, 0 })
       end,
     },
+    window = { config = win_config_markers },
   }
 
   return state.Result.ok { message = "mini.pick marker picker opened" }
