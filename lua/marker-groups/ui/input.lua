@@ -1,16 +1,38 @@
 local M = {}
 local config = require "marker-groups.config"
+local logger = require "marker-groups.utils.logger"
 
 function M.prompt_with_limit(opts, max_chars, callback)
+  opts = opts or {}
+  local limit = max_chars or config.get_internal "max_annotation_chars"
+  local backend = (vim and vim.ui and vim.ui.input) and tostring(vim.ui.input) or "<nil>"
+  logger.debug(
+    string.format(
+      "prompt_with_limit: opening input prompt='%s' default_len=%d limit=%d backend=%s",
+      tostring(opts.prompt or ""),
+      vim.fn.strchars(opts.default or ""),
+      limit,
+      backend
+    )
+  )
+
   vim.ui.input(opts, function(input)
     if input == nil then
+      logger.debug "prompt_with_limit: input=nil (cancelled)"
       callback(nil)
       return
     end
 
     local trimmed = vim.trim(input)
-    local limit = max_chars or config.get_internal "max_annotation_chars"
     local limited = vim.fn.strcharpart(trimmed, 0, limit)
+    logger.debug(
+      string.format(
+        "prompt_with_limit: received input len=%d trimmed_len=%d limited_len=%d",
+        vim.fn.strchars(input),
+        vim.fn.strchars(trimmed),
+        vim.fn.strchars(limited)
+      )
+    )
     callback(limited)
   end)
 end

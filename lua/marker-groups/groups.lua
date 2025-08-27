@@ -104,6 +104,8 @@ function M.create_group_interactive(opts)
   opts = opts or {}
   local prompt = opts.prompt or "Enter group name:"
   local default = opts.default_name or ""
+  local logger = require "marker-groups.utils.logger"
+  logger.debug(string.format("create_group_interactive: starting prompt='%s' default='%s'", prompt, default))
 
   local input_ui = require "marker-groups.ui.input"
   input_ui.prompt_with_limit(
@@ -131,7 +133,9 @@ function M.create_group_interactive(opts)
     },
     require("marker-groups.config").get_internal "max_group_name_chars",
     function(input)
+      logger.debug "create_group_interactive: callback invoked"
       if input and input ~= "" then
+        logger.debug(string.format("create_group_interactive: input='%s'", input))
         local result = M.create_group(input)
         ErrorHandler.handle_result("Group Creation", result, result.success and ("Created group: " .. input) or nil)
 
@@ -144,6 +148,7 @@ function M.create_group_interactive(opts)
           end
         end
       else
+        logger.debug "create_group_interactive: input=nil or empty (cancelled)"
         ErrorHandler.show_warning("Group Creation", "Group creation cancelled")
       end
     end
