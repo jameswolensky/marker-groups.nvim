@@ -56,8 +56,9 @@ function M.show_groups(opts)
       local lines = preview.build_group_preview_lines(group_name, { context_lines = 2, max_markers = 5 })
       return table.concat(lines, "\n")
     end,
-    -- Disable default accept to avoid file/buf requirement and bind our own <CR>
+    -- Disable default accept (which expects file/buf) and bind our own <CR>
     actions = { accept = false },
+    -- Bind our own <CR> to select the group and close the picker
     keys = {
       ["<CR>"] = function(p)
         local it = p:current()

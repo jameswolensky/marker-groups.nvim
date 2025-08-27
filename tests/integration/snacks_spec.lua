@@ -74,4 +74,38 @@ describe("snacks picker API compatibility", function()
     local res = picker.show_groups { prompt = "Select" }
     assert.is_true(res.success)
   end)
+
+  it("binds <CR> to select group via picker instance", function()
+    -- Stub snacks with function-style picker
+    package.loaded["snacks"] = {
+      picker = function(opts)
+        assert.is_table(opts)
+        assert.is_table(opts.items)
+        assert.is_table(opts.keys)
+
+        -- Simulate a picker instance
+        local selected = opts.items[2] -- choose second group (g2)
+        local instance = {
+          current = function()
+            return selected
+          end,
+          close = function() end,
+        }
+
+        -- Call our <CR> keybinding handler
+        assert.is_table(opts.actions)
+        assert.is_false(opts.actions.accept)
+        assert.is_function(opts.keys["<CR>"])
+        opts.keys["<CR>"](instance)
+      end,
+    }
+
+    local picker = require "marker-groups.pickers.snacks"
+    local res = picker.show_groups { prompt = "Select" }
+    assert.is_true(res.success)
+
+    -- Verify that active group changed from default
+    local active = state.get_active_group()
+    assert.not_equals("default", active)
+  end)
 end)
