@@ -39,68 +39,82 @@ function M.show_groups(opts)
     return state.Result.error("No groups", "NO_GROUPS")
   end
 
-  local tmp_files = {}
-  local tmp_bufs = {}
-
   local items = {}
   local by_text = {}
   for _, gi in ipairs(infos) do
     local text = gi.name
-    -- Create a tiny temp file so Snacks default previewer can always show something
-    local tmp = vim.fn.tempname() .. "_mg_group_" .. text .. ".txt"
-    local lines = { "Group:", text }
-    pcall(vim.fn.writefile, lines, tmp)
-    table.insert(tmp_files, tmp)
     table.insert(items, {
       text = text,
       label = text,
       display = text,
       value = gi.name,
-      file = tmp,
-      lnum = 1,
-      col = 1,
     })
     by_text[text] = gi.name
   end
 
-  local function cleanup_tmp_files()
-    for _, path in ipairs(tmp_files) do
-      pcall(function()
-        if path and path ~= "" then
-          vim.fn.delete(path)
-        end
-      end)
-    end
-    tmp_files = {}
-  end
-
-  local function cleanup_tmp_bufs()
-    for _, b in ipairs(tmp_bufs) do
-      pcall(function()
-        if vim.api.nvim_buf_is_valid(b) then
-          vim.api.nvim_buf_delete(b, { force = true })
-        end
-      end)
-    end
-    tmp_bufs = {}
-  end
+  -- No temp files/buffers needed for simple text preview
 
   local picker_opts = {
     title = opts.prompt or "Select Marker Group",
     items = items,
-    -- Show a simple scratch-buffer preview with the group name
-    preview = function(item)
-      local name = item and (item.value or item.text or item.label or item.display) or ""
-      local buf = vim.api.nvim_create_buf(false, true)
-      vim.api.nvim_buf_set_option(buf, "bufhidden", "wipe")
-      vim.api.nvim_buf_set_option(buf, "modifiable", true)
-      local lines = { "Group:", name }
-      vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
-      table.insert(tmp_bufs, buf)
-      return { buf = buf, title = "Group: " .. name }
+    -- Preview wrapper to support both ctx-based and legacy item-based signatures
+    preview = function(arg1)
+      local function build_lines(group_name)
+        local lines = { "Group: " .. group_name, "" }
+        local g = state.get_group(group_name)
+        if g and g.markers and #g.markers > 0 then
+          table.insert(lines, "Markers:")
+          local max = math.min(5, #g.markers)
+          for i = 1, max do
+            local m = g.markers[i]
+            local file = vim.fn.fnamemodify(m.buffer_path or "", ":t")
+            local line_info = (m.start_line == m.end_line) and tostring(m.start_line)
+              or (m.start_line .. "-" .. m.end_line)
+            local annotation = m.annotation or ""
+            if #annotation > 60 then
+              annotation = annotation:sub(1, 57) .. "..."
+            end
+            table.insert(lines, string.format("  %d. %s:%s - %s", i, file, line_info, annotation))
+          end
+          if #g.markers > 5 then
+            table.insert(lines, string.format("  ... and %d more", #g.markers - 5))
+          end
+        else
+          table.insert(lines, "No markers in this group")
+        end
+        return lines
+      end
+
+      -- New API: preview(ctx)
+      if type(arg1) == "table" and arg1.preview and arg1.item then
+        local ctx = arg1
+        local it = ctx.item
+        local name = it and (it.value or it.text or it.label or it.display) or ""
+        ctx.preview:reset()
+        ctx.preview:set_title("Group: " .. name)
+        ctx.preview:set_lines(build_lines(name))
+        return
+      end
+      -- Legacy API: preview(item)
+      local it = arg1
+      local name = it and (it.value or it.text or it.label or it.display) or ""
+      local lines = build_lines(name)
+      return table.concat(lines, "\n")
     end,
     -- Disable default accept (which expects file/buf) and provide our own handlers
     actions = { accept = false },
+    -- Newer API: confirm(picker, item)
+    confirm = function(p, item)
+      if not item then
+        return
+      end
+      local name = item.value or item.text or item.label or item.display
+      if name then
+        require("marker-groups.groups").select_group(name)
+      end
+      p:close()
+    end,
+    -- Older API fallback
     action = function(item)
       if not item then
         return
@@ -109,7 +123,6 @@ function M.show_groups(opts)
       if name then
         require("marker-groups.groups").select_group(name)
       end
-      cleanup_tmp_files()
     end,
     -- Bind our own <CR> in both normal and insert modes and close afterwards
     keys = {
@@ -122,18 +135,11 @@ function M.show_groups(opts)
           if name then
             require("marker-groups.groups").select_group(name)
           end
-          cleanup_tmp_files()
-          cleanup_tmp_bufs()
           p:close()
         end,
         mode = { "n", "i" },
       },
     },
-    -- Best-effort cleanup if the picker closes without selection
-    on_close = function()
-      cleanup_tmp_files()
-      cleanup_tmp_bufs()
-    end,
   }
 
   if type(picker) == "function" then
