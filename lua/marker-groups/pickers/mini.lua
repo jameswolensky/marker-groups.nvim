@@ -42,33 +42,8 @@ function M.show_groups(opts)
       name = opts.prompt or "Select Marker Group",
       preview = function(item)
         local group_name = name_by_text[item]
-        local state_data = require("marker-groups.state").get_state()
-        local group_data = state_data and state_data.marker_groups and state_data.marker_groups[group_name]
-
-        local lines = {
-          "📁 Group: " .. (group_name or ""),
-          "═══════════════════════════════════",
-          "",
-        }
-        if group_data and group_data.markers and #group_data.markers > 0 then
-          table.insert(lines, "📌 Markers:")
-          local max = math.min(5, #group_data.markers)
-          for i = 1, max do
-            local m = group_data.markers[i]
-            local file_name = vim.fn.fnamemodify(m.buffer_path or "", ":t")
-            local line_info = (m.start_line == m.end_line) and tostring(m.start_line)
-              or (m.start_line .. "-" .. m.end_line)
-            table.insert(
-              lines,
-              string.format("  %d. %s:%s - %s", i, file_name, line_info, string.sub(m.annotation or "", 1, 30))
-            )
-          end
-          if #group_data.markers > 5 then
-            table.insert(lines, "  ... and " .. (#group_data.markers - 5) .. " more")
-          end
-        else
-          table.insert(lines, "📝 No markers in this group")
-        end
+        local preview_builder = require "marker-groups.ui.preview"
+        local lines = preview_builder.build_group_preview_lines(group_name, { context_lines = 2, max_markers = 5 })
         return table.concat(lines, "\n")
       end,
       choose = function(item)
@@ -111,6 +86,58 @@ function M.show_markers(opts)
     source = {
       items = display,
       name = "Markers",
+      preview = function(item)
+        local m = map[item]
+        if not m or not m.buffer_path or m.buffer_path == "" then
+          return "No preview"
+        end
+        -- Read lines from loaded buffer if available, else from file
+        local function get_lines(path)
+          for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+            if vim.api.nvim_buf_is_valid(buf) and vim.api.nvim_buf_is_loaded(buf) then
+              if vim.api.nvim_buf_get_name(buf) == path then
+                return vim.api.nvim_buf_get_lines(buf, 0, -1, false)
+              end
+            end
+          end
+          local lines = {}
+          local f = io.open(path, "r")
+          if f then
+            for l in f:lines() do
+              table.insert(lines, l)
+            end
+            f:close()
+          end
+          return lines
+        end
+
+        local context_lines = 2
+        local file_lines = get_lines(m.buffer_path)
+        local start_line = math.max(m.start_line - context_lines, 1)
+        local end_line = math.min(m.end_line + context_lines, #file_lines)
+
+        local out = {}
+        table.insert(
+          out,
+          string.format(
+            "📍 %s:%s",
+            vim.fn.fnamemodify(m.buffer_path or "", ":t"),
+            (m.start_line == m.end_line) and tostring(m.start_line) or (m.start_line .. "-" .. m.end_line)
+          )
+        )
+        table.insert(out, "   " .. (m.buffer_path or ""))
+        table.insert(out, string.rep("─", 40))
+        for i = start_line, end_line do
+          local prefix = (i >= m.start_line and i <= m.end_line) and "► " or "  "
+          local content = file_lines[i] or ""
+          table.insert(out, string.format("%s%-4d: %s", prefix, i, content))
+        end
+        table.insert(out, string.rep("─", 40))
+        if m.annotation and m.annotation ~= "" then
+          table.insert(out, "💬 " .. m.annotation)
+        end
+        return table.concat(out, "\n")
+      end,
       choose = function(item)
         local m = map[item]
         if not m then
