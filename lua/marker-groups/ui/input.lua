@@ -18,13 +18,45 @@ function M.prompt_with_limit(opts, max_chars, callback)
 
   -- Defer opening the input to avoid immediate cancellation with some UI overrides
   vim.schedule(function()
-    vim.ui.input(opts, function(input)
+    local tried_fallback = false
+    local function finish(value)
+      callback(value)
+    end
+    local function apply_limit_and_finish(input)
       if input == nil then
+        if not tried_fallback then
+          tried_fallback = true
+          logger.debug "prompt_with_limit: input=nil, attempting fallback via vim.fn.input"
+          local prompt_text = tostring(opts.prompt or "")
+          prompt_text = prompt_text:gsub("%s+$", "") .. " "
+          local ok, result = pcall(vim.fn.input, prompt_text, opts.default or "")
+          if not ok then
+            logger.debug("prompt_with_limit: fallback errored: " .. tostring(result))
+            finish(nil)
+            return
+          end
+          if result == nil or result == "" then
+            logger.debug "prompt_with_limit: fallback returned empty/nil"
+            finish(nil)
+            return
+          end
+          local trimmed_fb = vim.trim(result)
+          local limited_fb = vim.fn.strcharpart(trimmed_fb, 0, limit)
+          logger.debug(
+            string.format(
+              "prompt_with_limit: fallback received len=%d trimmed_len=%d limited_len=%d",
+              vim.fn.strchars(result),
+              vim.fn.strchars(trimmed_fb),
+              vim.fn.strchars(limited_fb)
+            )
+          )
+          finish(limited_fb)
+          return
+        end
         logger.debug "prompt_with_limit: input=nil (cancelled)"
-        callback(nil)
+        finish(nil)
         return
       end
-
       local trimmed = vim.trim(input)
       local limited = vim.fn.strcharpart(trimmed, 0, limit)
       logger.debug(
@@ -35,8 +67,9 @@ function M.prompt_with_limit(opts, max_chars, callback)
           vim.fn.strchars(limited)
         )
       )
-      callback(limited)
-    end)
+      finish(limited)
+    end
+    vim.ui.input(opts, apply_limit_and_finish)
   end)
 end
 
