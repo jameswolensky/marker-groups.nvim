@@ -47,14 +47,39 @@ function M.show_groups(opts)
     by_text[text] = gi.name
   end
 
+  local tmp_files = {}
+
+  local function cleanup_tmp_files()
+    for _, path in ipairs(tmp_files) do
+      pcall(function()
+        if path and path ~= "" then
+          vim.fn.delete(path)
+        end
+      end)
+    end
+    tmp_files = {}
+  end
+
   local picker_opts = {
     title = opts.prompt or "Select Marker Group",
     items = items,
+    -- File-backed preview for maximum Snacks compatibility across versions
     preview = function(item, _)
       local group_name = item and (item.value or item.text or item.label or item.display)
-      local preview = require "marker-groups.ui.preview"
-      local lines = preview.build_group_preview_lines(group_name, { context_lines = 2, max_markers = 5 })
-      return table.concat(lines, "\n")
+      local preview_builder = require "marker-groups.ui.preview"
+      local lines = preview_builder.build_group_preview_lines(group_name, { context_lines = 2, max_markers = 5 })
+
+      -- Create a temporary file for the preview content
+      local tmp = vim.fn.tempname() .. "_mg_group_preview.txt"
+      pcall(vim.fn.writefile, lines, tmp)
+      table.insert(tmp_files, tmp)
+
+      -- Return a preview table recognized by Snacks picker
+      return {
+        file = tmp,
+        ft = "markdown",
+        title = "Group: " .. tostring(group_name),
+      }
     end,
     -- Disable default accept (which expects file/buf) and bind our own <CR>
     actions = { accept = false },
@@ -66,9 +91,14 @@ function M.show_groups(opts)
         if name then
           require("marker-groups.groups").select_group(name)
         end
+        cleanup_tmp_files()
         p:close()
       end,
     },
+    -- Best-effort cleanup if the picker closes without selection
+    on_close = function()
+      cleanup_tmp_files()
+    end,
   }
 
   if type(picker) == "function" then

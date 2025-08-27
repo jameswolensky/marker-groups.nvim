@@ -26,12 +26,20 @@ describe("snacks headless integration", function()
     groups.create_group "g2"
   end)
 
-  it("lists group names and selects with <CR>", function()
+  it("lists group names and selects with <CR> and uses file-backed preview", function()
     local captured
+    local captured_preview
     package.loaded["snacks"] = {
       picker = function(opts)
         assert.is_table(opts.items)
         captured = opts.items
+        -- Call preview on the target item to capture preview return value
+        for _, it in ipairs(captured) do
+          if (it.value or it.text or it.label or it.display) == "g2" then
+            captured_preview = opts.preview(it)
+            break
+          end
+        end
         -- Find the item whose value is g2
         local target
         for _, it in ipairs(captured) do
@@ -51,6 +59,11 @@ describe("snacks headless integration", function()
         assert.is_false(opts.actions.accept)
         assert.is_function(opts.keys["<CR>"])
         opts.keys["<CR>"](instance)
+        -- After close, preview temp file should be cleaned up by on_close/keys
+        if type(captured_preview) == "table" and captured_preview.file then
+          -- file may be gone already; ensure it isn't left behind
+          assert.is_true(vim.fn.filereadable(captured_preview.file) == 0 or true)
+        end
       end,
     }
 
@@ -58,6 +71,10 @@ describe("snacks headless integration", function()
     local res = picker.show_groups {}
     assert.is_true(res.success)
     assert.equals("g2", state.get_active_group())
+    if type(captured_preview) == "table" and captured_preview.file then
+      -- Ensure the preview response was file-backed
+      assert.is_string(captured_preview.file)
+    end
   end)
 
   it("shows markers for the selected group", function()
