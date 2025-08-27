@@ -63,37 +63,39 @@ function M.show_groups(opts)
   local picker_opts = {
     title = opts.prompt or "Select Marker Group",
     items = items,
-    -- File-backed preview for maximum Snacks compatibility across versions
+    -- Simplified preview: just show the group name as plain text
     preview = function(item, _)
-      local group_name = item and (item.value or item.text or item.label or item.display)
-      local preview_builder = require "marker-groups.ui.preview"
-      local lines = preview_builder.build_group_preview_lines(group_name, { context_lines = 2, max_markers = 5 })
-
-      -- Create a temporary file for the preview content
-      local tmp = vim.fn.tempname() .. "_mg_group_preview.txt"
-      pcall(vim.fn.writefile, lines, tmp)
-      table.insert(tmp_files, tmp)
-
-      -- Return a preview table recognized by Snacks picker
-      return {
-        file = tmp,
-        ft = "markdown",
-        title = "Group: " .. tostring(group_name),
-      }
+      local name = item and (item.value or item.text or item.label or item.display) or ""
+      return "Group: " .. name .. "\n" .. name
     end,
-    -- Disable default accept (which expects file/buf) and bind our own <CR>
+    -- Disable default accept (which expects file/buf) and provide our own handlers
     actions = { accept = false },
-    -- Bind our own <CR> to select the group and close the picker
+    action = function(item)
+      if not item then
+        return
+      end
+      local name = item.value or item.text or item.label or item.display
+      if name then
+        require("marker-groups.groups").select_group(name)
+      end
+      cleanup_tmp_files()
+    end,
+    -- Bind our own <CR> in both normal and insert modes and close afterwards
     keys = {
-      ["<CR>"] = function(p)
-        local it = p:current()
-        local name = it and (it.value or it.text or it.label or it.display)
-        if name then
-          require("marker-groups.groups").select_group(name)
-        end
-        cleanup_tmp_files()
-        p:close()
-      end,
+      { "<CR>", false, mode = { "n", "i" } },
+      {
+        "<CR>",
+        function(p)
+          local it = p:current()
+          local name = it and (it.value or it.text or it.label or it.display)
+          if name then
+            require("marker-groups.groups").select_group(name)
+          end
+          cleanup_tmp_files()
+          p:close()
+        end,
+        mode = { "n", "i" },
+      },
     },
     -- Best-effort cleanup if the picker closes without selection
     on_close = function()

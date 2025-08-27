@@ -57,8 +57,16 @@ describe("snacks headless integration", function()
         }
         assert.is_table(opts.actions)
         assert.is_false(opts.actions.accept)
-        assert.is_function(opts.keys["<CR>"])
-        opts.keys["<CR>"](instance)
+        -- New keys API: list of key entries
+        local handler
+        for _, k in ipairs(opts.keys or {}) do
+          if k[1] == "<CR>" and type(k[2]) == "function" then
+            handler = k[2]
+            break
+          end
+        end
+        assert.is_function(handler)
+        handler(instance)
         -- After close, preview temp file should be cleaned up by on_close/keys
         if type(captured_preview) == "table" and captured_preview.file then
           -- file may be gone already; ensure it isn't left behind
