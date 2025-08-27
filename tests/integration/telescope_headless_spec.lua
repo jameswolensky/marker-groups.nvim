@@ -107,11 +107,12 @@ describe("telescope headless integration", function()
         return tbl
       end,
     }
-    package.loaded["telescope.config"] = { values = {
-      generic_sorter = function(_)
-        return function() end
-      end,
-    } }
+    package.loaded["telescope.config"] =
+      { values = {
+        generic_sorter = function(_)
+          return function() end
+        end,
+      } }
     package.loaded["telescope.previewers"] = {
       new_buffer_previewer = function(_)
         return {}
