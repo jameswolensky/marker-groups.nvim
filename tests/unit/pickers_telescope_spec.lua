@@ -36,11 +36,12 @@ describe("telescope picker adapter", function()
         return { results = list }
       end,
     }
-    package.loaded["telescope.config"] = { values = {
-      generic_sorter = function()
-        return function() end
-      end,
-    } }
+    package.loaded["telescope.config"] =
+      { values = {
+        generic_sorter = function()
+          return function() end
+        end,
+      } }
     package.loaded["telescope.actions"] = { close = function() end }
     package.loaded["telescope.actions.state"] = {
       get_selected_entry = function()
