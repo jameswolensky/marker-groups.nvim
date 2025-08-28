@@ -8,10 +8,11 @@ function N.is_ready()
 end
 
 function N.show_groups(opts)
-  local groups = require("marker-groups.groups").get_group_names()
-  return vim.ui.select(groups, { prompt = "Marker Groups" }, function(item)
+  local state = require "marker-groups.state"
+  local names = state.get_group_names() or {}
+  return vim.ui.select(names, { prompt = "Marker Groups" }, function(item)
     if item then
-      require("marker-groups.groups").set_active_group(item)
+      require("marker-groups.groups").select_group(item)
     end
   end)
 end

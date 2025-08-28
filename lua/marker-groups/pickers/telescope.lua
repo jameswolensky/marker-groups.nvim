@@ -14,7 +14,8 @@ function T.show_groups(opts)
   local pickers = require "telescope.pickers"
   local finders = require "telescope.finders"
   local conf = require("telescope.config").values
-  local groups = require("marker-groups.groups").get_group_names()
+  local state = require "marker-groups.state"
+  local groups = state.get_group_names() or {}
 
   return pickers
     .new(opts or {}, {

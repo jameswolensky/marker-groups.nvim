@@ -15,9 +15,9 @@ end
 
 function S.show_groups(opts)
   local snacks = require "snacks"
-  local groups = require("marker-groups.groups").get_group_names()
+  local names = require("marker-groups.state").get_group_names() or {}
   return snacks.picker.open(vim.tbl_deep_extend("force", {
-    items = groups,
+    items = names,
     format_item = function(g)
       return g
     end,
