@@ -1,213 +1,54 @@
-local M = {}
+local S = {}
 
-local feedback = require "marker-groups.feedback"
-local state = require "marker-groups.state"
-local groups = require "marker-groups.groups"
+function S.name()
+  return "snacks"
+end
+S.module_name = "snacks"
 
-local function ensure()
-  local ok_snacks, snacks = pcall(require, "snacks")
-  if not ok_snacks then
-    feedback.warning("Snacks Picker", "snacks.nvim not available")
-    return nil, nil
+function S.is_ready()
+  local ok, mod = pcall(require, "snacks")
+  if not ok then
+    return false
   end
-
-  -- Try both field and module forms
-  local picker = snacks and snacks.picker or nil
-  local ok_mod, picker_mod = pcall(require, "snacks.picker")
-  if ok_mod and picker_mod then
-    picker = picker or picker_mod
-  end
-
-  if not picker then
-    feedback.warning("Snacks Picker", "picker API not found (snacks.picker)")
-    return snacks, nil
-  end
-
-  return snacks, picker
+  return type(mod.picker) == "table" and type(mod.picker.open) == "function"
 end
 
-function M.show_groups(opts)
-  opts = opts or {}
-  local snacks, picker = ensure()
-  if not snacks or not picker then
-    return state.Result.error("snacks.nvim not available", "NO_SNACKS")
-  end
+function S.show_groups(opts)
+  local snacks = require "snacks"
+  local groups = require("marker-groups.groups").get_group_names()
+  return snacks.picker.open(vim.tbl_deep_extend("force", {
+    items = groups,
+    format_item = function(g)
+      return g
+    end,
+    on_confirm = function(g)
+      if g then
+        require("marker-groups.groups").set_active_group(g)
+      end
+    end,
+  }, opts or {}))
+end
 
-  local infos = groups.list_groups()
-  if #infos == 0 then
-    feedback.warning("Groups", "No groups found")
-    return state.Result.error("No groups", "NO_GROUPS")
-  end
-
+function S.show_markers(opts)
+  local snacks = require "snacks"
+  local g = require("marker-groups.state").get_group()
   local items = {}
-  local by_text = {}
-  for _, gi in ipairs(infos) do
-    local text = gi.name
-    table.insert(items, {
-      text = text,
-      label = text,
-      display = text,
-      value = gi.name,
-    })
-    by_text[text] = gi.name
+  for _, m in ipairs(g and g.markers or {}) do
+    table.insert(items, m)
   end
-
-  -- No temp files/buffers needed for simple text preview
-
-  local picker_opts = {
-    title = opts.prompt or "Select Marker Group",
+  return snacks.picker.open(vim.tbl_deep_extend("force", {
     items = items,
-    -- Preview wrapper to support both ctx-based and legacy item-based signatures
-    preview = function(arg1)
-      local function build_lines(group_name)
-        local preview_builder = require "marker-groups.ui.preview"
-        return preview_builder.build_group_preview_lines(group_name, { context_lines = 2, max_markers = 5 })
-      end
-
-      -- New API: preview(ctx)
-      if type(arg1) == "table" and arg1.preview and arg1.item then
-        local ctx = arg1
-        local it = ctx.item
-        local name = it and (it.value or it.text or it.label or it.display) or ""
-        ctx.preview:reset()
-        ctx.preview:set_title("Group: " .. name)
-        ctx.preview:set_lines(build_lines(name))
-        return
-      end
-      -- Legacy API: preview(item)
-      local it = arg1
-      local name = it and (it.value or it.text or it.label or it.display) or ""
-      local lines = build_lines(name)
-      return table.concat(lines, "\n")
+    format_item = function(m)
+      local r = (m.start_line == m.end_line) and tostring(m.start_line) or (m.start_line .. "-" .. m.end_line)
+      return string.format("%s:%s %s", vim.fn.fnamemodify(m.buffer_path, ":t"), r, m.annotation or "")
     end,
-    -- Disable default accept (which expects file/buf) and provide our own handlers
-    actions = { accept = false },
-    -- Newer API: confirm(picker, item)
-    confirm = function(p, item)
-      if not item then
-        return
-      end
-      local name = item.value or item.text or item.label or item.display
-      if name then
-        require("marker-groups.groups").select_group(name)
-      end
-      p:close()
-    end,
-    -- Older API fallback
-    action = function(item)
-      if not item then
-        return
-      end
-      local name = item.value or item.text or item.label or item.display
-      if name then
-        require("marker-groups.groups").select_group(name)
+    on_confirm = function(m)
+      if m then
+        vim.cmd("edit " .. m.buffer_path)
+        vim.api.nvim_win_set_cursor(0, { m.start_line, 0 })
       end
     end,
-    -- Bind our own <CR> in both normal and insert modes and close afterwards
-    keys = {
-      { "<CR>", false, mode = { "n", "i" } },
-      {
-        "<CR>",
-        function(p)
-          local it = p:current()
-          local name = it and (it.value or it.text or it.label or it.display)
-          if name then
-            require("marker-groups.groups").select_group(name)
-          end
-          p:close()
-        end,
-        mode = { "n", "i" },
-      },
-    },
-    -- Preview window options: remove line numbers/signs
-    win = {
-      preview = {
-        wo = {
-          number = false,
-          relativenumber = false,
-          signcolumn = "no",
-          foldcolumn = "0",
-        },
-      },
-    },
-  }
-
-  if type(picker) == "function" then
-    picker(picker_opts)
-  elseif type(picker) == "table" and type(picker.open) == "function" then
-    picker.open(picker_opts)
-  elseif type(picker) == "table" and type(picker.pick) == "function" then
-    picker.pick(picker_opts)
-  elseif type(picker) == "table" and type(picker.start) == "function" then
-    picker.start(picker_opts)
-  else
-    feedback.warning("Snacks Picker", "Unsupported snacks.picker API")
-    return state.Result.error("Unsupported snacks.picker API", "SNACKS_API")
-  end
-
-  return state.Result.ok { message = "Snacks group picker opened" }
+  }, opts or {}))
 end
 
-function M.show_markers(opts)
-  opts = opts or {}
-  local snacks, picker = ensure()
-  if not snacks or not picker then
-    return state.Result.error("snacks.nvim not available", "NO_SNACKS")
-  end
-
-  local active = state.get_active_group()
-  local group = state.get_group(active)
-  if not group or not group.markers or #group.markers == 0 then
-    feedback.warning("Markers", "No markers in active group")
-    return state.Result.error("No markers", "NO_MARKERS")
-  end
-
-  local items = {}
-  local by_text = {}
-  for _, m in ipairs(group.markers) do
-    local text = string.format("%s:%d %s", vim.fn.fnamemodify(m.buffer_path or "", ":t"), m.start_line, m.annotation)
-    table.insert(items, {
-      text = text,
-      value = m,
-      file = m.buffer_path, -- enable Snacks preview
-      lnum = m.start_line,
-      col = 1,
-    })
-    by_text[text] = m
-  end
-
-  local picker_opts = {
-    title = "Markers",
-    items = items,
-    action = function(item)
-      local m = nil
-      if type(item) == "table" and item.value then
-        m = item.value
-      elseif type(item) == "string" then
-        m = by_text[item]
-      end
-      if not m then
-        return
-      end
-      vim.cmd("edit " .. vim.fn.fnameescape(m.buffer_path))
-      pcall(vim.api.nvim_win_set_cursor, 0, { m.start_line, 0 })
-    end,
-  }
-
-  if type(picker) == "function" then
-    picker(picker_opts)
-  elseif type(picker) == "table" and type(picker.open) == "function" then
-    picker.open(picker_opts)
-  elseif type(picker) == "table" and type(picker.pick) == "function" then
-    picker.pick(picker_opts)
-  elseif type(picker) == "table" and type(picker.start) == "function" then
-    picker.start(picker_opts)
-  else
-    feedback.warning("Snacks Picker", "Unsupported snacks.picker API")
-    return state.Result.error("Unsupported snacks.picker API", "SNACKS_API")
-  end
-
-  return state.Result.ok { message = "Snacks marker picker opened" }
-end
-
-return M
+return S

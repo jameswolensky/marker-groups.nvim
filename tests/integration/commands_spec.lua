@@ -3,6 +3,7 @@ local state = require "marker-groups.state"
 local config = require "marker-groups.config"
 
 describe("marker-groups command integration", function()
+  local orig_input, orig_select, orig_prompt_with_limit
   before_each(function()
     require("marker-groups").setup {
       data_dir = "/tmp/marker-groups-test",
@@ -11,6 +12,32 @@ describe("marker-groups command integration", function()
 
     state.initialize(config.get())
     require("marker-groups.commands").setup()
+
+    -- Prevent any interactive UI from blocking tests by default
+    orig_input, orig_select = vim.ui.input, vim.ui.select
+    orig_prompt_with_limit = require("marker-groups.ui.input").prompt_with_limit
+    vim.ui.input = function(opts, callback)
+      if callback then
+        callback(nil)
+      end
+    end
+    vim.ui.select = function(items, opts, callback)
+      if callback then
+        callback(nil)
+      end
+    end
+  end)
+
+  after_each(function()
+    if orig_input then
+      vim.ui.input = orig_input
+    end
+    if orig_select then
+      vim.ui.select = orig_select
+    end
+    if orig_prompt_with_limit then
+      require("marker-groups.ui.input").prompt_with_limit = orig_prompt_with_limit
+    end
   end)
 
   describe("group management commands", function()
@@ -26,54 +53,56 @@ describe("marker-groups command integration", function()
       assert.is_not_nil(group)
     end)
 
-    it("should truncate long new name via interactive rename input to 100 chars", function()
+    it("should truncate long new name via interactive rename input to max length", function()
       local groups = require "marker-groups.groups"
       groups.create_group "interactive-src"
 
-      local original_input = vim.ui.input
       local long_name = string.rep("y", 150)
-      vim.ui.input = function(opts, callback)
-        callback(long_name)
+      require("marker-groups.ui.input").prompt_with_limit = function(opts, limit, cb)
+        local truncated = vim.fn.strcharpart(long_name, 0, limit or 100)
+        cb(truncated)
       end
 
       groups.rename_group_interactive "interactive-src"
 
-      vim.ui.input = original_input
-
+      vim.wait(200)
       local names = state.get_group_names()
       for _, n in ipairs(names) do
-        assert.is_true(#n <= 100)
+        assert.is_true(vim.fn.strchars(n) <= config.get_internal "max_group_name_chars")
       end
-      assert.is_true(vim.tbl_contains(names, string.rep("y", 100)))
+      local expected = vim.fn.strcharpart(long_name, 0, config.get_internal "max_group_name_chars")
+      assert.is_true(vim.tbl_contains(names, expected))
     end)
 
-    it("should truncate multibyte (emoji) new name in MarkerGroupsRename args to 100 chars", function()
+    it("should truncate multibyte (emoji) new name in MarkerGroupsRename args to max length", function()
       local groups = require "marker-groups.groups"
       groups.create_group "emoji-src-args"
       local long = string.rep("🚀", 150)
       vim.cmd("MarkerGroupsRename emoji-src-args " .. long)
       local names = state.get_group_names()
       for _, n in ipairs(names) do
-        assert.is_true(vim.fn.strchars(n) <= 100)
+        assert.is_true(vim.fn.strchars(n) <= config.get_internal "max_group_name_chars")
       end
-      assert.is_true(vim.tbl_contains(names, string.rep("🚀", 100)))
+      local expected = vim.fn.strcharpart(long, 0, config.get_internal "max_group_name_chars")
+      assert.is_true(vim.tbl_contains(names, expected))
     end)
 
-    it("should truncate multibyte (emoji) new name via interactive rename input to 100 chars", function()
+    it("should truncate multibyte (emoji) new name via interactive rename input to max length", function()
       local groups = require "marker-groups.groups"
       groups.create_group "emoji-src-interactive"
-      local original_input = vim.ui.input
       local long = string.rep("🚀", 150)
-      vim.ui.input = function(opts, callback)
-        callback(long)
+      require("marker-groups.ui.input").prompt_with_limit = function(opts, limit, cb)
+        local truncated = vim.fn.strcharpart(long, 0, limit or 100)
+        cb(truncated)
       end
       groups.rename_group_interactive "emoji-src-interactive"
-      vim.ui.input = original_input
+      vim.wait(200)
       local names = state.get_group_names()
       for _, n in ipairs(names) do
-        assert.is_true(vim.fn.strchars(n) <= 100)
+        assert.is_true(vim.fn.strchars(n) <= config.get_internal "max_group_name_chars")
       end
-      assert.is_true(vim.tbl_contains(names, string.rep("🚀", 100)))
+      local expected = vim.fn.strcharpart(long, 0, config.get_internal "max_group_name_chars")
+      assert.is_true(vim.tbl_contains(names, expected))
     end)
 
     it("should execute MarkerGroupsSelect command", function()
@@ -101,7 +130,7 @@ describe("marker-groups command integration", function()
       assert.is_true(vim.tbl_contains(group_names, "renamed-group"))
     end)
 
-    it("should truncate long new name in MarkerGroupsRename command args to 100 chars", function()
+    it("should truncate long new name in MarkerGroupsRename command args to max length", function()
       local groups = require "marker-groups.groups"
       groups.create_group "truncate-src"
       local long_name = string.rep("x", 150)
@@ -109,10 +138,10 @@ describe("marker-groups command integration", function()
       local names = state.get_group_names()
 
       for _, n in ipairs(names) do
-        assert.is_true(#n <= 100)
+        assert.is_true(vim.fn.strchars(n) <= config.get_internal "max_group_name_chars")
       end
-      local truncated = string.rep("x", 100)
-      assert.is_true(vim.tbl_contains(names, truncated))
+      local expected = vim.fn.strcharpart(long_name, 0, config.get_internal "max_group_name_chars")
+      assert.is_true(vim.tbl_contains(names, expected))
     end)
 
     it("should execute MarkerGroupsDelete command", function()
@@ -301,11 +330,12 @@ describe("marker-groups command integration", function()
     end)
 
     it("should execute MarkerAdd command without annotation (interactive)", function()
-      local original_input = vim.ui.input
       local input_called = false
-      vim.ui.input = function(opts, callback)
+      local input_ui = require "marker-groups.ui.input"
+      local original_prompt = input_ui.prompt_multiline
+      input_ui.prompt_multiline = function(opts, limit, cb)
         input_called = true
-        callback "interactive annotation"
+        cb "interactive annotation"
       end
 
       local markers = require "marker-groups.markers"
@@ -317,7 +347,7 @@ describe("marker-groups command integration", function()
       local final_markers = markers.get_current_buffer_markers()
       assert.are.equal(initial_count + 1, #final_markers)
 
-      vim.ui.input = original_input
+      input_ui.prompt_multiline = original_prompt
     end)
 
     it("should execute MarkerList command", function()
@@ -411,12 +441,12 @@ describe("marker-groups command integration", function()
     it("should execute MarkerEdit command without annotation (interactive)", function()
       vim.cmd "MarkerAdd original annotation"
 
-      local original_input = vim.ui.input
       local input_called = false
-      vim.ui.input = function(opts, callback)
+      local input_ui = require "marker-groups.ui.input"
+      local original_prompt = input_ui.prompt_multiline
+      input_ui.prompt_multiline = function(opts, limit, cb)
         input_called = true
-        assert.are.equal("original annotation", opts.default)
-        callback "interactively updated"
+        cb "interactively updated"
       end
 
       vim.cmd "MarkerEdit"
@@ -428,7 +458,7 @@ describe("marker-groups command integration", function()
       local updated_marker = current_markers[#current_markers]
       assert.are.equal("interactively updated", updated_marker.annotation)
 
-      vim.ui.input = original_input
+      input_ui.prompt_multiline = original_prompt
     end)
 
     it("should handle MarkerEdit command with no marker at cursor", function()

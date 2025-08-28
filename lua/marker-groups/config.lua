@@ -41,6 +41,13 @@ local defaults = {
   context_lines = 2,
   max_annotation_display = 50,
 
+  -- Picker configuration: provider + per-call options
+  picker = {
+    provider = "telescope",
+    -- If nil: pass {} per-call; if table: pass this table per-call
+    config = nil,
+  },
+
   keymaps = {
     enabled = true,
     prefix = "<leader>m",

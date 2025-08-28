@@ -36,6 +36,15 @@ function M.setup(opts)
 
   require("marker-groups.markers").setup_global_line_tracking()
 
+  -- Register picker providers
+  pcall(function()
+    local router = require "marker-groups.picker"
+    router.register("native", require "marker-groups.pickers.native")
+    router.register("telescope", require "marker-groups.pickers.telescope")
+    router.register("snacks", require "marker-groups.pickers.snacks")
+    router.register("fzf_lua", require "marker-groups.pickers.fzf_lua")
+  end)
+
   _initialized = true
   vim.g.marker_groups_setup_called = true
 

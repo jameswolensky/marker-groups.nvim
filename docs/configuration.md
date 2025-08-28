@@ -52,6 +52,12 @@ require("marker-groups").setup({
 })
 ```
 
+### Picker provider resolution and external configuration
+
+- When `provider = "auto"`, the plugin selects the first available provider in this order: `telescope` → `snacks` → `mini` → `vim` (built-in `vim.ui`).
+- If a picker is installed and configured elsewhere in Neovim, that custom configuration is used as-is.
+- To force a specific provider (e.g., built-in UI), set `picker.provider = "vim"`.
+
 ## Limits
 
 - Annotations: up to 500 UTF‑8 characters (inputs longer than this are truncated)

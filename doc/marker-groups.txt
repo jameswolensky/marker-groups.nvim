@@ -101,7 +101,10 @@ Viewing & Navigation:
  
 
 :MarkerGroupsPicker                                  *:MarkerGroupsPicker*
-    Open configured picker (auto/telescope/snacks/mini or fallback to vim.ui).
+    Open configured picker. Resolution order when provider is 'auto':
+    telescope -> snacks -> mini -> vim (built-in vim.ui). If a picker is
+    installed and configured elsewhere in Neovim, its custom configuration
+    will be used.
 
 :MarkerGroupsPickerMarkers                           *:MarkerGroupsPickerMarkers*
     Open configured picker for markers in the active group.

@@ -12,7 +12,7 @@ A powerful Neovim plugin for organizing and annotating code with grouped markers
 - **🗂️ Group Organization**: Organize markers into logical groups (features, bugs, todos, etc.)
 - **🎯 Visual Indicators**: See markers directly in your code with virtual text
 - **🪟 Drawer Viewer**: Right-side drawer to browse all markers with context
-- **🔍 Picker Integration**: Use Telescope, Snacks Picker, or mini.pick (auto-detected), with fallback to built-in `vim.ui`
+- **🔍 Picker Integration**: Use Telescope, Snacks Picker, or mini.pick (auto-detected), with fallback to built-in `vim.ui` (auto resolution order: telescope → snacks → mini → vim)
 - **💾 Persistent Storage**: Markers survive Neovim restarts with automatic saving
 - **⌨️ Rich Keybindings**: Intuitive keymaps for all operations
 - **🔧 Configurable**: Extensive customization options
@@ -108,7 +108,7 @@ require("marker-groups").setup()
 
 ### Viewing & Navigation
 - `:MarkerGroupsView` - Open the drawer marker viewer
-- `:MarkerGroupsPicker` - Open configured picker (auto/telescope/snacks/mini)
+- `:MarkerGroupsPicker` - Open configured picker (auto resolution: telescope → snacks → mini → vim)
 - `:MarkerGroupsPickerMarkers` - Open configured picker for markers
 - `:MarkerGroupsTelescope` - Open Telescope integration
 - `:MarkerGroupsHealth` - Run health checks
@@ -190,6 +190,11 @@ require("marker-groups").setup({
   },
 })
 ```
+
+Notes:
+- Pickers are optional. If a picker is installed and configured elsewhere in Neovim, its custom configuration is used.
+- Auto provider resolution order: `telescope` → `snacks` → `mini` → `vim` (built-in `vim.ui`).
+- To force the built-in UI, set `picker.provider = "vim"`.
 
 ### Limits
 

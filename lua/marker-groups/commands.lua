@@ -306,17 +306,17 @@ function M.setup()
   })
 
   vim.api.nvim_create_user_command("MarkerGroupsTelescope", function()
-    local telescope = require "marker-groups.telescope"
-    telescope.show_groups()
+    local picker = require "marker-groups.picker"
+    picker.show_groups()
   end, {
-    desc = "Open Telescope picker for marker groups",
+    desc = "Open configured picker for marker groups",
   })
 
   vim.api.nvim_create_user_command("MarkerGroupsTelescopeMarkers", function()
-    local telescope = require "marker-groups.telescope"
-    telescope.show_markers()
+    local picker = require "marker-groups.picker"
+    picker.show_markers()
   end, {
-    desc = "Open Telescope picker for markers in active group",
+    desc = "Open configured picker for markers in active group",
   })
 
   -- Generic picker commands that respect configured provider

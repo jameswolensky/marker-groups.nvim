@@ -39,3 +39,19 @@ end, { nargs = 1 })
 
 print "Minimal test environment initialized"
 print("Runtime path: " .. vim.inspect(vim.opt.runtimepath:get()))
+
+-- Global non-interactive stubs to prevent any prompts in headless CI
+vim.o.more = false
+vim.ui = vim.ui or {}
+vim.ui.input = function(opts, cb)
+  if cb then
+    cb ""
+  end
+end
+vim.ui.select = function(items, opts, cb)
+  if cb then
+    cb ""
+  end
+end
+
+-- Ensure marker-groups' input helper will never block by default
