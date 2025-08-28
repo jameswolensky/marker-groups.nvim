@@ -43,6 +43,21 @@ function M.setup(opts)
     router.register("telescope", require "marker-groups.pickers.telescope")
     router.register("snacks", require "marker-groups.pickers.snacks")
     router.register("fzf_lua", require "marker-groups.pickers.fzf_lua")
+    -- Log configured vs readiness on startup (no resolve side effects)
+    local logger = require "marker-groups.utils.logger"
+    local configured = router.configured()
+    local ready = router.is_ready(configured)
+    if configured == "auto" then
+      logger.info "Picker: configured provider='auto' (will resolve at call-time)"
+    else
+      if ready then
+        logger.info(string.format("Picker: configured provider '%s' is ready", tostring(configured)))
+      else
+        logger.info(
+          string.format("Picker: configured provider '%s' not ready; fallback will be used", tostring(configured))
+        )
+      end
+    end
   end)
 
   _initialized = true
