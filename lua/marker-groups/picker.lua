@@ -20,10 +20,7 @@ function M.is_ready(name)
   if not p then
     return false
   end
-  local ok_require = pcall(require, p.module_name or p.name())
-  if not ok_require then
-    return false
-  end
+  -- Do not force-load providers here; rely on adapter's non-loading checks
   return p.is_ready and p.is_ready() or false
 end
 
@@ -64,18 +61,25 @@ local function call(kind)
     return fallback_native(kind)
   end
 
-  -- Require-only readiness check
-  local ok_require = pcall(require, provider.module_name or provider.name())
-  if not ok_require or not provider.is_ready() then
-    local configured = config.get_value("picker.provider", "telescope")
-    logger.info(
-      string.format(
-        "Picker: provider '%s' not ready (configured: '%s'); using native fallback",
-        provider.name and provider.name() or tostring(provider),
-        tostring(configured)
+  -- Prefer non-loading readiness; if not ready, try a soft require to trigger lazy-loading
+  if not provider.is_ready() then
+    local tried_soft_require = false
+    local ok_require, _ = pcall(require, provider.module_name or provider.name())
+    if ok_require then
+      tried_soft_require = true
+    end
+    if not provider.is_ready() then
+      local configured = config.get_value("picker.provider", "telescope")
+      logger.info(
+        string.format(
+          "Picker: provider '%s' not ready%s (configured: '%s'); using native fallback",
+          provider.name and provider.name() or tostring(provider),
+          tried_soft_require and " after soft require" or "",
+          tostring(configured)
+        )
       )
-    )
-    return fallback_native(kind)
+      return fallback_native(kind)
+    end
   end
 
   local call_opts = get_call_opts()

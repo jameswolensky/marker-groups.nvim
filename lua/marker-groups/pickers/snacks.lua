@@ -6,15 +6,10 @@ end
 S.module_name = "snacks"
 
 function S.is_ready()
-  if package.loaded["snacks"] ~= nil then
-    local mod = package.loaded["snacks"]
-    return type(mod) == "table" and type(mod.picker) == "table"
-  end
-  -- some setups expose a global
-  if rawget(_G, "Snacks") ~= nil then
-    return true
-  end
-  return false
+  -- Non-loading readiness: consider Snacks ready if the module is loaded
+  -- or a global `Snacks` is present. Avoid requiring or checking subfields
+  -- that may be initialized only after user setup.
+  return package.loaded["snacks"] ~= nil or rawget(_G, "Snacks") ~= nil
 end
 
 function S.show_groups(opts)
