@@ -6,11 +6,15 @@ end
 S.module_name = "snacks"
 
 function S.is_ready()
-  local ok, mod = pcall(require, "snacks")
-  if not ok then
-    return false
+  if package.loaded["snacks"] ~= nil then
+    local mod = package.loaded["snacks"]
+    return type(mod) == "table" and type(mod.picker) == "table"
   end
-  return type(mod.picker) == "table" and type(mod.picker.open) == "function"
+  -- some setups expose a global
+  if rawget(_G, "Snacks") ~= nil then
+    return true
+  end
+  return false
 end
 
 function S.show_groups(opts)

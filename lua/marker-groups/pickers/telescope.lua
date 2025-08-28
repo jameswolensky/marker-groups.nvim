@@ -6,8 +6,7 @@ end
 T.module_name = "telescope"
 
 function T.is_ready()
-  local ok = pcall(require, "telescope")
-  return ok
+  return package.loaded["telescope"] ~= nil or vim.fn.exists ":Telescope" == 2
 end
 
 function T.show_groups(opts)

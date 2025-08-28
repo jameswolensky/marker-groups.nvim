@@ -6,12 +6,12 @@ end
 F.module_name = "fzf-lua"
 
 function F.is_ready()
-  return pcall(require, "fzf-lua")
+  return package.loaded["fzf-lua"] ~= nil or vim.fn.exists ":FzfLua" == 2
 end
 
 function F.show_groups(opts)
   local fzf = require "fzf-lua"
-  local groups = require("marker-groups.groups").get_group_names()
+  local groups = require("marker-groups.state").get_group_names() or {}
   return fzf.fzf_exec(
     groups,
     vim.tbl_deep_extend("force", {
