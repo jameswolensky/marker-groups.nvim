@@ -19,7 +19,7 @@ describe("snacks picker adapter", function()
     -- stub snacks API
     package.loaded["snacks"] = {
       picker = {
-        open = function(opts)
+        pick = function(opts)
           assert.is_table(opts)
           assert.is_table(opts.items)
           local names = opts.items

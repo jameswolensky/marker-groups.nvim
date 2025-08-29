@@ -15,7 +15,7 @@ end
 function S.show_groups(opts)
   local snacks = require "snacks"
   local names = require("marker-groups.state").get_group_names() or {}
-  return snacks.picker.open(vim.tbl_deep_extend("force", {
+  return snacks.picker.pick(vim.tbl_deep_extend("force", {
     items = names,
     format_item = function(g)
       return g
@@ -35,7 +35,7 @@ function S.show_markers(opts)
   for _, m in ipairs(g and g.markers or {}) do
     table.insert(items, m)
   end
-  return snacks.picker.open(vim.tbl_deep_extend("force", {
+  return snacks.picker.pick(vim.tbl_deep_extend("force", {
     items = items,
     format_item = function(m)
       local r = (m.start_line == m.end_line) and tostring(m.start_line) or (m.start_line .. "-" .. m.end_line)
