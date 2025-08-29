@@ -47,6 +47,39 @@ describe("snacks picker adapter", function()
     assert.is_true(pick_called)
   end)
 
+  it("binds <CR> to confirm selection of a group", function()
+    for k, _ in pairs(package.loaded) do
+      if k:match "^marker%-groups" then
+        package.loaded[k] = nil
+      end
+    end
+    require("marker-groups").setup { keymaps = { enabled = false } }
+
+    local confirm_bound = false
+    package.loaded["snacks"] = {
+      picker = {
+        pick = function(opts)
+          assert.is_table(opts.keys)
+          -- find our <CR> rebind
+          local has_clear = false
+          local has_handler = false
+          for _, k in ipairs(opts.keys) do
+            if k[1] == "<CR>" and k[2] == false then
+              has_clear = true
+            elseif k[1] == "<CR>" and type(k[2]) == "function" then
+              has_handler = true
+            end
+          end
+          confirm_bound = has_clear and has_handler
+        end,
+      },
+    }
+
+    local snacks_adapter = require "marker-groups.pickers.snacks"
+    snacks_adapter.show_groups {}
+    assert.is_true(confirm_bound)
+  end)
+
   it("confirm handler selects group via groups.select_group", function()
     for k, _ in pairs(package.loaded) do
       if k:match "^marker%-groups" then

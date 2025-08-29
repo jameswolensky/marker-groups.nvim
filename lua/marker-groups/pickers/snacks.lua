@@ -23,6 +23,22 @@ function S.show_groups(opts)
     title = "Marker Groups",
     format = "text",
     items = items,
+    -- Ensure <CR> selects the group across configs
+    keys = {
+      { "<CR>", false, mode = { "n", "i" } },
+      {
+        "<CR>",
+        function(p)
+          local it = p:current()
+          local g = it and (it.value or it.text)
+          if g then
+            require("marker-groups.groups").select_group(g)
+          end
+          p:close()
+        end,
+        mode = { "n", "i" },
+      },
+    },
     -- Robust preview for both ctx-based (new) and item-based (legacy) signatures
     preview = function(arg1)
       local function build_lines(group_name)
