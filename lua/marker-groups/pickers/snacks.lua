@@ -23,6 +23,7 @@ function S.show_groups(opts)
     title = "Marker Groups",
     format = "text",
     items = items,
+    actions = { accept = false },
     -- Ensure <CR> selects the group across configs
     keys = {
       { "<CR>", false, mode = { "n", "i" } },
@@ -80,8 +81,29 @@ function S.show_groups(opts)
     end,
   }
   if type(opts) == "table" then
+    -- Merge non-key, non-action options (user still overrides)
     for k, v in pairs(opts) do
-      base_opts[k] = v
+      if k ~= "keys" and k ~= "actions" then
+        base_opts[k] = v
+      end
+    end
+    -- Merge actions but force accept to false to avoid default <CR> behavior
+    if type(opts.actions) == "table" then
+      base_opts.actions = vim.tbl_extend("force", base_opts.actions or {}, opts.actions)
+      base_opts.actions.accept = false
+    end
+    -- Merge keys while preserving our <CR> mapping at the end
+    if type(opts.keys) == "table" then
+      local merged = {}
+      for _, k in ipairs(opts.keys) do
+        if type(k) == "table" and k[1] ~= "<CR>" then
+          table.insert(merged, k)
+        end
+      end
+      for _, k in ipairs(base_opts.keys or {}) do
+        table.insert(merged, k)
+      end
+      base_opts.keys = merged
     end
   end
   return snacks.picker.pick(base_opts)
