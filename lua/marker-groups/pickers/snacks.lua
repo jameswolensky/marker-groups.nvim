@@ -15,12 +15,15 @@ end
 function S.show_groups(opts)
   local snacks = require "snacks"
   local names = require("marker-groups.state").get_group_names() or {}
+  local items = {}
+  for _, g in ipairs(names) do
+    items[#items + 1] = { text = g, value = g }
+  end
   return snacks.picker.pick(vim.tbl_deep_extend("force", {
-    items = names,
-    format_item = function(g)
-      return g
-    end,
-    on_confirm = function(g)
+    title = "Marker Groups",
+    items = items,
+    confirm = function(_, item)
+      local g = item and (item.value or item.text)
       if g then
         require("marker-groups.groups").set_active_group(g)
       end
@@ -33,18 +36,22 @@ function S.show_markers(opts)
   local g = require("marker-groups.state").get_group()
   local items = {}
   for _, m in ipairs(g and g.markers or {}) do
-    table.insert(items, m)
+    local r = (m.start_line == m.end_line) and tostring(m.start_line) or (m.start_line .. "-" .. m.end_line)
+    items[#items + 1] = {
+      text = string.format("%s:%s %s", vim.fn.fnamemodify(m.buffer_path, ":t"), r, m.annotation or ""),
+      buffer_path = m.buffer_path,
+      start_line = m.start_line,
+      end_line = m.end_line,
+      marker = m,
+    }
   end
   return snacks.picker.pick(vim.tbl_deep_extend("force", {
+    title = "Markers",
     items = items,
-    format_item = function(m)
-      local r = (m.start_line == m.end_line) and tostring(m.start_line) or (m.start_line .. "-" .. m.end_line)
-      return string.format("%s:%s %s", vim.fn.fnamemodify(m.buffer_path, ":t"), r, m.annotation or "")
-    end,
-    on_confirm = function(m)
-      if m then
-        vim.cmd("edit " .. m.buffer_path)
-        vim.api.nvim_win_set_cursor(0, { m.start_line, 0 })
+    confirm = function(_, item)
+      if item and item.buffer_path and item.start_line then
+        vim.cmd("edit " .. item.buffer_path)
+        vim.api.nvim_win_set_cursor(0, { item.start_line, 0 })
       end
     end,
   }, opts or {}))
