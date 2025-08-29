@@ -19,7 +19,7 @@ function S.show_groups(opts)
   for _, g in ipairs(names) do
     items[#items + 1] = { text = g, value = g }
   end
-  return snacks.picker.pick(vim.tbl_deep_extend("force", {
+  local base_opts = {
     title = "Marker Groups",
     format = "text",
     items = items,
@@ -78,7 +78,13 @@ function S.show_groups(opts)
         require("marker-groups.groups").select_group(g)
       end
     end,
-  }, opts or {}))
+  }
+  if type(opts) == "table" then
+    for k, v in pairs(opts) do
+      base_opts[k] = v
+    end
+  end
+  return snacks.picker.pick(base_opts)
 end
 
 function S.show_markers(opts)

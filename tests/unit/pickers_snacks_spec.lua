@@ -59,18 +59,28 @@ describe("snacks picker adapter", function()
     package.loaded["snacks"] = {
       picker = {
         pick = function(opts)
+          -- Require an explicit handler for <CR> so global mappings can't break confirm
           assert.is_table(opts.keys)
-          -- find our <CR> rebind
-          local has_clear = false
-          local has_handler = false
+          local handler
           for _, k in ipairs(opts.keys) do
-            if k[1] == "<CR>" and k[2] == false then
-              has_clear = true
-            elseif k[1] == "<CR>" and type(k[2]) == "function" then
-              has_handler = true
+            if k[1] == "<CR>" and type(k[2]) == "function" then
+              handler = k[2]
             end
           end
-          confirm_bound = has_clear and has_handler
+          assert.is_function(handler)
+          -- Simulate pressing enter by calling the handler with a fake picker
+          local picked
+          local fake_picker = {
+            current = function()
+              return { text = "g1", value = "g1" }
+            end,
+            close = function()
+              picked = true
+            end,
+          }
+          -- ensure handler uses the selection
+          handler(fake_picker)
+          confirm_bound = picked == true
         end,
       },
     }
