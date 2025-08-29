@@ -25,7 +25,7 @@ function S.show_groups(opts)
     confirm = function(_, item)
       local g = item and (item.value or item.text)
       if g then
-        require("marker-groups.groups").set_active_group(g)
+        require("marker-groups.groups").select_group(g)
       end
     end,
   }, opts or {}))

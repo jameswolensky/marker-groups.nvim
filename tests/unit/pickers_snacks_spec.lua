@@ -1,7 +1,7 @@
 local assert = require "luassert"
 
 describe("snacks picker adapter", function()
-  it("uses state.get_group_names() to build items", function()
+  it("uses state.get_group_names() to build items and calls picker.pick", function()
     for k, _ in pairs(package.loaded) do
       if k:match "^marker%-groups" then
         package.loaded[k] = nil
@@ -16,16 +16,26 @@ describe("snacks picker adapter", function()
     groups.create_group "a"
     groups.create_group "b"
 
-    -- stub snacks API
+    -- stub snacks API to only expose .pick (no .open)
+    local pick_called = false
     package.loaded["snacks"] = {
       picker = {
         pick = function(opts)
+          pick_called = true
           assert.is_table(opts)
           assert.is_table(opts.items)
-          local names = opts.items
-          assert.is_true(vim.tbl_contains(names, "default"))
-          assert.is_true(vim.tbl_contains(names, "a"))
-          assert.is_true(vim.tbl_contains(names, "b"))
+          -- items must be tables with a text field
+          local texts = {}
+          for _, it in ipairs(opts.items) do
+            assert.is_table(it)
+            assert.is_string(it.text)
+            texts[#texts + 1] = it.text
+          end
+          assert.is_true(vim.tbl_contains(texts, "default"))
+          assert.is_true(vim.tbl_contains(texts, "a"))
+          assert.is_true(vim.tbl_contains(texts, "b"))
+          -- confirm must exist and be callable
+          assert.is_function(opts.confirm)
         end,
       },
     }
@@ -34,5 +44,102 @@ describe("snacks picker adapter", function()
     assert.has_no.errors(function()
       snacks_adapter.show_groups {}
     end)
+    assert.is_true(pick_called)
+  end)
+
+  it("confirm handler selects group via groups.select_group", function()
+    for k, _ in pairs(package.loaded) do
+      if k:match "^marker%-groups" then
+        package.loaded[k] = nil
+      end
+    end
+    require("marker-groups").setup { keymaps = { enabled = false } }
+    local config = require "marker-groups.config"
+    local state = require "marker-groups.state"
+    state.initialize(config.get())
+
+    local select_called, selected_name = false, nil
+    -- monkey-patch groups.select_group
+    package.loaded["marker-groups.groups"] = setmetatable({}, {
+      __index = function(_, k)
+        if k == "select_group" then
+          return function(name)
+            select_called = true
+            selected_name = name
+          end
+        end
+        return function() end
+      end,
+    })
+
+    package.loaded["snacks"] = {
+      picker = {
+        pick = function(opts)
+          -- simulate confirming an item
+          opts.confirm({}, { text = "group-x", value = "group-x" })
+        end,
+      },
+    }
+
+    local snacks_adapter = require "marker-groups.pickers.snacks"
+    snacks_adapter.show_groups {}
+    assert.is_true(select_called)
+    assert.equals("group-x", selected_name)
+  end)
+
+  it("show_markers provides item tables and jumps on confirm", function()
+    for k, _ in pairs(package.loaded) do
+      if k:match "^marker%-groups" then
+        package.loaded[k] = nil
+      end
+    end
+    require("marker-groups").setup { keymaps = { enabled = false } }
+    local config = require "marker-groups.config"
+    local state = require "marker-groups.state"
+    state.initialize(config.get())
+
+    -- prepare group with markers
+    local group = {
+      name = "g",
+      markers = {
+        { buffer_path = "/tmp/a.txt", start_line = 3, end_line = 3, annotation = "a" },
+      },
+    }
+    package.loaded["marker-groups.state"] = setmetatable({}, {
+      __index = function(_, k)
+        if k == "get_group" then
+          return function()
+            return group
+          end
+        end
+        return function() end
+      end,
+    })
+
+    local cmd_called, cursor_called = nil, nil
+    vim.cmd = function(cmd)
+      cmd_called = cmd
+    end
+    vim.api.nvim_win_set_cursor = function(_, pos)
+      cursor_called = pos
+    end
+
+    package.loaded["snacks"] = {
+      picker = {
+        pick = function(opts)
+          -- items should be tables with text
+          assert.is_table(opts.items)
+          assert.is_table(opts.items[1])
+          assert.is_string(opts.items[1].text)
+          -- simulate confirm
+          opts.confirm({}, opts.items[1])
+        end,
+      },
+    }
+
+    local snacks_adapter = require "marker-groups.pickers.snacks"
+    snacks_adapter.show_markers {}
+    assert.matches("edit /tmp/a.txt", cmd_called)
+    assert.same({ 3, 0 }, cursor_called)
   end)
 end)
