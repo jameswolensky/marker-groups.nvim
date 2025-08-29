@@ -21,6 +21,7 @@ function S.show_groups(opts)
   end
   return snacks.picker.pick(vim.tbl_deep_extend("force", {
     title = "Marker Groups",
+    format = "text",
     items = items,
     -- Robust preview for both ctx-based (new) and item-based (legacy) signatures
     preview = function(arg1)
