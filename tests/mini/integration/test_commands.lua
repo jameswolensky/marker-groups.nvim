@@ -20,8 +20,7 @@ T['group management / MarkerGroupsCreate adds group'] = function()
 
     child.cmd('MarkerGroupsCreate test-group-cmd')
 
-    local ok, exists = child.lua([[local s=require('marker-groups.state'); return s.get_group('test-group-cmd')~=nil]])
-    expect_truthy(ok)
+    local exists = child.lua([[local s=require('marker-groups.state'); return s.get_group('test-group-cmd')~=nil]])
     expect_truthy(exists)
   end)
 end
@@ -39,12 +38,10 @@ T['marker commands / MarkerAdd adds marker to current buffer'] = function()
 
     child.cmd('MarkerAdd added-via-command')
 
-    local ok, count = child.lua([[local m=require('marker-groups.markers'); return #m.get_current_buffer_markers()]])
-    expect_truthy(ok)
+    local count = child.lua([[local m=require('marker-groups.markers'); return #m.get_current_buffer_markers()]])
     MiniTest.expect.equality(count, 1)
 
-    local ok2, ann = child.lua([[local m=require('marker-groups.markers'); local list=m.get_current_buffer_markers(); return list[1].annotation]])
-    expect_truthy(ok2)
+    local ann = child.lua([[local m=require('marker-groups.markers'); local list=m.get_current_buffer_markers(); return list[1].annotation]])
     MiniTest.expect.equality(ann, 'added-via-command')
   end)
 end
