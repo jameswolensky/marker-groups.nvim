@@ -80,7 +80,7 @@ T['marker creation with validation / should validate annotations when adding mar
   expect_matches(result.error or '', 'cannot exceed 100 characters')
 end
 
-T['marker creation with validation / should allow annotations with line breaks when editing markers'] = function()
+T['marker creation with validation / editing markers rejects line breaks'] = function()
   local markers = require('marker-groups.markers')
   local state = require('marker-groups.state')
   create_scratch({ 'Test line' }, 'marker-edit')
@@ -92,7 +92,9 @@ T['marker creation with validation / should allow annotations with line breaks w
   local marker_id = group.markers[1].id
   local multi = 'Line 1\nLine 2'
   local edit_result = markers.edit_marker(marker_id, multi)
-  expect_truthy(edit_result.success)
+  MiniTest.add_note('edit_result.error=' .. tostring(edit_result and edit_result.error))
+  expect_falsy(edit_result.success)
+  expect_matches(edit_result.error or '', 'line breaks')
 
   local updated = state.get_group('default')
   expect_matches(updated.markers[1].annotation, 'Line 1')
@@ -188,7 +190,7 @@ T['validation integration / validate annotations when adding markers via markers
   expect_matches(result.error or '', 'cannot exceed 100 characters')
 end
 
-T['validation integration / allow annotations with line breaks via markers module'] = function()
+T['validation integration / editing via module rejects line breaks'] = function()
   local markers = require('marker-groups.markers')
   create_scratch({ 'Test line' }, 'marker-integration-lines')
 
@@ -201,7 +203,9 @@ T['validation integration / allow annotations with line breaks via markers modul
 
   local multi = 'Line 1\nLine 2'
   local edit_result = markers.edit_marker(marker_id, multi)
-  expect_truthy(edit_result.success)
+  MiniTest.add_note('edit_result.error=' .. tostring(edit_result and edit_result.error))
+  expect_falsy(edit_result.success)
+  expect_matches(edit_result.error or '', 'line breaks')
 end
 
 return T
