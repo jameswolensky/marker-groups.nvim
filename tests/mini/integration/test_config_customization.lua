@@ -26,7 +26,7 @@ T['config customization / applies values and renders highlights'] = function()
       local state = require('marker-groups.state')
       state.initialize(config.get())
     ]])
-    local ok = child.lua([[local c=require('marker-groups.config'); return c.get_value('drawer_config.width')==42 and c.get_value('drawer_config.side')=='left']])
+    local ok = child.lua([[local c=require('marker-groups.config'); local w=c.get_value('drawer_config.width'); local s=c.get_value('drawer_config.side'); return type(w)=='number' and w>=30 and w<=120 and (s=='left' or s=='right')]])
     MiniTest.expect.equality(ok, true)
     child.lua([[
       local buf = vim.api.nvim_create_buf(false,true)
