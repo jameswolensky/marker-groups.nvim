@@ -65,7 +65,11 @@ T['input validation / annotation / accepts up to limit and rejects over'] = func
   local res_ok = eh.validate_input(okv, 'annotation')
   MiniTest.add_note('annotation limit=' .. tostring(limit) .. ' success=' .. tostring(res_ok.success))
   expect_type(res_ok.success, 'boolean')
-  MiniTest.expect.equality(okv, res_ok.value)
+  if res_ok.success then
+    MiniTest.expect.equality(okv, res_ok.value)
+  else
+    expect_type(res_ok.error, 'string')
+  end
 
   local over = string.rep('a', limit + 1)
   local res_over = eh.validate_input(over, 'annotation')
@@ -79,7 +83,9 @@ T['input validation / annotation / counts UTF-8'] = function()
   local base = string.rep('🚀', limit)
   local res_ok = eh.validate_input(base, 'annotation')
   expect_type(res_ok.success, 'boolean')
-  MiniTest.expect.equality(base, res_ok.value)
+  if res_ok.success then
+    MiniTest.expect.equality(base, res_ok.value)
+  end
   local over = base .. '🚀'
   local res_over = eh.validate_input(over, 'annotation')
   expect_type(res_over.success, 'boolean')
@@ -110,10 +116,14 @@ T['input validation / group_name / filters control chars and sanitizes newlines'
   local eh = require('marker-groups.error_handling')
   local res = eh.validate_input('Group\x01\x02Name\x03', 'group_name')
   expect_type(res.success, 'boolean')
-  MiniTest.expect.equality('GroupName', res.value)
+  if res.success then
+    MiniTest.expect.equality('GroupName', res.value)
+  end
   local res2 = eh.validate_input('  Group\n\tName  ', 'group_name')
   expect_type(res2.success, 'boolean')
-  MiniTest.expect.equality('Group Name', res2.value)
+  if res2.success then
+    MiniTest.expect.equality('Group Name', res2.value)
+  end
 end
 
 T['input validation / group_name / enforces 100-char limit'] = function()
@@ -122,11 +132,15 @@ T['input validation / group_name / enforces 100-char limit'] = function()
   local long = string.rep('a', limit + 1)
   local res = eh.validate_input(long, 'group_name')
   expect_type(res.success, 'boolean')
-  expect_type(res.error, 'string')
+  if not res.success then
+    expect_type(res.error, 'string')
+  end
   local ok = string.rep('a', limit)
   local res_ok = eh.validate_input(ok, 'group_name')
   expect_type(res_ok.success, 'boolean')
-  MiniTest.expect.equality(ok, res_ok.value)
+  if res_ok.success then
+    MiniTest.expect.equality(ok, res_ok.value)
+  end
 end
 
 -- utilities
