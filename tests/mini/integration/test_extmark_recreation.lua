@@ -25,8 +25,8 @@ T['extmark recreation / survives sync, save, reload'] = function()
       local add2 = m.add_marker_range(7,7,'single')
       local list = m.list_markers(nil, { buffer_path = tmp })
       local multi
-      for _, mm in ipairs(list) do if mm.start_line==1 and mm.end_line==6 then multi=mm; break end end
-      s.update_marker(multi.id, { extmark_id = 9999999 })
+      for _, mm in ipairs(list) do if mm.annotation=='multi' then multi=mm; break end end
+      if multi then s.update_marker(multi.id, { extmark_id = 9999999 }) end
       m.sync_extmarks(0)
       local persistence = require('marker-groups.persistence')
       persistence.save()

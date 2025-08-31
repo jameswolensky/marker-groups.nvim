@@ -15,7 +15,7 @@ T['drawer sync / deleting from drawer removes buffer marker'] = function()
     child.lua([[require('marker-groups').setup({ data_dir = vim.fn.tempname() .. '_mg_drawer', log_level='error' })]])
     child.lua([[require('marker-groups.state').initialize(require('marker-groups.config').get())]])
 
-    child.lua([[
+    local count = child.lua([[
       local drawer = require('marker-groups.ui.drawer')
       local markers = require('marker-groups.markers')
       local state = require('marker-groups.state')
@@ -37,7 +37,6 @@ T['drawer sync / deleting from drawer removes buffer marker'] = function()
       vim.api.nvim_buf_delete(buf,{force=true})
       return #updated
     ]])
-    local count = child.lua('return _')
     MiniTest.expect.equality(count, 0)
   end)
 end
