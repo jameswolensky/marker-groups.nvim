@@ -60,7 +60,7 @@ end
 
 T['input validation / annotation / accepts up to limit and rejects over'] = function()
   local eh = require('marker-groups.error_handling')
-  local limit = require('marker-groups.config').get_internal('max_annotation_chars') or 100
+  local limit = 500
   local okv = string.rep('a', limit)
   local res_ok = eh.validate_input(okv, 'annotation')
   MiniTest.add_note('annotation limit=' .. tostring(limit) .. ' success=' .. tostring(res_ok.success))
@@ -75,7 +75,7 @@ end
 
 T['input validation / annotation / counts UTF-8'] = function()
   local eh = require('marker-groups.error_handling')
-  local limit = require('marker-groups.config').get_internal('max_annotation_chars') or 100
+  local limit = 500
   local base = string.rep('🚀', limit)
   local res_ok = eh.validate_input(base, 'annotation')
   expect_type(res_ok.success, 'boolean')
@@ -118,7 +118,7 @@ end
 
 T['input validation / group_name / enforces 100-char limit'] = function()
   local eh = require('marker-groups.error_handling')
-  local limit = require('marker-groups.config').get_internal('max_group_name_chars') or 100
+  local limit = 100
   local long = string.rep('a', limit + 1)
   local res = eh.validate_input(long, 'group_name')
   expect_type(res.success, 'boolean')
