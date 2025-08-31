@@ -6,6 +6,14 @@ if not vim.tbl_contains(vim.opt.runtimepath:get(), cwd) then
   vim.opt.runtimepath:append(cwd)
 end
 
+-- Add vendored mini.nvim if present
+local vendor_path = cwd .. '/vendor/mini.nvim'
+if vim.fn.isdirectory(vendor_path) == 1 then
+  if not vim.tbl_contains(vim.opt.runtimepath:get(), vendor_path) then
+    vim.opt.runtimepath:append(vendor_path)
+  end
+end
+
 -- Basic vim defaults helpful for tests
 vim.cmd 'filetype plugin indent on'
 vim.o.hidden = true

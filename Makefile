@@ -79,9 +79,15 @@ install-deps: ## Install test dependencies
 	@echo "Optional: stylua for code formatting"
 	@echo "Optional: lua-language-server for linting"
 	@echo ""
-	@echo "Install mini.nvim with your plugin manager:"
-	@echo "  - Lazy: { 'echasnovski/mini.nvim' }"
-	@echo "  - Packer: use 'echasnovski/mini.nvim'"
+	@echo "Installing vendored mini.nvim for tests (if not present)..."
+	@mkdir -p vendor
+	@if [ ! -d vendor/mini.nvim ]; then \
+		git clone --depth=1 https://github.com/echasnovski/mini.nvim.git vendor/mini.nvim; \
+		echo "Cloned mini.nvim into vendor/mini.nvim"; \
+	else \
+		cd vendor/mini.nvim && git fetch --depth=1 origin && git reset --hard origin/master >/dev/null 2>&1 || true; \
+		echo "Updated vendor/mini.nvim"; \
+	fi
 
 # Utility commands
 check-health: ## Run health check
