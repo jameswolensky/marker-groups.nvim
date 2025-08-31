@@ -217,7 +217,7 @@ T['event system / should trigger events on state changes'] = function()
   local state = require('marker-groups.state')
   local triggered = false
   local event_data = nil
-  state.subscribe('group_added', function(data) triggered = true; event_data = data end)
+  state.subscribe('group_created', function(data) triggered = true; event_data = data end)
   state.add_group('event-test-group')
   expect_truthy(triggered)
   expect_type(event_data, 'table')
@@ -227,7 +227,7 @@ end
 T['event system / should unsubscribe from events'] = function()
   local state = require('marker-groups.state')
   local count = 0
-  local unsub = state.subscribe('group_added', function() count = count + 1 end)
+  local unsub = state.subscribe('group_created', function() count = count + 1 end)
   state.add_group('test1')
   MiniTest.expect.equality(1, count)
   unsub()
@@ -326,8 +326,10 @@ T['core functionality verification / can delete all markers in a marker group an
   end
   local group = state.get_group('test-group')
   MiniTest.expect.equality(3, #group.markers)
-  for _, marker in ipairs(group.markers) do
-    local del = state.remove_marker(marker.id)
+  local ids = {}
+  for _, m in ipairs(group.markers) do table.insert(ids, m.id) end
+  for _, id in ipairs(ids) do
+    local del = state.remove_marker(id)
     expect_truthy(del.success)
   end
   local final = state.get_group('test-group')
