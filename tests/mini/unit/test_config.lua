@@ -28,16 +28,30 @@ local T = MiniTest.new_set({
   },
 })
 
-local function expect_type(val, typ)
-  MiniTest.expect.type(val, typ)
-end
+local expect_truthy = MiniTest.new_expectation(
+  'truthy',
+  function(x) return not not x end,
+  function(x) return 'Object: ' .. vim.inspect(x) end
+)
+
+local expect_falsy = MiniTest.new_expectation(
+  'falsy',
+  function(x) return not x end,
+  function(x) return 'Object: ' .. vim.inspect(x) end
+)
+
+local expect_type = MiniTest.new_expectation(
+  'type',
+  function(x, t) return type(x) == t end,
+  function(x, t) return string.format('Expected %s, got %s. Object: %s', t, type(x), vim.inspect(x)) end
+)
 
 -- get and set operations
 T['get and set operations / should get default values'] = function()
   local config = require('marker-groups.config')
   local data_dir = config.get_value('data_dir')
   expect_type(data_dir, 'string')
-  MiniTest.expect.truthy(#data_dir > 0)
+  expect_truthy(#data_dir > 0)
 end
 
 T['get and set operations / should get nested values'] = function()
@@ -56,7 +70,7 @@ T['get and set operations / should get full config object'] = function()
   local config = require('marker-groups.config')
   local full_config = config.get()
   expect_type(full_config, 'table')
-  MiniTest.expect.truthy(full_config.data_dir ~= nil)
+  expect_truthy(full_config.data_dir ~= nil)
 end
 
 -- configuration updates
@@ -95,15 +109,15 @@ T['validation / should handle boolean values correctly (debug)'] = function()
   local new_config = vim.deepcopy(config.get())
   new_config.debug = true
   config.update(new_config)
-  MiniTest.expect.truthy(config.get_value('debug'))
+  expect_truthy(config.get_value('debug'))
 end
 
 -- path handling
 T['path handling / should expand data directory path'] = function()
   local config = require('marker-groups.config')
   local data_dir = config.get_value('data_dir')
-  MiniTest.expect.falsy(string.match(data_dir, '%%'))
-  MiniTest.expect.falsy(string.match(data_dir, '%$'))
+  expect_falsy(string.match(data_dir, '%%'))
+  expect_falsy(string.match(data_dir, '%$'))
   local normalized_path = vim.fn.fnamemodify(data_dir, ':p'):gsub('/$', '')
   MiniTest.expect.equality(normalized_path, data_dir)
 end
@@ -112,7 +126,7 @@ end
 T['drawer configuration / should have drawer_config in default configuration'] = function()
   local config = require('marker-groups.config')
   local current_config = config.get()
-  MiniTest.expect.truthy(current_config.drawer_config ~= nil)
+  expect_truthy(current_config.drawer_config ~= nil)
   expect_type(current_config.drawer_config, 'table')
   expect_type(current_config.drawer_config.width, 'number')
   expect_type(current_config.drawer_config.side, 'string')
@@ -121,16 +135,16 @@ end
 T['drawer configuration / should not have float_config in configuration'] = function()
   local config = require('marker-groups.config')
   local current_config = config.get()
-  MiniTest.expect.falsy(current_config.float_config ~= nil)
+  expect_falsy(current_config.float_config ~= nil)
 end
 
 T['drawer configuration / should have valid drawer configuration defaults'] = function()
   local config = require('marker-groups.config')
   local drawer_config = config.get().drawer_config
-  MiniTest.expect.truthy(drawer_config.width ~= nil)
-  MiniTest.expect.truthy(drawer_config.side ~= nil)
-  MiniTest.expect.truthy(drawer_config.side == 'left' or drawer_config.side == 'right')
-  MiniTest.expect.truthy(drawer_config.width >= 30 and drawer_config.width <= 120)
+  expect_truthy(drawer_config.width ~= nil)
+  expect_truthy(drawer_config.side ~= nil)
+  expect_truthy(drawer_config.side == 'left' or drawer_config.side == 'right')
+  expect_truthy(drawer_config.width >= 30 and drawer_config.width <= 120)
 end
 
 T['drawer configuration / should validate drawer width ranges'] = function()
@@ -173,7 +187,7 @@ T['drawer configuration / should handle invalid drawer configurations gracefully
   }
   for _, invalid_config in ipairs(invalid_configs) do
     local ok = pcall(config.update, invalid_config)
-    MiniTest.expect.type(ok, 'boolean')
+    expect_type(ok, 'boolean')
   end
 end
 
