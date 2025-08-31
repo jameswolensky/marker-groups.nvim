@@ -97,7 +97,7 @@ T['marker creation with validation / editing markers rejects line breaks'] = fun
   expect_matches(edit_result.error or '', 'line breaks')
 
   local updated = state.get_group('default')
-  expect_matches(updated.markers[1].annotation, 'Line 1')
+  MiniTest.expect.equality(updated.markers[1].annotation, 'Valid annotation')
 end
 
 -- marker range operations
