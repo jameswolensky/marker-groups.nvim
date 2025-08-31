@@ -74,14 +74,14 @@ clean: ## Clean test artifacts and temporary files
 # Dependency management
 install-deps: ## Install test dependencies
 	@echo "Checking dependencies..."
-	@echo "Required: plenary.nvim for testing"
+	@echo "Required: mini.nvim (mini.test) for testing"
 	@echo "Optional: telescope.nvim for full functionality"
 	@echo "Optional: stylua for code formatting"
 	@echo "Optional: lua-language-server for linting"
 	@echo ""
-	@echo "Install plenary.nvim with your plugin manager:"
-	@echo "  - Lazy: { 'nvim-lua/plenary.nvim' }"
-	@echo "  - Packer: use 'nvim-lua/plenary.nvim'"
+	@echo "Install mini.nvim with your plugin manager:"
+	@echo "  - Lazy: { 'echasnovski/mini.nvim' }"
+	@echo "  - Packer: use 'echasnovski/mini.nvim'"
 
 # Utility commands
 check-health: ## Run health check
