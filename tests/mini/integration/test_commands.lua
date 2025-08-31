@@ -46,10 +46,6 @@ T['marker commands / MarkerAdd adds marker to current buffer'] = function()
   end)
 end
 
-return T
-
-
-
 -- Additional coverage migrated from commands_spec
 
 T['group management / MarkerGroupsRename truncates long arg names'] = function()
@@ -115,3 +111,5 @@ T['drawer commands / width valid and invalid'] = function()
     expect_truthy(ok == false)
   end)
 end
+
+return T
