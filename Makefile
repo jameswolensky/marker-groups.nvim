@@ -7,20 +7,20 @@ all: test
 
 # Test commands
 test: ## Run all tests
-	@echo "Running all marker-groups tests..."
-	@nvim --headless --noplugin -u tests/minimal_init.lua -c "PlenaryBustedDirectory tests/" -c "qa"
+	@echo "Running all marker-groups tests (mini.test)..."
+	@nvim --headless -u NONE -l scripts/minitest.lua
 
 test-unit: ## Run unit tests only
-	@echo "Running unit tests..."
-	@nvim --headless --noplugin -u tests/minimal_init.lua -c "PlenaryBustedDirectory tests/unit/" -c "qa"
+	@echo "Running unit tests (mini.test)..."
+	@MODE=unit nvim --headless -u NONE -l scripts/minitest.lua
 
 test-integration: ## Run integration tests only
-	@echo "Running integration tests..."
-	@nvim --headless --noplugin -u tests/minimal_init.lua -c "PlenaryBustedDirectory tests/integration/" -c "qa"
+	@echo "Running integration tests (mini.test)..."
+	@MODE=integration nvim --headless -u NONE -l scripts/minitest.lua
 
-test-file: ## Run specific test file (usage: make test-file FILE=tests/unit/config_spec.lua)
+test-file: ## Run specific test file (usage: make test-file FILE=tests/unit/test_config.lua)
 	@echo "Running test file: $(FILE)"
-	@nvim --headless -c "lua require('tests.test_runner').run_file('$(FILE)', {verbose=true})" -c "qa!"
+	@TEST_FILE=$(FILE) nvim --headless -u NONE -l scripts/minitest.lua
 
 test-watch: ## Watch tests and re-run on changes
 	@echo "Starting test watcher..."
@@ -94,8 +94,8 @@ debug-state: ## Show debug state information
 
 # CI/CD helpers
 ci-test: ## Run tests in CI environment
-	@echo "Running tests in CI mode..."
-	@nvim --headless --noplugin -c "set rtp+=." -c "lua require('tests.test_runner').run_all({verbose=true,timeout=60000})" -c "qa!"
+	@echo "Running tests in CI mode (mini.test)..."
+	@nvim --headless -u NONE -l scripts/minitest.lua
 
 # Development setup
 dev-setup: install-deps ## Set up development environment

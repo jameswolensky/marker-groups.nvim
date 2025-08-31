@@ -6,18 +6,34 @@ vim.cmd('luafile ' .. vim.fn.fnamemodify(debug.getinfo(1, 'S').source:sub(2), ':
 local MiniTest = require 'mini.test'
 
 -- Configure collection to discover tests in tests/**/test_*.lua
+local mode = vim.env.MODE or 'all'
+local test_file = vim.env.TEST_FILE
+
+local function find_files_by_mode()
+  if test_file and test_file ~= '' then
+    return { test_file }
+  end
+  if mode == 'unit' then
+    return vim.fn.globpath('tests/unit', '**/test_*.lua', true, true)
+  elseif mode == 'integration' then
+    return vim.fn.globpath('tests/integration', '**/test_*.lua', true, true)
+  else
+    return vim.fn.globpath('tests', '**/test_*.lua', true, true)
+  end
+end
+
 MiniTest.setup({
   collect = {
     emulate_busted = true,
-    find_files = function()
-      return vim.fn.globpath('tests', '**/test_*.lua', true, true)
-    end,
+    find_files = find_files_by_mode,
   },
-  execute = {
-    stop_on_error = false,
-  },
+  execute = { stop_on_error = false },
 })
 
-MiniTest.run()
+if test_file and test_file ~= '' then
+  MiniTest.run_file(test_file)
+else
+  MiniTest.run()
+end
 
 
