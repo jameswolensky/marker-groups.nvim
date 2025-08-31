@@ -8,17 +8,18 @@ local MiniTest = require 'mini.test'
 -- Configure collection to discover tests in tests/**/test_*.lua
 local mode = vim.env.MODE or 'all'
 local test_file = vim.env.TEST_FILE
+local base = 'tests/mini'
 
 local function find_files_by_mode()
   if test_file and test_file ~= '' then
     return { test_file }
   end
   if mode == 'unit' then
-    return vim.fn.globpath('tests/unit', '**/test_*.lua', true, true)
+    return vim.fn.globpath(base .. '/unit', '**/test_*.lua', true, true)
   elseif mode == 'integration' then
-    return vim.fn.globpath('tests/integration', '**/test_*.lua', true, true)
+    return vim.fn.globpath(base .. '/integration', '**/test_*.lua', true, true)
   else
-    return vim.fn.globpath('tests', '**/test_*.lua', true, true)
+    return vim.fn.globpath(base, '**/test_*.lua', true, true)
   end
 end
 
