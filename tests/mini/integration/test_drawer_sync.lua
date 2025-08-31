@@ -1,21 +1,23 @@
-local MiniTest = require 'mini.test'
+local MiniTest = require "mini.test"
 
 local T = MiniTest.new_set()
 
 local function with_child(fn)
   local child = MiniTest.new_child_neovim()
-  child.restart({ '--headless', '-u', 'scripts/minimal_init.lua' })
+  child.restart { "--headless", "-u", "scripts/minimal_init.lua" }
   local ok, err = pcall(fn, child)
   child.stop()
-  if not ok then error(err) end
+  if not ok then
+    error(err)
+  end
 end
 
-T['drawer sync / deleting from drawer removes buffer marker'] = function()
+T["drawer sync / deleting from drawer removes buffer marker"] = function()
   with_child(function(child)
-    child.lua([[require('marker-groups').setup({ data_dir = vim.fn.tempname() .. '_mg_drawer', log_level='error' })]])
-    child.lua([[require('marker-groups.state').initialize(require('marker-groups.config').get())]])
+    child.lua [[require('marker-groups').setup({ data_dir = vim.fn.tempname() .. '_mg_drawer', log_level='error' })]]
+    child.lua [[require('marker-groups.state').initialize(require('marker-groups.config').get())]]
 
-    local count = child.lua([[
+    local count = child.lua [[
       local drawer = require('marker-groups.ui.drawer')
       local markers = require('marker-groups.markers')
       local state = require('marker-groups.state')
@@ -36,11 +38,9 @@ T['drawer sync / deleting from drawer removes buffer marker'] = function()
       vim.api.nvim_win_is_valid = owiv; vim.api.nvim_win_get_cursor = owgc; drawer.refresh_current_drawer = oref
       vim.api.nvim_buf_delete(buf,{force=true})
       return #updated
-    ]])
+    ]]
     MiniTest.expect.equality(count, 0)
   end)
 end
 
 return T
-
-
