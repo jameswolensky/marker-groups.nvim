@@ -74,10 +74,10 @@ end
 T['marker creation with validation / should validate annotations when adding markers'] = function()
   local markers = require('marker-groups.markers')
   create_scratch({ 'Test line' }, 'marker-validation')
-  local long_annotation = string.rep('a', 501)
+  local long_annotation = string.rep('a', 101)
   local result = markers.add_marker(long_annotation)
   expect_falsy(result.success)
-  expect_matches(result.error or '', 'cannot exceed 500 characters')
+  expect_matches(result.error or '', 'cannot exceed 100 characters')
 end
 
 T['marker creation with validation / should allow annotations with line breaks when editing markers'] = function()
@@ -115,10 +115,10 @@ end
 T['marker range operations / should validate range marker annotations'] = function()
   local markers = require('marker-groups.markers')
   create_scratch({ 'Line 1', 'Line 2' }, 'marker-range-long')
-  local long_annotation = string.rep('a', 501)
+  local long_annotation = string.rep('a', 101)
   local result = markers.add_marker_range(1, 2, long_annotation)
   expect_falsy(result.success)
-  expect_matches(result.error or '', 'cannot exceed 500 characters')
+  expect_matches(result.error or '', 'cannot exceed 100 characters')
 end
 
 T['marker range operations / single-line inside multi-line in same group is not allowed'] = function()
@@ -182,10 +182,10 @@ end
 T['validation integration / validate annotations when adding markers via markers module'] = function()
   local markers = require('marker-groups.markers')
   create_scratch({ 'Test line' }, 'marker-integration')
-  local long_annotation = string.rep('a', 501)
+  local long_annotation = string.rep('a', 101)
   local result = markers.add_marker(long_annotation)
   expect_falsy(result.success)
-  expect_matches(result.error or '', 'cannot exceed 500 characters')
+  expect_matches(result.error or '', 'cannot exceed 100 characters')
 end
 
 T['validation integration / allow annotations with line breaks via markers module'] = function()
