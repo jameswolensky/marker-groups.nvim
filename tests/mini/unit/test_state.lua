@@ -282,7 +282,7 @@ end
 T['core functionality verification / can add marker to same line number/range but different marker group'] = function()
   local state = require('marker-groups.state')
   local test_buf = vim.api.nvim_create_buf(false, true)
-  vim.api.nvim_buf_set_lines(test_buf, 0, -1, false, { 'Test line' })
+  vim.api.nvim_buf_set_lines(test_buf, 0, -1, false, { 'L1', 'L2', 'L3' })
   local temp_file = '/tmp/test-state-sameline-' .. math.random(1000, 9999) .. '.lua'
   vim.api.nvim_buf_set_name(test_buf, temp_file)
   local res = state.create_group('second-group')
@@ -320,7 +320,7 @@ T['core functionality verification / can delete all markers in a marker group an
   local temp_file = '/tmp/test-state-deleteall-' .. math.random(1000, 9999) .. '.lua'
   vim.api.nvim_buf_set_name(test_buf, temp_file)
   for i = 1, 3 do
-    local m = { buffer_path = temp_file, start_line = 1, end_line = 1, annotation = 'Marker ' .. i }
+    local m = { buffer_path = temp_file, start_line = i, end_line = i, annotation = 'Marker ' .. i }
     local add = state.add_marker(m, 'test-group')
     expect_truthy(add.success)
   end
