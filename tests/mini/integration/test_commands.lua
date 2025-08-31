@@ -2,6 +2,8 @@ local MiniTest = require 'mini.test'
 
 local T = MiniTest.new_set()
 
+local expect_truthy = MiniTest.new_expectation('truthy', function(x) return not not x end, function(x) return 'Object: ' .. vim.inspect(x) end)
+
 local function with_child(fn)
   local child = MiniTest.new_child_neovim()
   child.restart({ '--headless', '-u', 'scripts/minimal_init.lua' })
@@ -19,8 +21,8 @@ T['group management / MarkerGroupsCreate adds group'] = function()
     child.cmd('MarkerGroupsCreate test-group-cmd')
 
     local ok, exists = child.lua([[local s=require('marker-groups.state'); return s.get_group('test-group-cmd')~=nil]])
-    MiniTest.expect.truthy(ok)
-    MiniTest.expect.truthy(exists)
+    expect_truthy(ok)
+    expect_truthy(exists)
   end)
 end
 
@@ -38,11 +40,11 @@ T['marker commands / MarkerAdd adds marker to current buffer'] = function()
     child.cmd('MarkerAdd added-via-command')
 
     local ok, count = child.lua([[local m=require('marker-groups.markers'); return #m.get_current_buffer_markers()]])
-    MiniTest.expect.truthy(ok)
+    expect_truthy(ok)
     MiniTest.expect.equality(count, 1)
 
     local ok2, ann = child.lua([[local m=require('marker-groups.markers'); local list=m.get_current_buffer_markers(); return list[1].annotation]])
-    MiniTest.expect.truthy(ok2)
+    expect_truthy(ok2)
     MiniTest.expect.equality(ann, 'added-via-command')
   end)
 end
