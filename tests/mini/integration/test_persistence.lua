@@ -2,6 +2,8 @@ local MiniTest = require 'mini.test'
 
 local T = MiniTest.new_set()
 
+local expect_truthy = MiniTest.new_expectation('truthy', function(x) return not not x end, function(x) return 'Object: ' .. vim.inspect(x) end)
+
 local function with_child(fn)
   local child = MiniTest.new_child_neovim()
   child.restart({ '--headless', '-u', 'scripts/minimal_init.lua' })
@@ -28,7 +30,7 @@ T['json autosave / add, edit, delete reflect in file'] = function()
 
     child.lua([[vim.wait(150)]])
     local s1 = child.lua([[local f=io.open(vim.fn.stdpath('data')..'/marker-groups/marker-groups.json','r'); if not f then return nil end; local s=f:read('*a'); f:close(); return s]])
-    MiniTest.expect.truthy(type(s1)=='string' and s1:find('"annotation":"m1"')~=nil)
+    expect_truthy(type(s1)=='string' and s1:find('"annotation":"m1"')~=nil)
 
     child.lua([[
       local m = require('marker-groups.markers')
@@ -38,7 +40,7 @@ T['json autosave / add, edit, delete reflect in file'] = function()
     ]])
     child.lua([[vim.wait(150)]])
     local s2 = child.lua([[local f=io.open(vim.fn.stdpath('data')..'/marker-groups/marker-groups.json','r'); local s=f:read('*a'); f:close(); return s]])
-    MiniTest.expect.truthy(s2:find('"annotation":"m1%-edit"')~=nil)
+    expect_truthy(type(s2)=='string' and s2:find('"annotation":"m1%-edit"')~=nil)
 
     child.lua([[
       local m = require('marker-groups.markers')
@@ -48,7 +50,7 @@ T['json autosave / add, edit, delete reflect in file'] = function()
     ]])
     child.lua([[vim.wait(150)]])
     local s3 = child.lua([[local f=io.open(vim.fn.stdpath('data')..'/marker-groups/marker-groups.json','r'); local s=f:read('*a'); f:close(); return s]])
-    MiniTest.expect.truthy(s3:find('"annotation":"m1%-edit"')==nil)
+    expect_truthy(type(s3)=='string' and s3:find('"annotation":"m1%-edit"')==nil)
   end)
 end
 
