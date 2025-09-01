@@ -16,7 +16,12 @@ function M.show_groups(opts)
   local items = {}
   for _, g in ipairs(info) do
     local text = groups.format_group_info(g, "short")
-    table.insert(items, { text = tostring(text or g.name or ""), name = tostring(g.name or "") })
+    -- Provide both `value` and `name` to be compatible with Snacks picker expectations
+    table.insert(items, {
+      text = tostring(text or g.name or ""),
+      value = tostring(g.name or ""),
+      name = tostring(g.name or ""),
+    })
   end
 
   if #items == 0 then
@@ -24,28 +29,55 @@ function M.show_groups(opts)
     return
   end
 
+  local function coerce_name(val)
+    if type(val) == "string" then
+      return val
+    end
+    if type(val) == "table" then
+      if type(val.name) == "string" then
+        return val.name
+      end
+      if type(val.text) == "string" then
+        return val.text
+      end
+      if type(val.value) == "string" then
+        return val.value
+      end
+    end
+    return nil
+  end
+
   snacks.picker {
     source = { name = "marker_groups", items = items },
     prompt = "Marker Groups> ",
     format = function(item)
-      if type(item) == "table" and type(item.text) == "string" then
-        return item.text
+      if type(item) == "table" then
+        if type(item.text) == "string" then
+          return item.text
+        end
+        if type(item.value) == "string" then
+          return item.value
+        end
+        if type(item.name) == "string" then
+          return item.name
+        end
       end
       return tostring(item or "")
     end,
     preview = function(ctx)
-      local name = ctx.item and ctx.item.name
+      local name
+      if ctx and ctx.item then
+        if type(ctx.item) == "table" then
+          name = coerce_name(ctx.item.value) or coerce_name(ctx.item) or ctx.item.text
+        elseif type(ctx.item) == "string" then
+          name = ctx.item
+        end
+      end
       if not name then
         return true
       end
-      local info = nil
-      for _, g in ipairs(info or {}) do
-        if g.name == name then
-          info = g
-          break
-        end
-      end
       -- get fresh info via groups.list_groups
+      local info
       local list = groups.list_groups()
       for _, gi in ipairs(list) do
         if gi.name == name then
@@ -60,16 +92,25 @@ function M.show_groups(opts)
     end,
     actions = {
       ["default"] = function(selected)
-        local function get_name(sel)
+        local function extract_name(sel)
           if type(sel) == "table" then
+            -- Multiple selections case
             if #sel > 0 then
-              return sel[1] and sel[1].name
+              local first = sel[1]
+              if type(first) == "table" then
+                return coerce_name(first.value) or coerce_name(first) or first.text
+              elseif type(first) == "string" then
+                return first
+              end
             end
-            return sel.name
+            -- Single selection as table
+            return coerce_name(sel.value) or coerce_name(sel) or sel.text
+          elseif type(sel) == "string" then
+            return sel
           end
           return nil
         end
-        local name = get_name(selected)
+        local name = extract_name(selected)
         if not name or name == "" then
           return
         end
@@ -79,11 +120,15 @@ function M.show_groups(opts)
           else
             groups.delete_group(name, true)
           end
-          require("marker-groups.pickers.utils").show_notification("Deleted group: " .. name, vim.log.levels.INFO, 5000)
+          require("marker-groups.pickers.utils").show_notification(
+            "Deleted group: " .. tostring(name),
+            vim.log.levels.INFO,
+            5000
+          )
         else
           groups.select_group(name)
           require("marker-groups.pickers.utils").show_notification(
-            "Selected group: " .. name,
+            "Selected group: " .. tostring(name),
             vim.log.levels.INFO,
             3000
           )

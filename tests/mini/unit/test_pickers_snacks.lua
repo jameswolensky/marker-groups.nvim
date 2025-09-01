@@ -50,4 +50,30 @@ T["snacks backend Enter selects the chosen group (not delete)"] = function()
   MiniTest.expect.equality(state.get_group "dev" ~= nil, true)
 end
 
+-- Do not return here; more tests below and we'll return both sets at the end
+
+-- New failing repro for table `value` causing concat error in actions
+-- This mirrors Snacks passing structured items where `value` can be a table
+-- Expectation pre-fix: running actions should not error; current behavior errors
+T["repro: selecting with table value currently errors (should not)"] = function()
+  -- Override Snacks stub to simulate table value shape
+  package.loaded["snacks"] = {
+    picker = function(opts)
+      local item = {
+        text = "dev (0 markers)",
+        name = "dev",
+        value = { name = "dev" },
+      }
+      opts.actions["default"] { item }
+    end,
+  }
+  require("marker-groups").setup { picker = "snacks" }
+  local groups = require "marker-groups.groups"
+  local state = require "marker-groups.state"
+  groups.create_group "dev"
+
+  -- Intentionally call without expecting error to demonstrate failing behavior
+  -- Current bug: this errors with "attempt to concatenate a table value"
+  require("marker-groups.pickers.snacks").show_groups()
+end
 return T
