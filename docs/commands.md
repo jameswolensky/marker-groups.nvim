@@ -22,3 +22,13 @@ title: Commands
 - `:MarkerGroupsTelescope` — Telescope integration
 - `:MarkerGroupsHealth` — Run health checks
 
+## Picker Commands
+
+- `:MarkerGroupsPickerStatus` — Show current picker backend and availability.
+- `:MarkerGroupsSelect` (no argument) — Open the configured picker.
+
+Behavior
+- Group list: Enter deletes the selected group (5s notification confirms). ESC closes.
+- Marker list: Preview-only; shows code context around the marker; no jumping.
+- Backends: Telescope, Snacks.nvim, fzf-lua, vim.ui (auto-detected with fallback).
+

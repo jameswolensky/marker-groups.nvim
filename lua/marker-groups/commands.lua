@@ -306,15 +306,13 @@ function M.setup()
   })
 
   vim.api.nvim_create_user_command("MarkerGroupsTelescope", function()
-    local telescope = require "marker-groups.telescope"
-    telescope.show_groups()
+    require("marker-groups.pickers").show_groups()
   end, {
     desc = "Open Telescope picker for marker groups",
   })
 
   vim.api.nvim_create_user_command("MarkerGroupsTelescopeMarkers", function()
-    local telescope = require "marker-groups.telescope"
-    telescope.show_markers()
+    require("marker-groups.pickers").show_markers()
   end, {
     desc = "Open Telescope picker for markers in active group",
   })
@@ -336,6 +334,14 @@ function M.setup()
   end, {
     nargs = "?",
     desc = "Get or set the drawer width (30-120 columns)",
+  })
+
+  -- Picker status command
+  vim.api.nvim_create_user_command("MarkerGroupsPickerStatus", function()
+    local pickers = require "marker-groups.pickers"
+    pickers.show_picker_status()
+  end, {
+    desc = "Show picker backend status and availability",
   })
 end
 

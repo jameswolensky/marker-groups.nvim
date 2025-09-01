@@ -381,22 +381,10 @@ function M.select_group(name)
 end
 
 function M.select_group_interactive(opts)
-  opts = opts or {}
-  local prompt = opts.prompt or "Select marker group:"
-
-  local groups_info = M.list_groups()
-
-  if #groups_info == 0 then
-    vim.notify("No marker groups available", vim.log.levels.WARN)
-    return state.Result.error("No groups available", "NO_GROUPS")
-  end
-
-  local has_telescope, telescope = pcall(require, "telescope")
-  if has_telescope then
-    return M.select_group_with_telescope(groups_info, opts)
-  else
-    return M.select_group_with_vim_ui(groups_info, opts)
-  end
+  -- Delegate to unified pickers interface always
+  local pickers = require "marker-groups.pickers"
+  pickers.show_groups(opts)
+  return state.Result.ok { message = "Picker group selector opened" }
 end
 
 function M.select_group_with_telescope(groups_info, opts)

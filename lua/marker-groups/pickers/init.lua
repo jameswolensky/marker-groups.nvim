@@ -1,0 +1,194 @@
+local M = {}
+
+-- Priority order when auto-detecting a backend
+local PRIORITY_ORDER = { "telescope", "snacks", "fzf_lua", "vim_ui" }
+
+-- Cached detection results and current backend
+local detected_backends_cache = nil
+local current_backend_name = nil
+
+local function is_telescope_available()
+  if vim.fn.exists ":Telescope" ~= 2 then
+    return false
+  end
+  local ok, telescope = pcall(require, "telescope")
+  if not ok or not telescope then
+    return false
+  end
+  return type(telescope.setup) == "function"
+end
+
+local function is_snacks_available()
+  if pcall(require, "snacks.picker") then
+    return true
+  end
+  local ok, snacks = pcall(require, "snacks")
+  return ok and snacks and snacks.picker ~= nil
+end
+
+local function is_fzf_lua_available()
+  local ok, fzf_lua = pcall(require, "fzf-lua")
+  if not ok or not fzf_lua then
+    return false
+  end
+  return type(fzf_lua.fzf_exec) == "function"
+end
+
+local function is_vim_ui_available()
+  return type(vim.ui) == "table" and type(vim.ui.select) == "function"
+end
+
+local function detect_available_backends()
+  if detected_backends_cache ~= nil then
+    return detected_backends_cache
+  end
+
+  local backends = {}
+
+  backends.telescope = is_telescope_available()
+      and {
+        available = true,
+        version = "unknown",
+        backend = require "marker-groups.pickers.telescope",
+      }
+    or { available = false, error = "not available" }
+
+  backends.snacks = is_snacks_available()
+      and {
+        available = true,
+        version = "unknown",
+        backend = require "marker-groups.pickers.snacks",
+      }
+    or { available = false, error = "not available" }
+
+  backends.fzf_lua = is_fzf_lua_available()
+      and {
+        available = true,
+        version = "unknown",
+        backend = require "marker-groups.pickers.fzf_lua",
+      }
+    or { available = false, error = "not available" }
+
+  backends.vim_ui = is_vim_ui_available()
+      and {
+        available = true,
+        version = "builtin",
+        backend = require "marker-groups.pickers.vim_ui",
+      }
+    or { available = false, error = "not available" }
+
+  detected_backends_cache = backends
+  return backends
+end
+
+local function determine_backend(requested)
+  local available = detect_available_backends()
+
+  if requested and requested ~= "auto" then
+    if available[requested] and available[requested].available then
+      return requested
+    else
+      vim.notify("Picker '" .. tostring(requested) .. "' not available, falling back to auto", vim.log.levels.WARN)
+    end
+  end
+
+  for _, name in ipairs(PRIORITY_ORDER) do
+    if available[name] and available[name].available then
+      return name
+    end
+  end
+
+  return "vim_ui"
+end
+
+function M.setup(config)
+  config = config or {}
+  detected_backends_cache = nil
+  current_backend_name = determine_backend(config.picker or "auto")
+  M.picker_opts = config.picker_opts or {}
+end
+
+function M.get_status()
+  local available = detect_available_backends()
+  local list = {}
+  for name, info in pairs(available) do
+    if info.available then
+      table.insert(list, name)
+    end
+  end
+  return {
+    current_backend = current_backend_name or "vim_ui",
+    available_backends = list,
+    backends = available,
+  }
+end
+
+function M.show_picker_status()
+  local status = M.get_status()
+  local lines = {
+    "Marker Groups Picker Status",
+    "═══════════════════════════",
+    "",
+    "Current Backend: " .. (status.current_backend or "none"),
+    "",
+    "Available Backends:",
+  }
+
+  for name, info in pairs(status.backends or {}) do
+    local status_icon = info.available and "✅" or "❌"
+    local version_info = info.version and (" (v" .. tostring(info.version) .. ")") or ""
+    local error_info = info.error and (" - " .. tostring(info.error)) or ""
+    table.insert(lines, string.format("  %s %s%s%s", status_icon, name, version_info, error_info))
+  end
+
+  local buf = vim.api.nvim_create_buf(false, true)
+  vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
+  vim.api.nvim_buf_set_option(buf, "filetype", "markdown")
+  vim.api.nvim_buf_set_option(buf, "modifiable", false)
+
+  local width = 60
+  local height = math.max(8, #lines + 2)
+  local win = vim.api.nvim_open_win(buf, true, {
+    relative = "editor",
+    width = width,
+    height = height,
+    row = math.floor((vim.o.lines - height) / 2),
+    col = math.floor((vim.o.columns - width) / 2),
+    style = "minimal",
+    border = "rounded",
+    title = "Picker Status",
+  })
+
+  vim.api.nvim_buf_set_keymap(buf, "n", "<Esc>", "<cmd>close<CR>", { noremap = true, silent = true })
+  vim.api.nvim_buf_set_keymap(buf, "n", "q", "<cmd>close<CR>", { noremap = true, silent = true })
+
+  return win
+end
+
+function M.show_groups(opts)
+  local available = detect_available_backends()
+  local name = current_backend_name or "vim_ui"
+  local backend = available[name] and available[name].backend
+  if not backend and available.vim_ui and available.vim_ui.available then
+    backend = require "marker-groups.pickers.vim_ui"
+  end
+  if backend and backend.show_groups then
+    return backend.show_groups(opts)
+  end
+  vim.notify("No picker backend available", vim.log.levels.ERROR)
+end
+
+function M.show_markers(opts)
+  local available = detect_available_backends()
+  local name = current_backend_name or "vim_ui"
+  local backend = available[name] and available[name].backend
+  if not backend and available.vim_ui and available.vim_ui.available then
+    backend = require "marker-groups.pickers.vim_ui"
+  end
+  if backend and backend.show_markers then
+    return backend.show_markers(opts)
+  end
+  vim.notify("No picker backend available", vim.log.levels.ERROR)
+end
+
+return M

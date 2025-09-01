@@ -9,6 +9,11 @@ function M.setup(opts)
 
   local config = require("marker-groups.config").setup(opts)
 
+  -- Initialize picker system with user configuration
+  pcall(function()
+    require("marker-groups.pickers").setup(config)
+  end)
+
   require("marker-groups.state").initialize(config)
 
   require("marker-groups.commands").setup()
