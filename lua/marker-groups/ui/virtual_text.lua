@@ -7,6 +7,7 @@ local feedback = require "marker-groups.feedback"
 local _cached_namespaces = {}
 
 local _update_timers = {}
+local _hydrating = false
 
 local function get_namespace(name)
   if not _cached_namespaces[name] then
@@ -366,9 +367,9 @@ function M.setup_auto_updates()
 
   state.on("group_created", function(data)
     vim.schedule(function()
-      if not vim.g.__marker_groups_hydrating then
-        feedback.notify("Group created: " .. data.group_name, feedback.levels.DEBUG)
-      end
+      -- Suppress noisy create notification to avoid confusion during hydration and normal use
+      -- Visual updates are handled elsewhere; no notification needed here.
+      return
     end)
   end)
 
@@ -410,6 +411,11 @@ function M.setup_auto_updates()
     vim.schedule(function()
       M.update_all_buffers()
       feedback.notify("Marker groups UI synchronized with state", feedback.levels.DEBUG)
+      -- Suppress noisy create logs briefly during hydration sequence
+      _hydrating = true
+      vim.defer_fn(function()
+        _hydrating = false
+      end, 600)
     end)
   end)
 

@@ -313,8 +313,11 @@ function M.load()
   if virtual_text and virtual_text.update_all_buffers then
     virtual_text.update_all_buffers()
   end
-
-  vim.g.__marker_groups_hydrating = false
+  -- Defer clearing hydration flag to ensure scheduled 'group_created' handlers
+  -- still observe hydration state and don't log as newly created.
+  vim.defer_fn(function()
+    vim.g.__marker_groups_hydrating = false
+  end, 300)
 
   return {
     success = true,

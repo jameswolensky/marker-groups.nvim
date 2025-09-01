@@ -95,7 +95,10 @@ function M.create_group(name, description)
   end
 
   local feedback = require "marker-groups.feedback"
-  feedback.success("Group Creation", "Created group: " .. name)
+  -- Suppress noisy creation notice during persistence hydration
+  if not vim.g.__marker_groups_hydrating then
+    feedback.success("Group Creation", "Created group: " .. name)
+  end
 
   return result
 end
