@@ -15,7 +15,8 @@ function M.show_groups(opts)
   local info = groups.list_groups()
   local items = {}
   for _, g in ipairs(info) do
-    table.insert(items, { text = groups.format_group_info(g, "short"), name = g.name })
+    local text = groups.format_group_info(g, "short")
+    table.insert(items, { text = tostring(text or g.name or ""), name = tostring(g.name or "") })
   end
 
   if #items == 0 then
@@ -27,7 +28,10 @@ function M.show_groups(opts)
     source = { name = "marker_groups", items = items },
     prompt = "Marker Groups> ",
     format = function(item)
-      return item.text
+      if type(item) == "table" and type(item.text) == "string" then
+        return item.text
+      end
+      return tostring(item or "")
     end,
     preview = function(ctx)
       local name = ctx.item and ctx.item.name

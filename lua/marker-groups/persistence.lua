@@ -275,6 +275,7 @@ function M.load()
     }
   end
 
+  vim.g.__marker_groups_hydrating = true
   for group_name, group_data in pairs(data.marker_groups) do
     if group_name ~= "default" then
       local create_result = state.create_group(group_name)
@@ -312,6 +313,8 @@ function M.load()
   if virtual_text and virtual_text.update_all_buffers then
     virtual_text.update_all_buffers()
   end
+
+  vim.g.__marker_groups_hydrating = false
 
   return {
     success = true,

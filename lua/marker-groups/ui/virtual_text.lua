@@ -366,7 +366,9 @@ function M.setup_auto_updates()
 
   state.on("group_created", function(data)
     vim.schedule(function()
-      feedback.notify("Group created: " .. data.group_name, feedback.levels.DEBUG)
+      if not vim.g.__marker_groups_hydrating then
+        feedback.notify("Group created: " .. data.group_name, feedback.levels.DEBUG)
+      end
     end)
   end)
 
