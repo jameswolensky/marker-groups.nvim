@@ -16,7 +16,7 @@ local T = MiniTest.new_set {
   },
 }
 
-T["show_groups deletes selected group via vim.ui.select (Enter)"] = function()
+T["show_groups selects chosen group via vim.ui.select (Enter)"] = function()
   local state = require "marker-groups.state"
   local groups = require "marker-groups.groups"
   groups.create_group "dev"
@@ -28,7 +28,7 @@ T["show_groups deletes selected group via vim.ui.select (Enter)"] = function()
   vim.ui.select = function(items, opts, on_choice)
     called = true
     seen_items = items
-    -- choose first to delete it
+    -- choose first to select it
     on_choice(items[1])
   end
 
@@ -39,9 +39,27 @@ T["show_groups deletes selected group via vim.ui.select (Enter)"] = function()
 
   MiniTest.expect.equality(true, called)
   MiniTest.expect.equality(true, #seen_items >= 2)
-  -- After deletion, the selected group should not exist
-  local deleted = state.get_group "dev" == nil or state.get_group "docs" == nil
-  MiniTest.expect.equality(true, deleted)
+  MiniTest.expect.equality(true, state.get_active_group() == "dev" or state.get_active_group() == "docs")
+end
+T["delete_groups deletes chosen group via vim.ui.select (Enter)"] = function()
+  local state = require "marker-groups.state"
+  local groups = require "marker-groups.groups"
+  groups.create_group "dev"
+  groups.create_group "docs"
+
+  local called = false
+  local orig_select = vim.ui.select
+  vim.ui.select = function(items, opts, on_choice)
+    called = true
+    on_choice(items[1])
+  end
+
+  require("marker-groups.pickers").delete_groups()
+
+  vim.ui.select = orig_select
+
+  MiniTest.expect.equality(true, called)
+  MiniTest.expect.equality(nil, state.get_group "dev")
 end
 
 T["show_markers lists markers in active group via vim.ui.select"] = function()

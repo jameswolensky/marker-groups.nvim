@@ -56,14 +56,33 @@ function M.show_groups(opts)
     end,
     actions = {
       ["default"] = function(selected)
-        if selected and #selected > 0 then
-          local name = selected[1].name
+        local function get_name(sel)
+          if type(sel) == "table" then
+            if #sel > 0 then
+              return sel[1] and sel[1].name
+            end
+            return sel.name
+          end
+          return nil
+        end
+        local name = get_name(selected)
+        if not name or name == "" then
+          return
+        end
+        if opts.action == "delete" then
           if groups.delete_group_with_confirmation then
             groups.delete_group_with_confirmation(name, { skip_confirmation = true })
           else
             groups.delete_group(name, true)
           end
           require("marker-groups.pickers.utils").show_notification("Deleted group: " .. name, vim.log.levels.INFO, 5000)
+        else
+          groups.select_group(name)
+          require("marker-groups.pickers.utils").show_notification(
+            "Selected group: " .. name,
+            vim.log.levels.INFO,
+            3000
+          )
         end
       end,
     },

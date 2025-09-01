@@ -282,6 +282,9 @@ function M.load()
         feedback.warning("Persistence", "Failed to create group: " .. group_name)
         goto continue_group_loop
       end
+      -- Emit a dedicated event for groups loaded from persistence to avoid
+      -- confusing them with newly created groups during this session.
+      state.emit("group_loaded", { group_name = group_name })
     end
 
     for _, marker_data in ipairs(group_data.markers) do

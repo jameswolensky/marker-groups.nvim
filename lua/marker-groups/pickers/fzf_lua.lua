@@ -48,14 +48,24 @@ function M.show_groups(opts)
     actions = {
       ["default"] = function(selected)
         local display = selected and selected[1]
-        if display and map[display] then
-          local name = map[display]
+        local name = display and map[display]
+        if not name then
+          return
+        end
+        if opts.action == "delete" then
           if groups.delete_group_with_confirmation then
             groups.delete_group_with_confirmation(name, { skip_confirmation = true })
           else
             groups.delete_group(name, true)
           end
           require("marker-groups.pickers.utils").show_notification("Deleted group: " .. name, vim.log.levels.INFO, 5000)
+        else
+          groups.select_group(name)
+          require("marker-groups.pickers.utils").show_notification(
+            "Selected group: " .. name,
+            vim.log.levels.INFO,
+            3000
+          )
         end
       end,
     },

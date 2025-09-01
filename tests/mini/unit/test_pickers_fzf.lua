@@ -19,7 +19,7 @@ local T = MiniTest.new_set {
   },
 }
 
-T["fzf-lua backend Enter deletes selected group"] = function()
+T["fzf-lua backend Enter selects chosen group"] = function()
   local state = require "marker-groups.state"
   local groups = require "marker-groups.groups"
   groups.create_group "dev"
@@ -32,6 +32,22 @@ T["fzf-lua backend Enter deletes selected group"] = function()
     end,
   }
   require("marker-groups.pickers").show_groups()
+  MiniTest.expect.equality(true, called)
+  MiniTest.expect.equality("dev", state.get_active_group())
+end
+
+T["fzf-lua backend Enter deletes chosen group in delete mode"] = function()
+  local state = require "marker-groups.state"
+  local groups = require "marker-groups.groups"
+  groups.create_group "dev"
+  local called = false
+  package.loaded["fzf-lua"] = {
+    fzf_exec = function(items, opts)
+      called = true
+      opts.actions["default"] { items[1] }
+    end,
+  }
+  require("marker-groups.pickers").delete_groups()
   MiniTest.expect.equality(true, called)
   MiniTest.expect.equality(nil, state.get_group "dev")
 end

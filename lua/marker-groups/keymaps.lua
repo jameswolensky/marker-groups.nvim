@@ -85,7 +85,7 @@ function M.setup()
     "n",
     compute_lhs(prefix, km.group and km.group.select),
     safe_call(function()
-      return groups.select_group_interactive()
+      return require("marker-groups.pickers").show_groups()
     end, "Group selection"),
     "Select marker group"
   )
@@ -115,7 +115,7 @@ function M.setup()
     "n",
     compute_lhs(prefix, km.group and km.group.delete),
     safe_call(function()
-      return groups.select_group_for_deletion()
+      return require("marker-groups.pickers").delete_groups()
     end, "Group deletion"),
     "Delete marker group"
   )

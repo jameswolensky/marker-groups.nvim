@@ -178,6 +178,13 @@ function M.show_groups(opts)
   vim.notify("No picker backend available", vim.log.levels.ERROR)
 end
 
+-- Convenience wrapper to open group picker in deletion mode
+function M.delete_groups(opts)
+  opts = opts or {}
+  opts.action = "delete"
+  return M.show_groups(opts)
+end
+
 function M.show_markers(opts)
   local available = detect_available_backends()
   local name = current_backend_name or "vim_ui"

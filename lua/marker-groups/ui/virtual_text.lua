@@ -384,6 +384,15 @@ function M.setup_auto_updates()
     end)
   end)
 
+  -- Distinguish persisted groups from newly created ones to avoid misleading logs
+  state.on("group_loaded", function(data)
+    vim.schedule(function()
+      if require("marker-groups.config").get_value("debug", false) then
+        feedback.notify("Group loaded: " .. data.group_name, feedback.levels.DEBUG)
+      end
+    end)
+  end)
+
   state.on("buffer_major_change", function(data)
     vim.schedule(function()
       if api.nvim_buf_is_valid(data.buffer) then

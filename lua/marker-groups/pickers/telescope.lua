@@ -93,19 +93,24 @@ function M.show_groups(opts)
           local selection = t.action_state.get_selected_entry()
           t.actions.close(bufnr)
           if selection and selection.value then
-            if groups.delete_group_with_confirmation then
-              groups.delete_group_with_confirmation(selection.value, { skip_confirmation = true })
+            local name = selection.value
+            if (opts and opts.action) == "delete" then
+              if groups.delete_group_with_confirmation then
+                groups.delete_group_with_confirmation(name, { skip_confirmation = true })
+              else
+                groups.delete_group(name, true)
+              end
               require("marker-groups.pickers.utils").show_notification(
-                "Deleted group: " .. selection.value,
+                "Deleted group: " .. name,
                 vim.log.levels.INFO,
                 5000
               )
             else
-              groups.delete_group(selection.value, true)
+              groups.select_group(name)
               require("marker-groups.pickers.utils").show_notification(
-                "Deleted group: " .. selection.value,
+                "Selected group: " .. name,
                 vim.log.levels.INFO,
-                5000
+                3000
               )
             end
           end

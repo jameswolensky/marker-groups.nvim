@@ -8,12 +8,19 @@ local T = MiniTest.new_set {
           package.loaded[k] = nil
         end
       end
+      -- Stub Snacks BEFORE setup so backend detection picks it
+      package.loaded["snacks.picker"] = true
+      package.loaded["snacks"] = {
+        picker = function(opts)
+          -- no-op default; individual tests will override behavior
+        end,
+      }
       require("marker-groups").setup { picker = "snacks" }
     end,
   },
 }
 
-T["snacks backend Enter deletes selected group"] = function()
+T["snacks backend Enter selects the chosen group (not delete)"] = function()
   local state = require "marker-groups.state"
   local groups = require "marker-groups.groups"
   groups.create_group "dev"
@@ -22,17 +29,25 @@ T["snacks backend Enter deletes selected group"] = function()
   package.loaded["snacks"] = {
     picker = function(opts)
       called = true
-      -- simulate selecting first item (dev)
-      local first = opts.source.items[1]
-      opts.actions["default"] { { name = first.name } }
+      -- find the 'dev' item regardless of ordering
+      local chosen
+      for _, it in ipairs(opts.source.items or {}) do
+        if it.name == "dev" then
+          chosen = it
+          break
+        end
+      end
+      chosen = chosen or opts.source.items[1]
+      opts.actions["default"] { { name = chosen.name, text = chosen.text } }
     end,
   }
 
-  require("marker-groups.pickers").show_groups()
+  require("marker-groups.pickers.snacks").show_groups()
 
   MiniTest.expect.equality(true, called)
-  -- group 'dev' should be deleted
-  MiniTest.expect.equality(nil, state.get_group "dev")
+  -- expectation: selecting should activate the group, not delete it
+  MiniTest.expect.equality("dev", state.get_active_group())
+  MiniTest.expect.equality(state.get_group "dev" ~= nil, true)
 end
 
 return T
