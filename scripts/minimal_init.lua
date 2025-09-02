@@ -32,6 +32,7 @@ end
 local data = vim.fn.stdpath('data')
 -- Common Lazy path
 maybe_append(data .. '/lazy/mini.nvim')
+maybe_append(data .. '/lazy/snacks.nvim')
 -- Common pack/* paths
 maybe_append(data .. '/site/pack/packer/start/mini.nvim')
 maybe_append(data .. '/site/pack/packer/opt/mini.nvim')

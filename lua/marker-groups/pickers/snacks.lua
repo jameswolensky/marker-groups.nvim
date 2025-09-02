@@ -14,13 +14,14 @@ function M.show_groups(opts)
 
   local info = groups.list_groups()
   local items = {}
+  local name_to_info = {}
   for _, g in ipairs(info) do
-    local text = groups.format_group_info(g, "short")
-    -- Provide both `value` and `name` to be compatible with Snacks picker expectations
+    local name = tostring(g.name or "")
+    name_to_info[name] = g
     table.insert(items, {
-      text = tostring(text or g.name or ""),
-      value = tostring(g.name or ""),
-      name = tostring(g.name or ""),
+      text = groups.format_group_info(g, "short"),
+      value = name,
+      name = name,
     })
   end
 
@@ -48,22 +49,10 @@ function M.show_groups(opts)
   end
 
   snacks.picker {
-    source = { name = "marker_groups", items = items },
+    source = "marker_groups",
+    items = items,
     prompt = "Marker Groups> ",
-    format = function(item)
-      if type(item) == "table" then
-        if type(item.text) == "string" then
-          return item.text
-        end
-        if type(item.value) == "string" then
-          return item.value
-        end
-        if type(item.name) == "string" then
-          return item.name
-        end
-      end
-      return tostring(item or "")
-    end,
+    -- Use Snacks default formatter to avoid shape mismatches
     preview = function(ctx)
       local name
       if ctx and ctx.item then
@@ -76,15 +65,8 @@ function M.show_groups(opts)
       if not name then
         return true
       end
-      -- get fresh info via groups.list_groups
-      local info
-      local list = groups.list_groups()
-      for _, gi in ipairs(list) do
-        if gi.name == name then
-          info = gi
-          break
-        end
-      end
+      -- get info from local map (faster and avoids surprises)
+      local info = name_to_info[name]
       local lines = utils.generate_group_preview(info or { name = name, marker_count = 0 })
       vim.api.nvim_buf_set_lines(ctx.buf, 0, -1, false, lines)
       vim.bo[ctx.buf].filetype = "markdown"
@@ -164,9 +146,7 @@ function M.show_markers(opts)
   snacks.picker {
     source = { name = "marker_list", items = items },
     prompt = "Markers - " .. active .. "> ",
-    format = function(item)
-      return item.text
-    end,
+    -- Use default formatter
     preview = function(ctx)
       local m = ctx.item and ctx.item.marker
       if not m then

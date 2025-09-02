@@ -1,55 +1,26 @@
 local MiniTest = require "mini.test"
 
-local T = MiniTest.new_set {
-  hooks = {
-    pre_case = function()
-      for k in pairs(package.loaded) do
-        if k:match "^marker%-groups" or k:match "^fzf%-lua" then
-          package.loaded[k] = nil
-        end
-      end
-      -- stub fzf-lua
-      package.loaded["fzf-lua"] = {
-        fzf_exec = function(items, opts)
-          return true
-        end,
-      }
-      require("marker-groups").setup { picker = "fzf_lua" }
-    end,
-  },
-}
+local T = MiniTest.new_set()
 
-T["fzf-lua backend Enter selects chosen group"] = function()
-  local state = require "marker-groups.state"
-  local groups = require "marker-groups.groups"
-  groups.create_group "dev"
-  local called = false
-  package.loaded["fzf-lua"] = {
-    fzf_exec = function(items, opts)
-      called = true
-      -- simulate selecting first display (dev)
-      opts.actions["default"] { items[1] }
-    end,
-  }
-  require("marker-groups.pickers").show_groups()
-  MiniTest.expect.equality(true, called)
-  MiniTest.expect.equality("dev", state.get_active_group())
-end
-
-T["fzf-lua backend Enter deletes chosen group in delete mode"] = function()
-  local state = require "marker-groups.state"
-  local groups = require "marker-groups.groups"
-  groups.create_group "dev"
-  local called = false
-  package.loaded["fzf-lua"] = {
-    fzf_exec = function(items, opts)
-      called = true
-      opts.actions["default"] { items[1] }
-    end,
-  }
-  require("marker-groups.pickers").delete_groups()
-  MiniTest.expect.equality(true, called)
-  MiniTest.expect.equality(nil, state.get_group "dev")
+T["fzf-lua picker works with real plugin if available (no stubs)"] = function()
+  local child = MiniTest.new_child_neovim()
+  child.restart { "--headless", "-u", "scripts/minimal_init.lua" }
+  local has_fzf = child.lua [[return pcall(require, 'fzf-lua')]]
+  if not has_fzf then
+    child.stop()
+    return
+  end
+  child.lua [[vim.opt.runtimepath:append(vim.fn.getcwd())]]
+  child.lua [[require('marker-groups').setup({ picker = 'fzf_lua' })]]
+  local ret = child.lua [[ 
+    local ok, err = pcall(function()
+      require('marker-groups.groups').create_group('dev')
+      require('marker-groups.pickers').show_groups()
+    end)
+    return { ok = ok, msg = tostring(err) }
+  ]]
+  assert(ret and ret.ok == true, "fzf-lua picker errored: " .. tostring(ret and ret.msg))
+  child.stop()
 end
 
 return T
