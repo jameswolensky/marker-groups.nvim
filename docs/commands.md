@@ -20,6 +20,7 @@ title: Commands
 
 - `:MarkerGroupsView` — Open drawer marker viewer
 - `:MarkerGroupsTelescope` — Telescope integration
+- `:MarkerGroupsPickerStatus` — Show current picker backend and availability
 - `:MarkerGroupsHealth` — Run health checks
 
 ## Picker Commands
@@ -30,5 +31,5 @@ title: Commands
 Behavior
 - Group list: Enter deletes the selected group (5s notification confirms). ESC closes.
 - Marker list: Preview-only; shows code context around the marker; no jumping.
-- Backends: Telescope, Snacks.nvim, fzf-lua, vim.ui (auto-detected with fallback).
+- Backends: mini.pick, Telescope, Snacks.nvim, fzf-lua, vim.ui (auto-detected with fallback).
 

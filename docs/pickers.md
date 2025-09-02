@@ -2,8 +2,9 @@
 
 Marker Groups supports multiple picker backends (strict selection with fallback to vim):
 
-- Telescope (rich previews; ESC closes)
+- mini.pick (from mini.nvim)
 - Snacks.nvim (previews; native close behavior)
+- Telescope (rich previews; ESC closes)
 - fzf-lua (previews; ESC aborts)
 - vim.ui.select (basic, always available)
 
@@ -24,8 +25,8 @@ Configure the picker in `setup()`:
 
 ```lua
 require('marker-groups').setup({
-  -- Strict options: 'vim' | 'telescope' | 'snacks' | 'fzf-lua'
-  -- Default is 'vim'. Invalid values fall back to 'vim'.
+  -- Strict options: 'vim' | 'telescope' | 'snacks' | 'fzf-lua' | 'mini.pick'
+  -- Aliases: 'fzf_lua' and 'mini_pick' are also accepted. Default is 'vim'.
   picker = 'vim',
 })
 ```
@@ -33,5 +34,6 @@ require('marker-groups').setup({
 ### Notes
 
 - Use `:MarkerGroupsPickerStatus` to see available backends and current selection.
+- mini.pick requires `require('mini.pick').setup()` in your config (if using your own mini.nvim); this plugin vendors mini.nvim for tests but does not force-enable it for you.
 
 

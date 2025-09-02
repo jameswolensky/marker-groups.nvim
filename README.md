@@ -12,7 +12,7 @@ A powerful Neovim plugin for organizing and annotating code with grouped markers
 - **🗂️ Group Organization**: Organize markers into logical groups (features, bugs, todos, etc.)
 - **🎯 Visual Indicators**: See markers directly in your code with virtual text
 - **🪟 Drawer Viewer**: Right-side drawer to browse all markers with context
-- **🔍 Telescope Integration**: Fuzzy search through markers and groups
+- **🔎 Picker Integrations**: mini.pick, Snacks, Telescope, fzf-lua, and built-in vim.ui
 - **💾 Persistent Storage**: Markers survive Neovim restarts with automatic saving
 - **⌨️ Rich Keybindings**: Intuitive keymaps for all operations
 - **🔧 Configurable**: Extensive customization options
@@ -26,12 +26,17 @@ A powerful Neovim plugin for organizing and annotating code with grouped markers
   "jameswolensky/marker-groups.nvim",
   dependencies = {
     "nvim-lua/plenary.nvim", -- Required
-    "nvim-telescope/telescope.nvim", -- Optional: for fuzzy search
+    "nvim-telescope/telescope.nvim", -- Optional: Telescope picker
+    "ibhagwan/fzf-lua", -- Optional: fzf-lua picker
+    "folke/snacks.nvim", -- Optional: Snacks picker
+    -- mini.pick is part of mini.nvim; this plugin vendors mini.nvim for tests,
+    -- but you can also install mini.nvim explicitly to use mini.pick system-wide
+    -- "nvim-mini/mini.nvim",
   },
   config = function()
     require("marker-groups").setup({
       -- Default picker is 'vim' (built-in vim.ui). Valid values:
-      -- 'vim' | 'telescope' | 'snacks' | 'fzf-lua'
+      -- 'vim' | 'telescope' | 'snacks' | 'fzf-lua' | 'mini.pick'
       picker = 'vim',
     })
   end,
@@ -46,6 +51,9 @@ use {
   requires = {
     "nvim-lua/plenary.nvim", -- Required
     "nvim-telescope/telescope.nvim", -- Optional
+    "ibhagwan/fzf-lua", -- Optional
+    "folke/snacks.nvim", -- Optional
+    -- "nvim-mini/mini.nvim", -- Optional
   },
   config = function()
     require("marker-groups").setup()
@@ -107,6 +115,7 @@ require("marker-groups").setup()
 ### Viewing & Navigation
 - `:MarkerGroupsView` - Open the drawer marker viewer
 - `:MarkerGroupsTelescope` - Open Telescope integration
+- `:MarkerGroupsPickerStatus` - Show current picker backend and availability
 - `:MarkerGroupsHealth` - Run health checks
 
 ## ⚙️ Configuration
@@ -133,8 +142,6 @@ require("marker-groups").setup({
 
   -- Virtual text display & highlight groups
   max_annotation_display = 50, -- truncate long annotations
-  -- Customize highlight groups (names). These will be used for rendering.
-  -- Provide your own groups to integrate with your colorscheme.
   highlight_groups = {
     marker = "MarkerGroupsMarker",
     annotation = "MarkerGroupsAnnotation",
@@ -154,7 +161,6 @@ require("marker-groups").setup({
         delete = { suffix = "d", desc = "Delete marker at cursor" },
         list = { suffix = "l", desc = "List markers in buffer" },
         info = { suffix = "i", desc = "Show marker at cursor" },
-        
       },
       group = {
         create = { suffix = "gc", desc = "Create marker group" },
@@ -163,12 +169,9 @@ require("marker-groups").setup({
         rename = { suffix = "gr", desc = "Rename marker group" },
         delete = { suffix = "gd", desc = "Delete marker group" },
         info = { suffix = "gi", desc = "Show active group info" },
-        -- next/prev/toggle_last/cleanup removed
         from_branch = { suffix = "gb", desc = "Create group from git branch" },
       },
-      view = {
-        toggle = { suffix = "v", desc = "Toggle drawer marker viewer" },
-      },
+      view = { toggle = { suffix = "v", desc = "Toggle drawer marker viewer" } },
       telescope = {
         groups = { suffix = "tg", desc = "Telescope: marker groups" },
         markers = { suffix = "tm", desc = "Telescope: markers in active group" },
@@ -177,7 +180,7 @@ require("marker-groups").setup({
   },
 
   -- Picker backend (default: 'vim')
-  -- Strict options: 'vim' | 'telescope' | 'snacks' | 'fzf-lua'
+  -- Strict options: 'vim' | 'telescope' | 'snacks' | 'fzf-lua' | 'mini.pick'
   -- Invalid values fall back to 'vim'.
   picker = 'vim',
 })
@@ -253,5 +256,5 @@ MIT License - see [LICENSE](LICENSE) file for details.
 ## 🙏 Acknowledgments
 
 - Built with [plenary.nvim](https://github.com/nvim-lua/plenary.nvim)
-- Telescope integration via [telescope.nvim](https://github.com/nvim-telescope/telescope.nvim)
+- Picker integrations with mini.pick, Snacks, [telescope.nvim](https://github.com/nvim-telescope/telescope.nvim), and [fzf-lua](https://github.com/ibhagwan/fzf-lua)
 - Inspired by various code annotation and marker plugins
