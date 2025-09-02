@@ -7,10 +7,10 @@ if not vim.tbl_contains(vim.opt.runtimepath:get(), cwd) then
 end
 
 -- Add vendored mini.nvim if present
-local vendor_path = cwd .. '/vendor/mini.nvim'
-if vim.fn.isdirectory(vendor_path) == 1 then
-  if not vim.tbl_contains(vim.opt.runtimepath:get(), vendor_path) then
-    vim.opt.runtimepath:append(vendor_path)
+local vendored = cwd .. '/vendor/mini.nvim'
+if vim.fn.isdirectory(vendored) == 1 then
+  if not vim.tbl_contains(vim.opt.runtimepath:get(), vendored) then
+    vim.opt.runtimepath:append(vendored)
   end
 end
 
@@ -36,12 +36,13 @@ maybe_append(data .. '/lazy/mini.nvim')
 maybe_append(data .. '/lazy/snacks.nvim')
 -- Common pack/* paths
 maybe_append(data .. '/site/pack/packer/start/mini.nvim')
+maybe_append(data .. '/site/pack/testing/opt/mini.nvim')
 maybe_append(data .. '/site/pack/packer/opt/mini.nvim')
 maybe_append(data .. '/site/pack/lazy/start/mini.nvim')
 maybe_append(data .. '/site/pack/vendor/start/mini.nvim')
 maybe_append(data .. '/site/pack/testing/start/mini.nvim')
 
-pcall(vim.cmd, 'packadd mini.nvim')
+-- mini.nvim is on rtp via vendor; no packer-specific calls
 
 -- If needed elsewhere: `require("mini.test")` will be done by the runner
 vim.g.__mg_minimal_init = true

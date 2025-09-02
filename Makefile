@@ -8,11 +8,8 @@ all: test
 # Helper: run tests in sandboxed XDG with ephemeral plugin deps
 define RUN_TESTS
 	@TMP_XDG=$$(mktemp -d 2>/dev/null || mktemp -d -t xdgdata); \
-	PACK_START="$$TMP_XDG/site/pack/testing/start"; PACK_OPT="$$TMP_XDG/site/pack/testing/opt"; \
+	PACK_START="$$TMP_XDG/nvim/site/pack/testing/start"; PACK_OPT="$$TMP_XDG/nvim/site/pack/testing/opt"; \
 	mkdir -p "$$PACK_START" "$$PACK_OPT"; \
-	# Optional deps used by some tests
-	git clone --depth=1 https://github.com/folke/snacks.nvim.git "$$PACK_START/snacks.nvim" >/dev/null 2>&1 || true; \
-	git clone --depth=1 https://github.com/ibhagwan/fzf-lua.git "$$PACK_START/fzf-lua" >/dev/null 2>&1 || true; \
 	XDG_DATA_HOME="$$TMP_XDG" $(1); \
 	RC=$$?; rm -rf "$$TMP_XDG"; exit $$RC
 endef
