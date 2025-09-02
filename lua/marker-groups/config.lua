@@ -61,11 +61,6 @@ local defaults = {
       view = {
         toggle = { suffix = "v", desc = "Toggle drawer marker viewer" },
       },
-
-      telescope = {
-        groups = { suffix = "tg", desc = "Telescope: marker groups" },
-        markers = { suffix = "tm", desc = "Telescope: markers in active group" },
-      },
     },
   },
 

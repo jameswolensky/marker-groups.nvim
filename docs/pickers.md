@@ -4,7 +4,6 @@ Marker Groups supports multiple picker backends (strict selection with fallback 
 
 - mini.pick (from mini.nvim)
 - Snacks.nvim (previews; native close behavior)
-- Telescope (rich previews; ESC closes)
 - fzf-lua (previews; ESC aborts)
 - vim.ui.select (basic, always available)
 
@@ -12,7 +11,7 @@ Marker Groups supports multiple picker backends (strict selection with fallback 
 
 - Group lists: Enter deletes the selected group. A 5s notification confirms deletion. The `default` group is not listed in vim.ui to avoid accidental removal.
 - Marker lists: preview-only; no jumping. Previews show code context around the marker.
-- ESC: closes/aborts the picker (uses each backend's native behavior; Telescope explicitly mapped).
+- ESC: closes/aborts the picker (uses each backend's native behavior).
 
 ### Commands
 
@@ -25,7 +24,7 @@ Configure the picker in `setup()`:
 
 ```lua
 require('marker-groups').setup({
-  -- Strict options: 'vim' | 'telescope' | 'snacks' | 'fzf-lua' | 'mini.pick'
+  -- Strict options: 'vim' | 'snacks' | 'fzf-lua' | 'mini.pick'
   -- Aliases: 'fzf_lua' and 'mini_pick' are also accepted. Default is 'vim'.
   picker = 'vim',
 })

@@ -390,60 +390,6 @@ function M.select_group_interactive(opts)
   return state.Result.ok { message = "Picker group selector opened" }
 end
 
-function M.select_group_with_telescope(groups_info, opts)
-  local telescope = require "telescope"
-  local pickers = require "telescope.pickers"
-  local finders = require "telescope.finders"
-  local conf = require("telescope.config").values
-  local actions = require "telescope.actions"
-  local action_state = require "telescope.actions.state"
-
-  local entries = {}
-  for _, group_info in ipairs(groups_info) do
-    local display_text = M.format_group_info(group_info, "short")
-    if opts.include_stats then
-      display_text = display_text .. " | " .. (group_info.age or "unknown age")
-    end
-
-    table.insert(entries, {
-      value = group_info.name,
-      display = display_text,
-      ordinal = group_info.name,
-      group_info = group_info,
-    })
-  end
-
-  pickers
-    .new(opts, {
-      prompt_title = opts.prompt or "Select Marker Group",
-      finder = finders.new_table {
-        results = entries,
-        entry_maker = function(entry)
-          return {
-            value = entry.value,
-            display = entry.display,
-            ordinal = entry.ordinal,
-            group_info = entry.group_info,
-          }
-        end,
-      },
-      sorter = conf.generic_sorter(opts),
-      attach_mappings = function(prompt_bufnr, map)
-        actions.select_default:replace(function()
-          actions.close(prompt_bufnr)
-          local selection = action_state.get_selected_entry()
-          if selection then
-            M.select_group(selection.value)
-          end
-        end)
-        return true
-      end,
-    })
-    :find()
-
-  return state.Result.ok { message = "Telescope group selector opened" }
-end
-
 function M.select_group_with_vim_ui(groups_info, opts)
   local items = {}
   local name_map = {}

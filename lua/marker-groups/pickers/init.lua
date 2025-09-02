@@ -3,22 +3,11 @@ local M = {}
 local logger = require "marker-groups.utils.logger"
 
 -- Priority order when auto-detecting a backend
-local PRIORITY_ORDER = { "telescope", "snacks", "fzf_lua", "mini_pick", "vim_ui" }
+local PRIORITY_ORDER = { "snacks", "fzf_lua", "mini_pick", "vim_ui" }
 
 -- Cached detection results and current backend
 local detected_backends_cache = nil
 local current_backend_name = nil
-
-local function is_telescope_available()
-  if vim.fn.exists ":Telescope" ~= 2 then
-    return false
-  end
-  local ok, telescope = pcall(require, "telescope")
-  if not ok or not telescope then
-    return false
-  end
-  return type(telescope.setup) == "function"
-end
 
 local function is_snacks_available()
   if pcall(require, "snacks.picker") then
@@ -54,14 +43,6 @@ local function detect_available_backends()
   end
 
   local backends = {}
-
-  backends.telescope = is_telescope_available()
-      and {
-        available = true,
-        version = "unknown",
-        backend = require "marker-groups.pickers.telescope",
-      }
-    or { available = false, error = "not available" }
 
   backends.snacks = is_snacks_available()
       and {

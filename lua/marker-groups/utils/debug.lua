@@ -128,7 +128,7 @@ function M.show_state()
       .. "."
       .. dump.neovim_version.patch
   )
-  table.insert(lines, "  • Telescope: " .. (dump.environment.has_telescope and "✅" or "❌"))
+
   table.insert(lines, "  • OS: " .. dump.environment.os.sysname)
 
   vim.notify(table.concat(lines, "\n"), vim.log.levels.INFO)

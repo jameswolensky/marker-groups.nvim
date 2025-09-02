@@ -26,7 +26,6 @@ M.ErrorCodes = {
   CANNOT_RENAME_DEFAULT = "CANNOT_RENAME_DEFAULT",
   OPERATION_CANCELLED = "OPERATION_CANCELLED",
 
-  TELESCOPE_NOT_AVAILABLE = "TELESCOPE_NOT_AVAILABLE",
   PERSISTENCE_FAILED = "PERSISTENCE_FAILED",
 }
 
@@ -137,9 +136,6 @@ function M.attempt_recovery(error_code, context)
   elseif error_code == M.ErrorCodes.PERSISTENCE_FAILED then
     feedback.warning("Recovery", "Persistence failed, continuing without auto-save")
     return state.Result.ok "Continuing without persistence"
-  elseif error_code == M.ErrorCodes.TELESCOPE_NOT_AVAILABLE then
-    feedback.warning("Recovery", "Telescope not available, using native UI")
-    return state.Result.ok "Using fallback UI"
   end
 
   return state.Result.error("No recovery available for: " .. error_code, "NO_RECOVERY")

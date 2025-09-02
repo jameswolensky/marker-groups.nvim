@@ -305,18 +305,6 @@ function M.setup()
     desc = "Close all drawer marker viewer windows",
   })
 
-  vim.api.nvim_create_user_command("MarkerGroupsTelescope", function()
-    require("marker-groups.pickers").show_groups()
-  end, {
-    desc = "Open Telescope picker for marker groups",
-  })
-
-  vim.api.nvim_create_user_command("MarkerGroupsTelescopeMarkers", function()
-    require("marker-groups.pickers").show_markers()
-  end, {
-    desc = "Open Telescope picker for markers in active group",
-  })
-
   vim.api.nvim_create_user_command("MarkerGroupsDrawerWidth", function(args)
     local drawer = require "marker-groups.ui.drawer"
 

@@ -26,7 +26,7 @@ code with grouped markers. It allows you to:
 - Organize markers into logical groups (features, bugs, todos, etc.)
 - View markers with visual indicators in your code
 - Browse markers in a right-side drawer viewer with code context
-- Search markers with multiple pickers: mini.pick, Telescope, Snacks, fzf-lua, or builtin vim.ui
+- Search markers with multiple pickers: mini.pick, Snacks, fzf-lua, or builtin vim.ui
 - Persist markers across Neovim sessions
 
 ==============================================================================
@@ -37,7 +37,8 @@ Using lazy.nvim: >
       "jameswolensky/marker-groups.nvim",
       dependencies = {
         "nvim-lua/plenary.nvim",
-        "nvim-telescope/telescope.nvim", -- Optional
+        "folke/snacks.nvim",              -- Optional
+        "ibhagwan/fzf-lua",               -- Optional
         "folke/snacks.nvim",              -- Optional
         "ibhagwan/fzf-lua",               -- Optional
         -- "nvim-mini/mini.nvim",         -- Optional, for mini.pick
@@ -102,11 +103,7 @@ Viewing & Navigation:
 :MarkerGroupsPickerStatus                            *:MarkerGroupsPickerStatus*
     Show current picker backend, available backends, and their status.
 
-:MarkerGroupsTelescope                               *:MarkerGroupsTelescope*
-    Open picker for marker groups using the configured backend.
-
-:MarkerGroupsTelescopeMarkers                        *:MarkerGroupsTelescopeMarkers*
-    Open picker for markers in the active group using the configured backend.
+    
 
 :MarkerGroupsHealth                                  *:MarkerGroupsHealth*
     Run health checks to verify plugin status.
@@ -133,8 +130,8 @@ Default keybindings (customizable):
 <leader>mgs                 Select/switch group
 <leader>mgr                 Rename current group
 <leader>mgd                 Delete group
-<leader>mtg                 Telescope marker groups
-<leader>mtm                 Telescope markers in active group
+<leader>mtg                 Picker: marker groups (if configured)
+<leader>mtm                 Picker: markers in active group (if configured)
 
 Drawer Window Navigation (buffer-local):
 j/k or ↑/↓                  Navigate between markers
@@ -207,7 +204,7 @@ Default configuration: >
         },
       },
       -- Picker backend (default: 'vim')
-      -- Strict options: 'vim' | 'telescope' | 'snacks' | 'fzf-lua' | 'mini.pick'
+      -- Strict options: 'vim' | 'snacks' | 'fzf-lua' | 'mini.pick'
       -- Aliases: 'fzf_lua' and 'mini_pick' are also accepted; invalid values fall back to 'vim'.
       picker = 'vim',
     })

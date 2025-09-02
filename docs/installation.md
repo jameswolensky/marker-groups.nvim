@@ -9,7 +9,10 @@ title: Installation
   "jameswolensky/marker-groups.nvim",
   dependencies = {
     "nvim-lua/plenary.nvim", -- Required
-    "nvim-telescope/telescope.nvim", -- Optional: for fuzzy search
+    -- Optional pickers:
+    -- "ibhagwan/fzf-lua",
+    -- "folke/snacks.nvim",
+    -- "nvim-mini/mini.nvim",
   },
   config = function()
     require("marker-groups").setup({
@@ -26,7 +29,10 @@ use {
   "jameswolensky/marker-groups.nvim",
   requires = {
     "nvim-lua/plenary.nvim", -- Required
-    "nvim-telescope/telescope.nvim", -- Optional
+    -- Optional: picker backends
+    -- "ibhagwan/fzf-lua",
+    -- "folke/snacks.nvim",
+    -- "nvim-mini/mini.nvim",
   },
   config = function()
     require("marker-groups").setup()

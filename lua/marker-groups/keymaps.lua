@@ -270,28 +270,6 @@ function M.setup()
     end, "Drawer viewer"),
     "Toggle drawer marker viewer"
   )
-
-  map(
-    km.telescope and km.telescope.groups,
-    "n",
-    compute_lhs(prefix, km.telescope and km.telescope.groups),
-    safe_call(function()
-      local telescope = require "marker-groups.telescope"
-      telescope.show_groups()
-    end, "Telescope groups"),
-    "Telescope: marker groups"
-  )
-
-  map(
-    km.telescope and km.telescope.markers,
-    "n",
-    compute_lhs(prefix, km.telescope and km.telescope.markers),
-    safe_call(function()
-      local telescope = require "marker-groups.telescope"
-      telescope.show_markers()
-    end, "Telescope markers"),
-    "Telescope: markers in active group"
-  )
 end
 
 function M.defaults()
@@ -516,28 +494,6 @@ function M.defaults()
       drawer.toggle_drawer()
     end, "Drawer viewer"),
     "Toggle drawer marker viewer"
-  )
-
-  add(
-    km.telescope and km.telescope.groups,
-    "n",
-    compute_lhs(prefix, km.telescope and km.telescope.groups),
-    safe_call(function()
-      local telescope = require "marker-groups.telescope"
-      telescope.show_groups()
-    end, "Telescope groups"),
-    "Telescope: marker groups"
-  )
-
-  add(
-    km.telescope and km.telescope.markers,
-    "n",
-    compute_lhs(prefix, km.telescope and km.telescope.markers),
-    safe_call(function()
-      local telescope = require "marker-groups.telescope"
-      telescope.show_markers()
-    end, "Telescope markers"),
-    "Telescope: markers in active group"
   )
 
   return keys

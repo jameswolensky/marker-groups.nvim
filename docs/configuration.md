@@ -40,14 +40,11 @@ require("marker-groups").setup({
         delete = { suffix = "gd", desc = "Delete marker group" },
       },
       view = { toggle = { suffix = "v", desc = "Toggle drawer marker viewer" } },
-      telescope = {
-        groups = { suffix = "tg", desc = "Telescope: marker groups" },
-        markers = { suffix = "tm", desc = "Telescope: markers in active group" },
-      },
+      
     },
   },
   -- Picker backend (default: 'vim')
-  -- Strict options: 'vim' | 'telescope' | 'snacks' | 'fzf-lua' | 'mini.pick'
+  -- Strict options: 'vim' | 'snacks' | 'fzf-lua' | 'mini.pick'
   -- Aliases: 'fzf_lua' and 'mini_pick' are also accepted. Invalid values fall back to 'vim'.
   picker = 'vim',
 })
