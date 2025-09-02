@@ -27,9 +27,13 @@ function M.show_groups(opts)
 
   fzf.fzf_exec(items, {
     prompt = "Marker Groups> ",
-    previewer = "builtin",
     preview = function(selected)
-      local display = selected and selected[1]
+      local display
+      if type(selected) == "table" then
+        display = selected[1]
+      elseif type(selected) == "string" then
+        display = selected
+      end
       local name = display and map[display]
       if not name then
         return ""
@@ -91,9 +95,13 @@ function M.show_markers(opts)
 
   fzf.fzf_exec(items, {
     prompt = "Markers - " .. active .. "> ",
-    previewer = "builtin",
     preview = function(selected)
-      local display = selected and selected[1]
+      local display
+      if type(selected) == "table" then
+        display = selected[1]
+      elseif type(selected) == "string" then
+        display = selected
+      end
       local m = display and map[display]
       if not m then
         return ""
