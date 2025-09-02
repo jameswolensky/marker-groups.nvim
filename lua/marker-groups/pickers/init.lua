@@ -3,7 +3,7 @@ local M = {}
 local logger = require "marker-groups.utils.logger"
 
 -- Priority order when auto-detecting a backend
-local PRIORITY_ORDER = { "telescope", "snacks", "fzf_lua", "vim_ui" }
+local PRIORITY_ORDER = { "telescope", "snacks", "fzf_lua", "mini_pick", "vim_ui" }
 
 -- Cached detection results and current backend
 local detected_backends_cache = nil
@@ -34,6 +34,14 @@ local function is_fzf_lua_available()
     return false
   end
   return type(fzf_lua.fzf_exec) == "function"
+end
+
+local function is_mini_pick_available()
+  local ok, pick = pcall(require, "mini.pick")
+  if not ok or not pick then
+    return false
+  end
+  return type(pick.start) == "function"
 end
 
 local function is_vim_ui_available()
@@ -71,6 +79,14 @@ local function detect_available_backends()
       }
     or { available = false, error = "not available" }
 
+  backends.mini_pick = is_mini_pick_available()
+      and {
+        available = true,
+        version = "unknown",
+        backend = require "marker-groups.pickers.mini_pick",
+      }
+    or { available = false, error = "not available" }
+
   backends.vim_ui = is_vim_ui_available()
       and {
         available = true,
@@ -92,6 +108,8 @@ local function determine_backend(requested)
       normalized = "vim_ui"
     elseif normalized == "fzf-lua" then
       normalized = "fzf_lua"
+    elseif normalized == "mini.pick" or normalized == "mini-pick" or normalized == "minipick" then
+      normalized = "mini_pick"
     end
   end
 

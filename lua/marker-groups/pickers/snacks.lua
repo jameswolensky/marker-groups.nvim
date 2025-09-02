@@ -68,7 +68,7 @@ function M.show_groups(opts)
   snacks.picker {
     source = "marker_groups",
     items = items,
-    prompt = "Marker Groups snacks> ",
+    prompt = "Marker Groups> ",
     -- Explicitly format list entries as highlight chunks so names render in the list
     format = function(item)
       local txt
