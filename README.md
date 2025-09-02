@@ -30,7 +30,9 @@ A powerful Neovim plugin for organizing and annotating code with grouped markers
   },
   config = function()
     require("marker-groups").setup({
-      -- Your configuration here
+      -- Default picker is 'vim' (built-in vim.ui). Valid values:
+      -- 'vim' | 'telescope' | 'snacks' | 'fzf-lua'
+      picker = 'vim',
     })
   end,
 }
@@ -173,6 +175,11 @@ require("marker-groups").setup({
       },
     },
   },
+
+  -- Picker backend (default: 'vim')
+  -- Strict options: 'vim' | 'telescope' | 'snacks' | 'fzf-lua'
+  -- Invalid values fall back to 'vim'.
+  picker = 'vim',
 })
 ```
 

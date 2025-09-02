@@ -46,6 +46,10 @@ require("marker-groups").setup({
       },
     },
   },
+  -- Picker backend (default: 'vim')
+  -- Strict options: 'vim' | 'telescope' | 'snacks' | 'fzf-lua'
+  -- Invalid values fall back to 'vim'.
+  picker = 'vim',
 })
 ```
 

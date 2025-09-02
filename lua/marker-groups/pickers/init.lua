@@ -84,17 +84,20 @@ end
 local function determine_backend(requested)
   local available = detect_available_backends()
 
-  if requested and requested ~= "auto" then
-    if available[requested] and available[requested].available then
-      return requested
-    else
-      vim.notify("Picker '" .. tostring(requested) .. "' not available, falling back to auto", vim.log.levels.WARN)
+  local normalized = requested
+  if type(normalized) == "string" then
+    if normalized == "vim" then
+      normalized = "vim_ui"
+    elseif normalized == "fzf-lua" then
+      normalized = "fzf_lua"
     end
   end
 
-  for _, name in ipairs(PRIORITY_ORDER) do
-    if available[name] and available[name].available then
-      return name
+  if normalized and normalized ~= "auto" then
+    if available[normalized] and available[normalized].available then
+      return normalized
+    else
+      return "vim_ui"
     end
   end
 
@@ -104,7 +107,7 @@ end
 function M.setup(config)
   config = config or {}
   detected_backends_cache = nil
-  current_backend_name = determine_backend(config.picker or "auto")
+  current_backend_name = determine_backend(config.picker or "vim_ui")
   M.picker_opts = config.picker_opts or {}
 end
 
