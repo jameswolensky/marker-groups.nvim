@@ -71,6 +71,7 @@ function M.show_groups(opts)
       groups.select_group(name)
       utils.show_notification("Selected group: " .. tostring(name), vim.log.levels.INFO, 3000)
     end
+    pick.stop()
     return true
   end
 
