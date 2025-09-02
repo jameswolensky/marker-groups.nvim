@@ -82,6 +82,16 @@ function M.show_groups(opts)
     source = "marker_groups",
     items = items,
     prompt = "Marker Groups> ",
+    -- Explicitly format list entries as highlight chunks so names render in the list
+    format = function(item)
+      local txt
+      if type(item) == "table" then
+        txt = item.text or item.name or item.value
+      else
+        txt = tostring(item)
+      end
+      return { { tostring(txt or "") } }
+    end,
     -- Use Snacks default formatter to avoid shape mismatches
     preview = function(ctx)
       local name
