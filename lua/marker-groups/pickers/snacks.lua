@@ -48,6 +48,21 @@ function M.show_groups(opts)
     return nil
   end
 
+  local function with_modifiable(buf, fn)
+    if not (buf and vim.api.nvim_buf_is_valid(buf)) then
+      return false
+    end
+    local prev = vim.bo[buf].modifiable
+    if not prev then
+      vim.bo[buf].modifiable = true
+    end
+    local ok, err = pcall(fn)
+    if not prev then
+      vim.bo[buf].modifiable = false
+    end
+    return ok, err
+  end
+
   snacks.picker {
     source = "marker_groups",
     items = items,
@@ -68,8 +83,10 @@ function M.show_groups(opts)
       -- get info from local map (faster and avoids surprises)
       local info = name_to_info[name]
       local lines = utils.generate_group_preview(info or { name = name, marker_count = 0 })
-      vim.api.nvim_buf_set_lines(ctx.buf, 0, -1, false, lines)
-      vim.bo[ctx.buf].filetype = "markdown"
+      with_modifiable(ctx.buf, function()
+        vim.api.nvim_buf_set_lines(ctx.buf, 0, -1, false, lines)
+        vim.bo[ctx.buf].filetype = "markdown"
+      end)
       return true
     end,
     actions = {
@@ -153,8 +170,10 @@ function M.show_markers(opts)
         return true
       end
       local data = utils.generate_marker_preview(m)
-      vim.api.nvim_buf_set_lines(ctx.buf, 0, -1, false, data.content)
-      vim.bo[ctx.buf].filetype = data.filetype or "text"
+      with_modifiable(ctx.buf, function()
+        vim.api.nvim_buf_set_lines(ctx.buf, 0, -1, false, data.content)
+        vim.bo[ctx.buf].filetype = data.filetype or "text"
+      end)
       return true
     end,
     actions = {},
