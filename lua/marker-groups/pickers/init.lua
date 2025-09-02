@@ -1,5 +1,7 @@
 local M = {}
 
+local logger = require "marker-groups.utils.logger"
+
 -- Priority order when auto-detecting a backend
 local PRIORITY_ORDER = { "telescope", "snacks", "fzf_lua", "vim_ui" }
 
@@ -108,7 +110,8 @@ function M.setup(config)
   config = config or {}
   detected_backends_cache = nil
   current_backend_name = determine_backend(config.picker or "vim_ui")
-  M.picker_opts = config.picker_opts or {}
+
+  logger.debug("Picker backend set to: " .. tostring(current_backend_name))
 end
 
 function M.get_status()

@@ -1,6 +1,6 @@
 ## Picker backends
 
-Marker Groups supports multiple picker backends with auto-detection and graceful fallback:
+Marker Groups supports multiple picker backends (strict selection with fallback to vim):
 
 - Telescope (rich previews; ESC closes)
 - Snacks.nvim (previews; native close behavior)
@@ -24,24 +24,14 @@ Configure the picker in `setup()`:
 
 ```lua
 require('marker-groups').setup({
-  picker = 'auto', -- 'telescope' | 'snacks' | 'fzf_lua' | 'vim_ui' | 'auto'
-  picker_opts = {
-    telescope = { -- passed to Telescope pickers
-      -- layout_strategy = 'horizontal',
-      -- layout_config = { width = 0.9, height = 0.8 },
-    },
-    snacks = {},
-    fzf_lua = { -- forwarded to fzf-lua where applicable
-      -- winopts = { width = 0.8, height = 0.8 },
-    },
-    vim_ui = {},
-  },
+  -- Strict options: 'vim' | 'telescope' | 'snacks' | 'fzf-lua'
+  -- Default is 'vim'. Invalid values fall back to 'vim'.
+  picker = 'vim',
 })
 ```
 
 ### Notes
 
-- Auto-detection priority: Telescope → Snacks → fzf-lua → vim.ui.
-- Use `:MarkerGroupsPickerStatus` to debug detection if a backend isn’t loading.
+- Use `:MarkerGroupsPickerStatus` to see available backends and current selection.
 
 
