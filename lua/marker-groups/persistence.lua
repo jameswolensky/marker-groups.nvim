@@ -5,6 +5,12 @@ local feedback = require "marker-groups.feedback"
 local versions = require "marker-groups.version"
 
 local function should_persist()
+  if vim.g.__mg_force_persist == true then
+    return true
+  end
+  if vim.g.__mg_minimal_init == true then
+    return false
+  end
   return true
 end
 

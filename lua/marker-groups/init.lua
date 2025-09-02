@@ -50,13 +50,18 @@ end
 function M.reload()
   _initialized = false
 
+  local current_config = nil
+  pcall(function()
+    current_config = require("marker-groups.config").get()
+  end)
+
   for name, _ in pairs(package.loaded) do
     if name:match "^marker%-groups" then
       package.loaded[name] = nil
     end
   end
 
-  require("marker-groups").setup {}
+  require("marker-groups").setup(current_config or {})
 end
 
 function M.version()

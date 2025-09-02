@@ -90,6 +90,9 @@ function M.validate_input(input, validation_type)
       return state.Result.error("Annotation cannot be empty", M.ErrorCodes.INVALID_MARKER)
     end
 
+    if trimmed:find "[\r\n]" then
+      return state.Result.error("Annotation cannot contain line breaks", M.ErrorCodes.INVALID_MARKER)
+    end
     local sanitized = trimmed:gsub("[\1-\8\11\12\14-\31\127]", "")
 
     local limit = require("marker-groups.config").get_internal "max_annotation_chars"

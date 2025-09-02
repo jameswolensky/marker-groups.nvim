@@ -4,7 +4,7 @@ M.options = nil
 
 local INTERNAL = {
   max_group_name_chars = 100,
-  max_annotation_chars = 500,
+  max_annotation_chars = 100,
 }
 
 local defaults = {
