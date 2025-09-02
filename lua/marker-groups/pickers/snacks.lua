@@ -113,51 +113,7 @@ function M.show_groups(opts)
       end)
       return true
     end,
-    actions = {
-      ["default"] = function(selected)
-        local function extract_name(sel)
-          if type(sel) == "table" then
-            -- Multiple selections case
-            if #sel > 0 then
-              local first = sel[1]
-              if type(first) == "table" then
-                return coerce_name(first.value) or coerce_name(first) or first.text
-              elseif type(first) == "string" then
-                return first
-              end
-            end
-            -- Single selection as table
-            return coerce_name(sel.value) or coerce_name(sel) or sel.text
-          elseif type(sel) == "string" then
-            return sel
-          end
-          return nil
-        end
-        local name = extract_name(selected)
-        if not name or name == "" then
-          return
-        end
-        if opts.action == "delete" then
-          if groups.delete_group_with_confirmation then
-            groups.delete_group_with_confirmation(name, { skip_confirmation = true })
-          else
-            groups.delete_group(name, true)
-          end
-          require("marker-groups.pickers.utils").show_notification(
-            "Deleted group: " .. tostring(name),
-            vim.log.levels.INFO,
-            5000
-          )
-        else
-          groups.select_group(name)
-          require("marker-groups.pickers.utils").show_notification(
-            "Selected group: " .. tostring(name),
-            vim.log.levels.INFO,
-            3000
-          )
-        end
-      end,
-    },
+    -- Use Snacks default actions (confirm => jump)
   }
 end
 
