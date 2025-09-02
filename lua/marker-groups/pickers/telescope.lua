@@ -66,7 +66,7 @@ function M.show_groups(opts)
 
   t.pickers
     .new(opts, {
-      prompt_title = "Marker Groups",
+      prompt_title = "Marker Groups telescope",
       finder = t.finders.new_table {
         results = entries,
         entry_maker = function(e)
