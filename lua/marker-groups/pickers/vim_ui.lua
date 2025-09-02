@@ -10,11 +10,9 @@ function M.show_groups(opts)
   local items, map = {}, {}
 
   for _, info in ipairs(group_data) do
-    if info.name ~= "default" then
-      local display = groups.format_group_info(info, "short")
-      table.insert(items, display)
-      map[display] = info.name
-    end
+    local display = groups.format_group_info(info, "short")
+    table.insert(items, display)
+    map[display] = info.name
   end
 
   if #items == 0 then

@@ -28,8 +28,15 @@ T["show_groups selects chosen group via vim.ui.select (Enter)"] = function()
   vim.ui.select = function(items, opts, on_choice)
     called = true
     seen_items = items
-    -- choose first to select it
-    on_choice(items[1])
+    local default_disp = groups.format_group_info({ name = "default", marker_count = 0, is_active = true }, "short")
+    local choice = nil
+    for _, item in ipairs(items) do
+      if item ~= default_disp then
+        choice = item
+        break
+      end
+    end
+    on_choice(choice)
   end
 
   require("marker-groups.pickers").show_groups()
@@ -41,6 +48,36 @@ T["show_groups selects chosen group via vim.ui.select (Enter)"] = function()
   MiniTest.expect.equality(true, #seen_items >= 2)
   MiniTest.expect.equality(true, state.get_active_group() == "dev" or state.get_active_group() == "docs")
 end
+
+T["show_groups includes default group in list"] = function()
+  local groups = require "marker-groups.groups"
+  local expected = groups.format_group_info({ name = "default", marker_count = 0, is_active = true }, "short")
+
+  local seen_items = nil
+  local orig_select = vim.ui.select
+  vim.ui.select = function(items, opts, on_choice)
+    seen_items = items
+    if on_choice then
+      on_choice(nil)
+    end
+  end
+
+  require("marker-groups.pickers").show_groups()
+
+  vim.ui.select = orig_select
+
+  local found = false
+  if seen_items then
+    for _, v in ipairs(seen_items) do
+      if v == expected then
+        found = true
+        break
+      end
+    end
+  end
+
+  MiniTest.expect.equality(true, found)
+end
 T["delete_groups deletes chosen group via vim.ui.select (Enter)"] = function()
   local state = require "marker-groups.state"
   local groups = require "marker-groups.groups"
@@ -51,7 +88,15 @@ T["delete_groups deletes chosen group via vim.ui.select (Enter)"] = function()
   local orig_select = vim.ui.select
   vim.ui.select = function(items, opts, on_choice)
     called = true
-    on_choice(items[1])
+    local target = groups.format_group_info({ name = "dev", marker_count = 0, is_active = false }, "short")
+    local selected = nil
+    for _, item in ipairs(items) do
+      if item == target then
+        selected = item
+        break
+      end
+    end
+    on_choice(selected)
   end
 
   require("marker-groups.pickers").delete_groups()
