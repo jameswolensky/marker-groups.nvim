@@ -63,6 +63,21 @@ function M.show_groups(opts)
     return ok, err
   end
 
+  local function generate_group_markers_lines(group_name)
+    local grp = state.get_group(group_name)
+    local markers = (grp and grp.markers) or {}
+    if #markers == 0 then
+      return { "No markers in group" }
+    end
+    local lines = {}
+    for _, m in ipairs(markers) do
+      local file_name = vim.fn.fnamemodify(m.buffer_path, ":t")
+      local line_info = m.start_line ~= m.end_line and (m.start_line .. "-" .. m.end_line) or m.start_line
+      table.insert(lines, string.format("%s:%s - %s", file_name, line_info, m.annotation or ""))
+    end
+    return lines
+  end
+
   snacks.picker {
     source = "marker_groups",
     items = items,
@@ -80,12 +95,11 @@ function M.show_groups(opts)
       if not name then
         return true
       end
-      -- get info from local map (faster and avoids surprises)
-      local info = name_to_info[name]
-      local lines = utils.generate_group_preview(info or { name = name, marker_count = 0 })
+      -- Show only markers for the selected group
+      local lines = generate_group_markers_lines(name)
       with_modifiable(ctx.buf, function()
         vim.api.nvim_buf_set_lines(ctx.buf, 0, -1, false, lines)
-        vim.bo[ctx.buf].filetype = "markdown"
+        vim.bo[ctx.buf].filetype = "text"
       end)
       return true
     end,
