@@ -34,16 +34,8 @@ function M.show_groups(opts)
       if not name then
         return ""
       end
-      -- regenerate group info via groups.list_groups
-      local gi
-      for _, info in ipairs(groups.list_groups()) do
-        if info.name == name then
-          gi = info
-          break
-        end
-      end
-      local lines = utils.generate_group_preview(gi or { name = name, marker_count = 0 })
-      return table.concat(lines, "\n")
+      local data = utils.generate_group_markers_code_preview(name, { max_width = 70 })
+      return table.concat(data.content, "\n")
     end,
     actions = {
       ["default"] = function(selected)

@@ -80,12 +80,13 @@ function M.show_groups(opts)
       },
       sorter = t.conf.generic_sorter(opts),
       previewer = t.previewers.new_buffer_previewer {
-        title = "Group Info",
+        title = "Group Markers",
         define_preview = function(self, entry, status)
           local info = entry.group_info or {}
-          local lines = utils.generate_group_preview(info)
-          vim.api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, lines)
-          vim.bo[self.state.bufnr].filetype = "markdown"
+          local name = info.name
+          local data = utils.generate_group_markers_code_preview(name, { max_width = 70 })
+          vim.api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, data.content)
+          vim.bo[self.state.bufnr].filetype = data.filetype or "text"
         end,
       },
       attach_mappings = function(bufnr, map)

@@ -156,4 +156,109 @@ function M.generate_group_preview(group_info)
   return preview
 end
 
+-- Drawer-style helpers reused for picker previews
+local function _extract_marker_context_lines(file_lines, marker, context_lines, max_width)
+  local context = {}
+  if not file_lines or #file_lines == 0 then
+    table.insert(context, " │ [File not found or empty]")
+    return context
+  end
+
+  local start_line = math.max(1, tonumber(marker.start_line) or 1)
+  local end_line = tonumber(marker.end_line) or start_line
+  local ctx_start = math.max(1, start_line - (context_lines or 2))
+  local ctx_end = math.min(#file_lines, end_line + (context_lines or 2))
+
+  local max_line_num = ctx_end
+  local line_num_width = #tostring(max_line_num)
+
+  for ln = ctx_start, ctx_end do
+    local is_marker_line = ln >= start_line and ln <= end_line
+    local prefix = is_marker_line and " ► " or " │ "
+
+    local line_num_str = string.format("%" .. line_num_width .. "d", ln)
+    local content = file_lines[ln] or ""
+
+    if max_width and max_width > 0 then
+      local available = max_width - #prefix - line_num_width - 3 -- account for ": "
+      if available > 3 and #content > available then
+        content = string.sub(content, 1, available - 3) .. "..."
+      end
+    end
+
+    table.insert(context, prefix .. line_num_str .. ": " .. content)
+  end
+
+  return context
+end
+
+-- Generate a drawer-like preview for all markers in a group
+function M.generate_group_markers_code_preview(group_name, opts)
+  opts = opts or {}
+  local state = require "marker-groups.state"
+  local ok_cfg, cfg = pcall(require, "marker-groups.config")
+
+  local group = group_name and state.get_group(group_name) or nil
+  local markers = (group and group.markers) or {}
+
+  local context_lines = (ok_cfg and cfg.get_value and cfg.get_value("context_lines", 2)) or 2
+  local border_width = math.max(10, tonumber(opts.max_width) or 70)
+
+  local out = {}
+  local count = #markers
+  local noun = (count == 1) and "marker" or "markers"
+  table.insert(out, string.format("📁 Group: %s (%d %s)", tostring(group_name or "unknown"), count, noun))
+  table.insert(out, string.rep("═", 80))
+  table.insert(out, "")
+
+  if count == 0 then
+    table.insert(out, "No markers in group")
+    return { content = out, filetype = "text" }
+  end
+
+  for i, m in ipairs(markers) do
+    local start_line = tonumber(m.start_line) or 1
+    local end_line = tonumber(m.end_line) or start_line
+    local range = (start_line == end_line) and tostring(start_line) or (start_line .. "-" .. end_line)
+    table.insert(out, string.format("📍 %s:%s", vim.fn.fnamemodify(m.buffer_path or "", ":t"), range))
+    table.insert(out, string.format("   %s", tostring(m.buffer_path or "")))
+
+    table.insert(out, "   ┌" .. string.rep("─", border_width) .. "┐")
+    local file_lines = M.read_file_content(m.buffer_path or "")
+    local ctx_lines = _extract_marker_context_lines(file_lines, m, context_lines, border_width)
+    for _, line in ipairs(ctx_lines) do
+      table.insert(out, "   " .. line)
+    end
+    table.insert(out, "   └" .. string.rep("─", border_width) .. "┘")
+
+    local annotation = tostring(m.annotation or "")
+    if annotation:find "\n" then
+      local first = true
+      for line in (annotation .. "\n"):gmatch "(.-)\n" do
+        if first then
+          table.insert(out, "   💬 " .. line)
+          first = false
+        else
+          table.insert(out, "      " .. line)
+        end
+      end
+    else
+      table.insert(out, "   💬 " .. annotation)
+    end
+
+    if m.timestamp then
+      local time_str = os.date("%Y-%m-%d %H:%M", m.timestamp)
+      table.insert(out, "   🕒 " .. time_str)
+    end
+
+    if i < #markers then
+      table.insert(out, "")
+      table.insert(out, string.rep("─", 80))
+      table.insert(out, "")
+    end
+  end
+
+  return { content = out, filetype = "text" }
+end
+
 return M
