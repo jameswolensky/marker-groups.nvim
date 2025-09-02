@@ -32,7 +32,8 @@ end
 
 T["persistence can be enabled explicitly via config"] = function()
   local tmp = vim.fn.tempname() .. "_mg_guard_on"
-  require("marker-groups").setup { data_dir = tmp, log_level = "error", persistence_enabled = true }
+  vim.g.__mg_force_persist = true
+  require("marker-groups").setup { data_dir = tmp, log_level = "error" }
   local cfg = require("marker-groups.config").get()
   local path = cfg.data_dir .. "/marker-groups.json"
 

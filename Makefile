@@ -5,26 +5,38 @@
 # Default target
 all: test
 
+# Helper: run tests in sandboxed XDG with ephemeral plugin deps
+define RUN_TESTS
+	@TMP_XDG=$$(mktemp -d 2>/dev/null || mktemp -d -t xdgdata); \
+	PACK_START="$$TMP_XDG/site/pack/testing/start"; PACK_OPT="$$TMP_XDG/site/pack/testing/opt"; \
+	mkdir -p "$$PACK_START" "$$PACK_OPT"; \
+	# Optional deps used by some tests
+	git clone --depth=1 https://github.com/folke/snacks.nvim.git "$$PACK_START/snacks.nvim" >/dev/null 2>&1 || true; \
+	git clone --depth=1 https://github.com/ibhagwan/fzf-lua.git "$$PACK_START/fzf-lua" >/dev/null 2>&1 || true; \
+	XDG_DATA_HOME="$$TMP_XDG" $(1); \
+	RC=$$?; rm -rf "$$TMP_XDG"; exit $$RC
+endef
+
 # Test commands
 test: ## Run all tests
 	@echo "Running all marker-groups tests (mini.test)..."
-	@nvim --headless -u NONE -l scripts/minitest.lua
+	$(call RUN_TESTS,nvim --headless -u NONE -l scripts/minitest.lua)
 
 test-unit: ## Run unit tests only
 	@echo "Running unit tests (mini.test)..."
-	@MODE=unit nvim --headless -u NONE -l scripts/minitest.lua
+	$(call RUN_TESTS,MODE=unit nvim --headless -u NONE -l scripts/minitest.lua)
 
 test-integration: ## Run integration tests only
 	@echo "Running integration tests (mini.test)..."
-	@MODE=integration nvim --headless -u NONE -l scripts/minitest.lua
+	$(call RUN_TESTS,MODE=integration nvim --headless -u NONE -l scripts/minitest.lua)
 
 test-file: ## Run specific test file (usage: make test-file FILE=tests/unit/test_config.lua)
 	@echo "Running test file: $(FILE)"
-	@TEST_FILE=$(FILE) nvim --headless -u NONE -l scripts/minitest.lua
+	$(call RUN_TESTS,TEST_FILE=$(FILE) nvim --headless -u NONE -l scripts/minitest.lua)
 
 test-watch: ## Watch tests and re-run on changes
 	@echo "Starting test watcher..."
-	@nvim --headless -c "lua require('tests.test_runner').watch('all')"
+	$(call RUN_TESTS,nvim --headless -c "lua require('tests.test_runner').watch('all')")
 
 # Development commands
 lint: ## Run linter (lua language server)
@@ -101,7 +113,7 @@ debug-state: ## Show debug state information
 # CI/CD helpers
 ci-test: ## Run tests in CI environment
 	@echo "Running tests in CI mode (mini.test)..."
-	@nvim --headless -u NONE -l scripts/minitest.lua
+	$(call RUN_TESTS,nvim --headless -u NONE -l scripts/minitest.lua)
 
 # Development setup
 dev-setup: install-deps ## Set up development environment

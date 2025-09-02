@@ -20,6 +20,7 @@ vim.o.hidden = true
 vim.o.swapfile = false
 vim.o.shada = ''
 
+
 -- Try to make mini.nvim available if installed
 local function maybe_append(path)
   if path and vim.fn.isdirectory(path) == 1 then

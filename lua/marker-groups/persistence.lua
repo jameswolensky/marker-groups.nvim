@@ -5,14 +5,6 @@ local feedback = require "marker-groups.feedback"
 local versions = require "marker-groups.version"
 
 local function should_persist()
-  if vim.g.__mg_force_persist == true then
-    return true
-  end
-  local is_minimal = vim.g.__mg_minimal_init == true
-  local mini_loaded = package.loaded["mini.test"] ~= nil
-  if is_minimal or mini_loaded then
-    return false
-  end
   return true
 end
 

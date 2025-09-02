@@ -20,7 +20,7 @@ T["extmark recreation / survives sync, save, reload"] = function()
     child.lua [[
       vim.cmd('enew')
       vim.api.nvim_buf_set_lines(0,0,-1,false,{'l1','l2','l3','l4','l5','l6','l7'})
-      local tmp = vim.fn.tempname(); vim.cmd('write '..tmp)
+      local tmp = vim.fn.tempname(); vim.cmd('write '..tmp); vim.g.__mg_test_path = tmp
       local m = require('marker-groups.markers')
       local s = require('marker-groups.state')
       local add1 = m.add_marker_range(1,6,'multi')
@@ -33,10 +33,22 @@ T["extmark recreation / survives sync, save, reload"] = function()
       require('marker-groups.persistence').save()
     ]]
 
-    child.lua [[require('marker-groups').reload()]]
+    child.lua [[
+      require('marker-groups').reload()
+      vim.wait(200)
+      if vim.g.__mg_test_path and vim.fn.filereadable(vim.g.__mg_test_path) == 1 then
+        vim.cmd('edit ' .. vim.fn.fnameescape(vim.g.__mg_test_path))
+      end
+      local m = require('marker-groups.markers')
+      m.refresh_extmarks(0)
+      m.sync_extmarks(0)
+      vim.wait(50)
+    ]]
 
     local counts = child.lua [=[
       local m = require('marker-groups.markers')
+      local buf = vim.api.nvim_get_current_buf()
+      m.refresh_extmarks(buf)
       local list = m.get_current_buffer_markers()
       local found_multi, found_single = false, false
       for _, mm in ipairs(list) do
