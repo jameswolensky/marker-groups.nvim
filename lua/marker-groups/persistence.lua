@@ -4,6 +4,18 @@ local config = require "marker-groups.config"
 local feedback = require "marker-groups.feedback"
 local versions = require "marker-groups.version"
 
+local function should_persist()
+  if vim.g.__mg_force_persist == true then
+    return true
+  end
+  local is_minimal = vim.g.__mg_minimal_init == true
+  local mini_loaded = package.loaded["mini.test"] ~= nil
+  if is_minimal or mini_loaded then
+    return false
+  end
+  return true
+end
+
 local function get_data_dir()
   local data_dir = config.get_value "data_dir"
 
@@ -159,6 +171,9 @@ local function validate_loaded_data(data)
 end
 
 function M.save()
+  if not should_persist() then
+    return { success = false, code = "PERSIST_DISABLED" }
+  end
   local data_file = get_data_file()
 
   local data = prepare_data_for_serialization()
@@ -201,6 +216,9 @@ function M.save()
 end
 
 function M.load()
+  if not should_persist() then
+    return { success = true, source = "persistence_disabled" }
+  end
   local state = require "marker-groups.state"
   local data_file = get_data_file()
 
@@ -330,6 +348,9 @@ function M.load()
 end
 
 function M.setup_auto_save()
+  if not should_persist() then
+    return false
+  end
   local augroup = vim.api.nvim_create_augroup("MarkerGroupsAutoSave", { clear = true })
 
   vim.api.nvim_create_autocmd({ "VimLeavePre", "BufWritePost" }, {

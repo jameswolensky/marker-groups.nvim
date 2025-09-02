@@ -193,7 +193,6 @@ Default configuration: >
             rename = { suffix = "gr", desc = "Rename marker group" },
             delete = { suffix = "gd", desc = "Delete marker group" },
           },
-          persistence = false,
           view = {
             toggle = { suffix = "v", desc = "Toggle drawer marker viewer" },
           },
@@ -236,7 +235,9 @@ Problem: Pickers not found
 Solution: Ensure the chosen backend is installed and configured. For mini.pick, call `require('mini.pick').setup()` in your config.
 
 Problem: Markers not persisting across sessions
-Solution: Check data directory permissions and ensure auto-save is enabled.
+Solution: Persistence is always enabled. Check data directory permissions and path
+(`:echo stdpath('data') .. '/marker-groups'`). Ensure Neovim can write to this
+location.
 
 Problem: Virtual text not showing
 Solution: Ensure the plugin is initialized and there are markers in the active

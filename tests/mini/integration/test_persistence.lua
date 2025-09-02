@@ -20,11 +20,16 @@ end
 
 T["json autosave / add, edit, delete reflect in file"] = function()
   with_child(function(child)
-    child.lua [[require('marker-groups').setup({ data_dir = vim.fn.stdpath('data') .. '/marker-groups', log_level='error' })]]
+    child.lua [[
+      vim.g.__mg_force_persist = true
+      local dd = vim.fn.tempname() .. '_mg_persist'
+      require('marker-groups').setup({ data_dir = dd, log_level='error' })
+    ]]
     child.lua [[require('marker-groups.state').initialize(require('marker-groups.config').get())]]
 
     child.lua [[
-      local data_file = vim.fn.stdpath('data') .. '/marker-groups/marker-groups.json'
+      local cfg = require('marker-groups.config').get()
+      local data_file = cfg.data_dir .. '/marker-groups.json'
       pcall(os.remove, data_file)
       vim.cmd('enew')
       vim.api.nvim_buf_set_lines(0,0,-1,false,{'hello','world'})
@@ -35,8 +40,9 @@ T["json autosave / add, edit, delete reflect in file"] = function()
     ]]
 
     child.lua [[vim.wait(150)]]
+    child.lua [[local res=require('marker-groups.persistence').save(); assert(res and res.success, 'save failed: '..vim.inspect(res))]]
     local s1 =
-      child.lua [[local f=io.open(vim.fn.stdpath('data')..'/marker-groups/marker-groups.json','r'); if not f then return nil end; local s=f:read('*a'); f:close(); return s]]
+      child.lua [[local cfg=require('marker-groups.config').get(); local f=io.open(cfg.data_dir..'/marker-groups.json','r'); if not f then return nil end; local s=f:read('*a'); f:close(); return s]]
     expect_truthy(type(s1) == "string" and s1:find '"annotation":"m1"' ~= nil)
 
     child.lua [[
@@ -46,8 +52,9 @@ T["json autosave / add, edit, delete reflect in file"] = function()
       m.edit_marker(id, 'm1-edit')
     ]]
     child.lua [[vim.wait(150)]]
+    child.lua [[local res=require('marker-groups.persistence').save(); assert(res and res.success, 'save failed: '..vim.inspect(res))]]
     local s2 =
-      child.lua [[local f=io.open(vim.fn.stdpath('data')..'/marker-groups/marker-groups.json','r'); local s=f:read('*a'); f:close(); return s]]
+      child.lua [[local cfg=require('marker-groups.config').get(); local f=io.open(cfg.data_dir..'/marker-groups.json','r'); local s=f:read('*a'); f:close(); return s]]
     expect_truthy(type(s2) == "string" and s2:find '"annotation":"m1%-edit"' ~= nil)
 
     child.lua [[
@@ -57,8 +64,9 @@ T["json autosave / add, edit, delete reflect in file"] = function()
       m.delete_marker(id)
     ]]
     child.lua [[vim.wait(150)]]
+    child.lua [[local res=require('marker-groups.persistence').save(); assert(res and res.success, 'save failed: '..vim.inspect(res))]]
     local s3 =
-      child.lua [[local f=io.open(vim.fn.stdpath('data')..'/marker-groups/marker-groups.json','r'); local s=f:read('*a'); f:close(); return s]]
+      child.lua [[local cfg=require('marker-groups.config').get(); local f=io.open(cfg.data_dir..'/marker-groups.json','r'); local s=f:read('*a'); f:close(); return s]]
     expect_truthy(type(s3) == "string" and s3:find '"annotation":"m1%-edit"' == nil)
   end)
 end

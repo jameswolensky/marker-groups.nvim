@@ -14,7 +14,7 @@ end
 
 T["extmark recreation / survives sync, save, reload"] = function()
   with_child(function(child)
-    child.lua [[require('marker-groups').setup({ data_dir = vim.fn.tempname() .. '_mg_ext', log_level='error' })]]
+    child.lua [[vim.g.__mg_force_persist = true; require('marker-groups').setup({ data_dir = vim.fn.tempname() .. '_mg_ext', log_level='error' })]]
     child.lua [[require('marker-groups.state').initialize(require('marker-groups.config').get())]]
 
     child.lua [[
@@ -30,8 +30,7 @@ T["extmark recreation / survives sync, save, reload"] = function()
       for _, mm in ipairs(list) do if mm.annotation=='multi' then multi=mm; break end end
       if multi then s.update_marker(multi.id, { extmark_id = 9999999 }) end
       m.sync_extmarks(0)
-      local persistence = require('marker-groups.persistence')
-      persistence.save()
+      require('marker-groups.persistence').save()
     ]]
 
     child.lua [[require('marker-groups').reload()]]
