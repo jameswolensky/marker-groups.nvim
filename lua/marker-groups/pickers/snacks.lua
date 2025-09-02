@@ -113,7 +113,37 @@ function M.show_groups(opts)
       end)
       return true
     end,
-    -- Use Snacks default actions (confirm => jump)
+    actions = {
+      -- Ensure confirm selects/deletes group rather than jumping to a file path
+      confirm = function(picker, item)
+        local name = coerce_name(item) or (type(item) == "table" and (item.name or item.value or item.text)) or nil
+        if not name or name == "" then
+          return
+        end
+        if opts.action == "delete" then
+          if groups.delete_group_with_confirmation then
+            groups.delete_group_with_confirmation(name, { skip_confirmation = true })
+          else
+            groups.delete_group(name, true)
+          end
+          require("marker-groups.pickers.utils").show_notification(
+            "Deleted group: " .. tostring(name),
+            vim.log.levels.INFO,
+            5000
+          )
+        else
+          groups.select_group(name)
+          require("marker-groups.pickers.utils").show_notification(
+            "Selected group: " .. tostring(name),
+            vim.log.levels.INFO,
+            3000
+          )
+        end
+        if picker and picker.close then
+          picker:close()
+        end
+      end,
+    },
   }
 end
 
