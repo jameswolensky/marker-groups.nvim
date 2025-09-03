@@ -135,8 +135,6 @@ function M.create_group_interactive(opts)
     function(input)
       if input and input ~= "" then
         local result = M.create_group(input)
-        ErrorHandler.handle_result("Group Creation", result, result.success and ("Created group: " .. input) or nil)
-
         if result.success then
           if opts.auto_switch ~= false then
             local switch_result = M.select_group(input)
@@ -144,6 +142,8 @@ function M.create_group_interactive(opts)
               ErrorHandler.show_warning("Group Creation", "Created group but failed to switch: " .. switch_result.error)
             end
           end
+        else
+          ErrorHandler.show_error("Group Creation", result.error or "Unknown error", result.code)
         end
       else
         ErrorHandler.show_warning("Group Creation", "Group creation cancelled")

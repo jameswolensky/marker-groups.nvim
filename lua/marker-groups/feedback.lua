@@ -15,7 +15,14 @@ function M.notify(message, level, options)
 
   local title = options.title and ("Marker Groups: " .. options.title) or "Marker Groups"
 
-  local _ = config
+  local is_debug = false
+  pcall(function()
+    is_debug = (config.get_value("log_level", "info") == "debug") or config.get_value("debug", false)
+  end)
+
+  if level == M.levels.DEBUG and not is_debug then
+    return
+  end
 
   vim.notify(message, level, {
     title = title,

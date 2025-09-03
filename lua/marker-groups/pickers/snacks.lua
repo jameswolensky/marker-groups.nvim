@@ -108,11 +108,6 @@ function M.show_groups(opts)
           else
             groups.delete_group(name, true)
           end
-          require("marker-groups.feedback").notify(
-            "Deleted group: " .. tostring(name),
-            vim.log.levels.INFO,
-            { timeout = 5000 }
-          )
         else
           groups.select_group(name)
           require("marker-groups.feedback").notify(
