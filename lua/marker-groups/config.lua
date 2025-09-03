@@ -26,7 +26,7 @@ local defaults = {
 
   drawer_config = {
     width = 60,
-    side = "right", -- "left" or "right"
+    side = "right",
     border = "rounded",
     title_pos = "center",
   },
@@ -65,7 +65,7 @@ local defaults = {
   },
 
   debug = false,
-  log_level = "info", -- "debug", "info", "warn", "error"
+  log_level = "info",
 }
 
 local function validate_config(config)

@@ -63,13 +63,10 @@ function M.show_groups(opts)
     return ok, err
   end
 
-  -- preview content will be generated using drawer-like renderer from utils
-
   snacks.picker {
     source = "marker_groups",
     items = items,
     prompt = "Marker Groups> ",
-    -- Explicitly format list entries as highlight chunks so names render in the list
     format = function(item)
       local txt
       if type(item) == "table" then
@@ -79,7 +76,6 @@ function M.show_groups(opts)
       end
       return { { tostring(txt or "") } }
     end,
-    -- Use Snacks default formatter to avoid shape mismatches
     preview = function(ctx)
       local name
       if ctx and ctx.item then
@@ -100,7 +96,6 @@ function M.show_groups(opts)
       return true
     end,
     actions = {
-      -- Ensure confirm selects/deletes group rather than jumping to a file path
       confirm = function(picker, item)
         local name = coerce_name(item) or (type(item) == "table" and (item.name or item.value or item.text)) or nil
         if not name or name == "" then
@@ -159,7 +154,6 @@ function M.show_markers(opts)
   snacks.picker {
     source = { name = "marker_list", items = items },
     prompt = "Markers - " .. active .. "> ",
-    -- Use default formatter
     preview = function(ctx)
       local m = ctx.item and ctx.item.marker
       if not m then

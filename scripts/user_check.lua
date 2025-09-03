@@ -1,4 +1,3 @@
--- Ensure local dev plugin path is on runtimepath first
 local dev = '/Users/jameswolensky/Development/marker-groups.nvim'
 if vim.fn.isdirectory(dev) == 1 then
   if not vim.tbl_contains(vim.opt.runtimepath:get(), dev) then
@@ -7,7 +6,6 @@ if vim.fn.isdirectory(dev) == 1 then
 end
 
 pcall(function()
-  -- Touch the plugin to ensure it's loaded and logger is ready
   require('marker-groups')
 end)
 

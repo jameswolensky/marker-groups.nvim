@@ -95,7 +95,6 @@ function M.create_group(name, description)
   end
 
   local feedback = require "marker-groups.feedback"
-  -- Suppress noisy creation notice during persistence hydration
   if not vim.g.__marker_groups_hydrating then
     feedback.success("Group Creation", "Created group: " .. name)
   end
@@ -384,7 +383,6 @@ function M.select_group(name)
 end
 
 function M.select_group_interactive(opts)
-  -- Delegate to unified pickers interface always
   local pickers = require "marker-groups.pickers"
   pickers.show_groups(opts)
   return state.Result.ok { message = "Picker group selector opened" }

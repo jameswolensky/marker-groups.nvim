@@ -129,7 +129,6 @@ function M.generate_group_preview(group_info)
     "",
   }
 
-  -- Recent markers (up to 5)
   local group_full = state.get_group(name)
   local markers = group_full and group_full.markers or {}
   if marker_count > 0 and markers and #markers > 0 then
@@ -156,7 +155,6 @@ function M.generate_group_preview(group_info)
   return preview
 end
 
--- Drawer-style helpers reused for picker previews
 local function _extract_marker_context_lines(file_lines, marker, context_lines, max_width)
   local context = {}
   if not file_lines or #file_lines == 0 then
@@ -180,7 +178,7 @@ local function _extract_marker_context_lines(file_lines, marker, context_lines, 
     local content = file_lines[ln] or ""
 
     if max_width and max_width > 0 then
-      local available = max_width - #prefix - line_num_width - 3 -- account for ": "
+      local available = max_width - #prefix - line_num_width - 3
       if available > 3 and #content > available then
         content = string.sub(content, 1, available - 3) .. "..."
       end
@@ -192,7 +190,6 @@ local function _extract_marker_context_lines(file_lines, marker, context_lines, 
   return context
 end
 
--- Generate a drawer-like preview for all markers in a group
 function M.generate_group_markers_code_preview(group_name, opts)
   opts = opts or {}
   local state = require "marker-groups.state"

@@ -3,13 +3,11 @@ local MiniTest = require "mini.test"
 local T = MiniTest.new_set {
   hooks = {
     pre_case = function()
-      -- reset plugin and pickers
       for k in pairs(package.loaded) do
         if k:match "^marker%-groups" then
           package.loaded[k] = nil
         end
       end
-      -- ensure a predictable leader
       vim.g.mapleader = "\\"
       require("marker-groups").setup {}
     end,
@@ -65,14 +63,13 @@ T["expected group keymaps exist"] = function()
   for _, m in ipairs(maps) do
     have[m.lhs] = true
   end
-  -- Defaults: prefix <leader>m
-  MiniTest.expect.equality(true, have[term "<leader>mgs"]) -- select
-  MiniTest.expect.equality(true, have[term "<leader>mgd"]) -- delete
-  MiniTest.expect.equality(true, have[term "<leader>mgc"]) -- create
-  MiniTest.expect.equality(true, have[term "<leader>mgl"]) -- list
-  MiniTest.expect.equality(true, have[term "<leader>mgr"]) -- rename
-  MiniTest.expect.equality(true, have[term "<leader>mgi"]) -- info
-  MiniTest.expect.equality(true, have[term "<leader>mgb"]) -- from_branch
+  MiniTest.expect.equality(true, have[term "<leader>mgs"])
+  MiniTest.expect.equality(true, have[term "<leader>mgd"])
+  MiniTest.expect.equality(true, have[term "<leader>mgc"])
+  MiniTest.expect.equality(true, have[term "<leader>mgl"])
+  MiniTest.expect.equality(true, have[term "<leader>mgr"])
+  MiniTest.expect.equality(true, have[term "<leader>mgi"])
+  MiniTest.expect.equality(true, have[term "<leader>mgb"])
 end
 
 return T

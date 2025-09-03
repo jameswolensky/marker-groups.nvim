@@ -299,8 +299,6 @@ function M.load()
         feedback.warning("Persistence", "Failed to create group: " .. group_name)
         goto continue_group_loop
       end
-      -- Emit a dedicated event for groups loaded from persistence to avoid
-      -- confusing them with newly created groups during this session.
       state.emit("group_loaded", { group_name = group_name })
     end
 
@@ -329,8 +327,7 @@ function M.load()
   if virtual_text and virtual_text.update_all_buffers then
     virtual_text.update_all_buffers()
   end
-  -- Defer clearing hydration flag to ensure scheduled 'group_created' handlers
-  -- still observe hydration state and don't log as newly created.
+
   vim.defer_fn(function()
     vim.g.__marker_groups_hydrating = false
   end, 300)

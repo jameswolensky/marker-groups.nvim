@@ -22,7 +22,6 @@ T["persistence disabled by default in tests unless explicitly enabled"] = functi
   local persistence = require "marker-groups.persistence"
   persistence.save()
   local exists = vim.fn.filereadable(path) == 1
-  -- Under some environments, file may exist from previous runs; assert that save did not create/modify now
   local mtime1 = vim.loop.fs_stat(path) and vim.loop.fs_stat(path).mtime.sec or 0
   vim.wait(50)
   persistence.save()

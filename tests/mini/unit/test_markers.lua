@@ -34,7 +34,6 @@ local T = MiniTest.new_set {
   },
 }
 
--- Helpers
 local expect_truthy = MiniTest.new_expectation("truthy", function(x)
   return not not x
 end, function(x)
@@ -70,7 +69,6 @@ local function create_scratch(lines, prefix)
   return buf, temp_file
 end
 
--- marker creation with validation
 T["marker creation with validation / should validate annotations when adding markers"] = function()
   local markers = require "marker-groups.markers"
   create_scratch({ "Test line" }, "marker-validation")
@@ -100,7 +98,6 @@ T["marker creation with validation / editing markers rejects line breaks"] = fun
   MiniTest.expect.equality(updated.markers[1].annotation, "Valid annotation")
 end
 
--- marker range operations
 T["marker range operations / should handle adding range markers"] = function()
   local markers = require "marker-groups.markers"
   local state = require "marker-groups.state"
@@ -146,7 +143,6 @@ T["marker range operations / single-line inside multi-line in same group is not 
   expect_truthy(res4.success)
 end
 
--- marker utility functions
 T["marker utility functions / should have update/clear/get functions"] = function()
   local markers = require "marker-groups.markers"
   expect_type(markers.update_buffer_markers, "function")
@@ -154,7 +150,6 @@ T["marker utility functions / should have update/clear/get functions"] = functio
   expect_type(markers.get_buffer_markers, "function")
 end
 
--- marker deletion and recreation
 T["marker deletion and recreation / allow deleting and recreating multi-line markers"] = function()
   local markers = require "marker-groups.markers"
   local state = require "marker-groups.state"
@@ -180,7 +175,6 @@ T["marker deletion and recreation / allow deleting and recreating multi-line mar
   MiniTest.expect.equality(1, #final_group.markers)
 end
 
--- validation integration
 T["validation integration / validate annotations when adding markers via markers module"] = function()
   local markers = require "marker-groups.markers"
   create_scratch({ "Test line" }, "marker-integration")

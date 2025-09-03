@@ -2,10 +2,8 @@ local M = {}
 
 local logger = require "marker-groups.utils.logger"
 
--- Priority order when auto-detecting a backend
 local PRIORITY_ORDER = { "snacks", "fzf_lua", "mini_pick", "vim_ui" }
 
--- Cached detection results and current backend
 local detected_backends_cache = nil
 local current_backend_name = nil
 
@@ -183,7 +181,6 @@ function M.show_groups(opts)
   vim.notify("No picker backend available", vim.log.levels.ERROR)
 end
 
--- Convenience wrapper to open group picker in deletion mode
 function M.delete_groups(opts)
   opts = opts or {}
   opts.action = "delete"

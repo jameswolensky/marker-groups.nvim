@@ -324,7 +324,6 @@ function M.setup()
     desc = "Get or set the drawer width (30-120 columns)",
   })
 
-  -- Picker status command
   vim.api.nvim_create_user_command("MarkerGroupsPickerStatus", function()
     local pickers = require "marker-groups.pickers"
     pickers.show_picker_status()

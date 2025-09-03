@@ -20,7 +20,6 @@ local T = MiniTest.new_set {
   },
 }
 
--- Helpers
 local expect_truthy = MiniTest.new_expectation("truthy", function(x)
   return not not x
 end, function(x)
@@ -37,7 +36,6 @@ end, function(x, t)
   return string.format("Expected %s, got %s. Object: %s", t, type(x), vim.inspect(x))
 end)
 
--- initialization
 T["initialization / should initialize with default state"] = function()
   local state = require "marker-groups.state"
   local current = state.get_state()
@@ -55,7 +53,6 @@ T["initialization / should have default group"] = function()
   expect_type(groups.default.markers, "table")
 end
 
--- group management
 T["group management / should get active group"] = function()
   local state = require "marker-groups.state"
   local active = state.get_active_group()
@@ -161,7 +158,6 @@ T["group management / renames without delete/recreate (preserves markers and emi
   MiniTest.expect.equality("rename-dst", renamed.new_name)
 end
 
--- marker management
 T["marker management / should add markers to active group"] = function()
   local state = require "marker-groups.state"
   local marker = {
@@ -261,7 +257,6 @@ T["marker management / should update markers"] = function()
   MiniTest.expect.equality("Updated annotation", updated.markers[1].annotation)
 end
 
--- event system
 T["event system / should trigger events on state changes"] = function()
   local state = require "marker-groups.state"
   local triggered = false
@@ -289,7 +284,6 @@ T["event system / should unsubscribe from events"] = function()
   MiniTest.expect.equality(1, count)
 end
 
--- state validation
 T["state validation / should validate state structure"] = function()
   local state = require "marker-groups.state"
   local current = state.get_state()
@@ -309,7 +303,6 @@ T["state validation / should validate group structure"] = function()
   end
 end
 
--- core functionality verification
 T["core functionality verification / can delete multi-line marker and immediately recreate it"] = function()
   local state = require "marker-groups.state"
   local test_buf = vim.api.nvim_create_buf(false, true)
