@@ -173,9 +173,10 @@ function M.update_buffer_display(buf, markers)
     end)
 
     if not success and config.get().debug then
-      vim.notify(
+      require("marker-groups.feedback").notify(
         string.format("Failed to create virtual text for marker %s: %s", marker.id or "unknown", err),
-        vim.log.levels.WARN
+        vim.log.levels.WARN,
+        {}
       )
     end
   end
@@ -198,14 +199,14 @@ function M.toggle_display(enabled)
 
   if new_state then
     M.update_all_buffers()
-    vim.notify("Marker virtual text enabled", vim.log.levels.INFO)
+    require("marker-groups.feedback").notify("Marker virtual text enabled", vim.log.levels.INFO, {})
   else
     for _, buf in ipairs(api.nvim_list_bufs()) do
       if api.nvim_buf_is_loaded(buf) then
         M.clear_buffer_display(buf)
       end
     end
-    vim.notify("Marker virtual text disabled", vim.log.levels.INFO)
+    require("marker-groups.feedback").notify("Marker virtual text disabled", vim.log.levels.INFO, {})
   end
 end
 

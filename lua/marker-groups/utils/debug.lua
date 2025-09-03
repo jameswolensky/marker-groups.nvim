@@ -131,7 +131,7 @@ function M.show_state()
 
   table.insert(lines, "  • OS: " .. dump.environment.os.sysname)
 
-  vim.notify(table.concat(lines, "\n"), vim.log.levels.INFO)
+  require("marker-groups.feedback").notify(table.concat(lines, "\n"), vim.log.levels.INFO, {})
 
   logger.debug "State dump generated and displayed"
   return dump
@@ -212,7 +212,7 @@ function M.inspect_group(group_name)
     table.insert(lines, "📌 No markers in this group")
   end
 
-  vim.notify(table.concat(lines, "\n"), vim.log.levels.INFO)
+  require("marker-groups.feedback").notify(table.concat(lines, "\n"), vim.log.levels.INFO, {})
   logger.debug("Inspected group: " .. group_name)
 end
 
@@ -342,7 +342,7 @@ function M.show_validation()
     end
   end
 
-  vim.notify(table.concat(lines, "\n"), vim.log.levels.INFO)
+  require("marker-groups.feedback").notify(table.concat(lines, "\n"), vim.log.levels.INFO, {})
   return validation
 end
 

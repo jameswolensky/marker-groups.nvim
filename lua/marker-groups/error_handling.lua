@@ -57,67 +57,68 @@ function M.safe_execute(operation, func, fallback)
   return result
 end
 
-function M.validate_input(input, validation_type)
-  if validation_type == "group_name" then
-    if not input or type(input) ~= "string" then
-      return state.Result.error("Group name must be a string", M.ErrorCodes.INVALID_GROUP_NAME)
+local function join_non_empty(parts, sep)
+  local out = {}
+  for _, p in ipairs(parts) do
+    if p and p ~= "" then
+      table.insert(out, p)
     end
+  end
+  return table.concat(out, sep or " ")
+end
 
-    local trimmed = vim.trim(input)
-    if trimmed == "" then
-      return state.Result.error("Group name cannot be empty", M.ErrorCodes.INVALID_GROUP_NAME)
-    end
-
-    local sanitized = trimmed:gsub("[\r\n]", " "):gsub("\t", " "):gsub("[\1-\8\11\12\14-\31\127]", ""):gsub("%s+", " ")
-
-    local limit = require("marker-groups.config").get_internal "max_group_name_chars"
-    local char_count = vim.fn.strchars(sanitized)
-    if char_count > limit then
-      return state.Result.error(
-        "Group name cannot exceed " .. tostring(limit) .. " characters",
-        M.ErrorCodes.INVALID_GROUP_NAME
-      )
-    end
-
-    return state.Result.ok(sanitized)
-  elseif validation_type == "annotation" then
-    if not input or type(input) ~= "string" then
-      return state.Result.error("Annotation must be a string", M.ErrorCodes.INVALID_MARKER)
-    end
-
-    local trimmed = vim.trim(input)
-    if trimmed == "" then
-      return state.Result.error("Annotation cannot be empty", M.ErrorCodes.INVALID_MARKER)
-    end
-
-    if trimmed:find "[\r\n]" then
-      return state.Result.error("Annotation cannot contain line breaks", M.ErrorCodes.INVALID_MARKER)
-    end
-    local sanitized = trimmed:gsub("[\1-\8\11\12\14-\31\127]", "")
-
-    local limit = require("marker-groups.config").get_internal "max_annotation_chars"
-    local char_count = vim.fn.strchars(sanitized)
-    if char_count > limit then
-      return state.Result.error(
-        "Annotation cannot exceed " .. tostring(limit) .. " characters",
-        M.ErrorCodes.INVALID_MARKER
-      )
-    end
-
-    return state.Result.ok(sanitized)
-  elseif validation_type == "file_path" then
-    if not input or type(input) ~= "string" then
-      return state.Result.error("File path must be a string", M.ErrorCodes.INVALID_BUFFER)
-    end
-
-    if input == "" then
-      return state.Result.error("Buffer has no file path (save the file first)", M.ErrorCodes.INVALID_BUFFER)
-    end
-
-    return state.Result.ok(input)
+function M.validate_input(input, field)
+  if not input or input == "" then
+    return { success = false, error = field .. " cannot be empty", code = "EMPTY_INPUT" }
   end
 
-  return state.Result.error("Unknown validation type: " .. tostring(validation_type), "UNKNOWN_VALIDATION")
+  if type(input) ~= "string" then
+    return { success = false, error = field .. " must be a string", code = "INVALID_TYPE" }
+  end
+
+  local value = vim.trim(input)
+  if value == "" then
+    return { success = false, error = field .. " cannot be empty", code = "EMPTY_INPUT" }
+  end
+
+  if field == "annotation" then
+    if value:find "\n" or value:find "\r" then
+      return { success = false, error = "Annotation cannot contain line breaks", code = "INVALID_ANNOTATION" }
+    end
+    local cleaned = value:gsub("%c", "")
+    local limit = 100
+    local len = vim.fn.strchars(cleaned)
+    if len > limit then
+      return { success = false, error = "Annotation cannot exceed 100 characters", code = "INVALID_ANNOTATION" }
+    end
+    return { success = true, value = cleaned }
+  elseif field == "group_name" then
+    local sanitized = value:gsub("[\r\n\t]", " ")
+    sanitized = sanitized:gsub("%c", "")
+    sanitized = sanitized:gsub("%s+", " ")
+    sanitized = vim.trim(sanitized)
+    if sanitized == "" then
+      return { success = false, error = "Group name cannot be empty", code = "EMPTY_INPUT" }
+    end
+    local limit = 100
+    local len = vim.fn.strchars(sanitized)
+    if len > limit then
+      return { success = false, error = "Group name exceeds maximum length", code = "INVALID_GROUP_NAME" }
+    end
+    return { success = true, value = sanitized }
+  end
+
+  return { success = true, value = value }
+end
+
+function M.handle_error(context)
+  local level = context and context.level or vim.log.levels.ERROR
+  local title = context and context.title or "Error"
+  local message = join_non_empty({ context and context.message or "", context and context.details or "" }, ": ")
+
+  require("marker-groups.feedback").notify(message, level, { title = title, timeout = 5000 })
+
+  return { success = false, error = message, code = context and context.code or "UNKNOWN" }
 end
 
 function M.attempt_recovery(error_code, context)
@@ -186,9 +187,10 @@ function M.log_error(operation, result, context)
     context = context,
   }
 
-  vim.notify(
+  require("marker-groups.feedback").notify(
     string.format("Error in %s: %s (Code: %s)", operation, result.error or "Unknown", result.code or "UNKNOWN"),
-    vim.log.levels.DEBUG
+    vim.log.levels.DEBUG,
+    {}
   )
 end
 

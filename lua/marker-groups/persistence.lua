@@ -370,7 +370,7 @@ function M.setup_auto_save()
       else
         local error_msg = ok and result.error or tostring(result)
         if config.get_value("debug", false) then
-          vim.notify("Auto-save failed: " .. error_msg, vim.log.levels.DEBUG)
+          require("marker-groups.feedback").notify("Auto-save failed: " .. error_msg, vim.log.levels.DEBUG, {})
         end
       end
     end)

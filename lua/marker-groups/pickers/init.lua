@@ -178,7 +178,7 @@ function M.show_groups(opts)
   if backend and backend.show_groups then
     return backend.show_groups(opts)
   end
-  vim.notify("No picker backend available", vim.log.levels.ERROR)
+  require("marker-groups.feedback").notify("No picker backend available", vim.log.levels.ERROR, {})
 end
 
 function M.delete_groups(opts)
@@ -197,7 +197,7 @@ function M.show_markers(opts)
   if backend and backend.show_markers then
     return backend.show_markers(opts)
   end
-  vim.notify("No picker backend available", vim.log.levels.ERROR)
+  require("marker-groups.feedback").notify("No picker backend available", vim.log.levels.ERROR, {})
 end
 
 return M

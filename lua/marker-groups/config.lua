@@ -188,7 +188,7 @@ function M.update(updates)
 
   local valid, error_msg = validate_config(new_config)
   if not valid then
-    vim.notify("Configuration update failed: " .. error_msg, vim.log.levels.ERROR)
+    require("marker-groups.feedback").notify("Configuration update failed: " .. error_msg, vim.log.levels.ERROR, {})
     return false
   end
 

@@ -111,7 +111,11 @@ function M.register()
     local ok = pcall(vim.cmd, "checkhealth marker-groups")
     if not ok then
       M.check()
-      vim.notify("Health report generated. View it with :checkhealth marker-groups", vim.log.levels.INFO)
+      require("marker-groups.feedback").notify(
+        "Health report generated. View it with :checkhealth marker-groups",
+        vim.log.levels.INFO,
+        {}
+      )
     end
   end, {
     desc = "Run marker-groups health check",

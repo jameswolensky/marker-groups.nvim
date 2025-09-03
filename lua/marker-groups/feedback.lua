@@ -15,10 +15,7 @@ function M.notify(message, level, options)
 
   local title = options.title and ("Marker Groups: " .. options.title) or "Marker Groups"
 
-  local is_debug = config.get_value("debug", false)
-  if (level == M.levels.INFO or level == M.levels.DEBUG) and not is_debug then
-    return
-  end
+  local _ = config
 
   vim.notify(message, level, {
     title = title,
@@ -33,24 +30,21 @@ function M.notify(message, level, options)
 end
 
 function M.error(operation, error_msg, error_code)
-  local formatted_msg = string.format("%s failed: %s", operation, error_msg)
+  local msg = tostring(error_msg or "Error")
   if error_code then
-    formatted_msg = formatted_msg .. string.format(" (Code: %s)", error_code)
+    msg = msg .. string.format(" (Code: %s)", error_code)
   end
 
-  M.notify(formatted_msg, M.levels.ERROR, {
+  M.notify(msg, M.levels.ERROR, {
     title = "Error",
     timeout = 5000,
   })
 end
 
 function M.success(operation, details)
-  local formatted_msg = operation .. " successful"
-  if details then
-    formatted_msg = formatted_msg .. ": " .. details
-  end
+  local msg = tostring(details or "Success")
 
-  M.notify(formatted_msg, M.levels.INFO, {
+  M.notify(msg, M.levels.INFO, {
     title = "Success",
     timeout = 2000,
     important = true,
@@ -58,9 +52,9 @@ function M.success(operation, details)
 end
 
 function M.warning(operation, warning_msg)
-  local formatted_msg = string.format("%s warning: %s", operation, warning_msg)
+  local msg = tostring(warning_msg or "Warning")
 
-  M.notify(formatted_msg, M.levels.WARN, {
+  M.notify(msg, M.levels.WARN, {
     title = "Warning",
     timeout = 4000,
   })

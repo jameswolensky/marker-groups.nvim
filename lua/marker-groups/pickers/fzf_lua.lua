@@ -8,7 +8,7 @@ function M.show_groups(opts)
   opts = opts or {}
   local ok, fzf = pcall(require, "fzf-lua")
   if not ok or not fzf or type(fzf.fzf_exec) ~= "function" then
-    vim.notify("fzf-lua not available", vim.log.levels.WARN)
+    require("marker-groups.feedback").notify("fzf-lua not available", vim.log.levels.WARN, {})
     return
   end
 
@@ -22,7 +22,7 @@ function M.show_groups(opts)
   end
 
   if #items == 0 then
-    vim.notify(utils.empty_groups_message(opts), vim.log.levels.WARN)
+    require("marker-groups.feedback").notify(utils.empty_groups_message(opts), vim.log.levels.WARN, {})
     return
   end
 
@@ -55,14 +55,10 @@ function M.show_groups(opts)
           else
             groups.delete_group(name, true)
           end
-          require("marker-groups.pickers.utils").show_notification("Deleted group: " .. name, vim.log.levels.INFO, 5000)
+          require("marker-groups.feedback").notify("Deleted group: " .. name, vim.log.levels.INFO, { timeout = 5000 })
         else
           groups.select_group(name)
-          require("marker-groups.pickers.utils").show_notification(
-            "Selected group: " .. name,
-            vim.log.levels.INFO,
-            3000
-          )
+          require("marker-groups.feedback").notify("Selected group: " .. name, vim.log.levels.INFO, { timeout = 3000 })
         end
       end,
     },
@@ -73,13 +69,13 @@ function M.show_markers(opts)
   opts = opts or {}
   local ok, fzf = pcall(require, "fzf-lua")
   if not ok or not fzf or type(fzf.fzf_exec) ~= "function" then
-    vim.notify("fzf-lua not available", vim.log.levels.WARN)
+    require("marker-groups.feedback").notify("fzf-lua not available", vim.log.levels.WARN, {})
     return
   end
 
   local active = state.get_active_group()
   if not active then
-    vim.notify("No active group selected", vim.log.levels.WARN)
+    require("marker-groups.feedback").notify("No active group selected", vim.log.levels.WARN, {})
     return
   end
   local grp = state.get_group(active)

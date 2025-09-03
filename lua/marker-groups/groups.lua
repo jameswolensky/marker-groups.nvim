@@ -18,7 +18,7 @@ function ErrorHandler.show_error(operation, error_msg, error_code)
   if error_code then
     formatted_msg = formatted_msg .. string.format(" (Code: %s)", error_code)
   end
-  vim.notify(formatted_msg, vim.log.levels.ERROR)
+  require("marker-groups.feedback").notify(formatted_msg, vim.log.levels.ERROR, {})
 end
 
 function ErrorHandler.show_success(operation, details)
@@ -26,12 +26,12 @@ function ErrorHandler.show_success(operation, details)
   if details then
     formatted_msg = formatted_msg .. ": " .. details
   end
-  vim.notify(formatted_msg, vim.log.levels.INFO)
+  require("marker-groups.feedback").notify(formatted_msg, vim.log.levels.INFO, {})
 end
 
 function ErrorHandler.show_warning(operation, warning_msg)
   local formatted_msg = string.format("%s Warning: %s", operation, warning_msg)
-  vim.notify(formatted_msg, vim.log.levels.WARN)
+  require("marker-groups.feedback").notify(formatted_msg, vim.log.levels.WARN, {})
 end
 
 function ErrorHandler.handle_result(operation, result, success_details)
@@ -504,7 +504,7 @@ function M.rename_group_interactive(old_name, opts)
     local groups_info = M.list_groups()
 
     if #groups_info == 0 then
-      vim.notify("No groups available to rename", vim.log.levels.WARN)
+      require("marker-groups.feedback").notify("No groups available to rename", vim.log.levels.WARN, {})
       return state.Result.error("No groups available", "NO_GROUPS")
     end
 
@@ -520,7 +520,11 @@ function M.rename_group_interactive(old_name, opts)
     end
 
     if #items == 0 then
-      vim.notify("No renameable groups available (default group cannot be renamed)", vim.log.levels.WARN)
+      require("marker-groups.feedback").notify(
+        "No renameable groups available (default group cannot be renamed)",
+        vim.log.levels.WARN,
+        {}
+      )
       return state.Result.error("No renameable groups", "NO_RENAMEABLE_GROUPS")
     end
 
@@ -573,7 +577,7 @@ function M.rename_group_interactive(old_name, opts)
       if input and input ~= "" then
         local result = M.rename_group(old_name, input)
         if not result.success then
-          vim.notify("Failed to rename group: " .. result.error, vim.log.levels.ERROR)
+          require("marker-groups.feedback").notify("Failed to rename group: " .. result.error, vim.log.levels.ERROR, {})
         end
       end
     end
@@ -731,7 +735,7 @@ function M.delete_group_with_confirmation(group_name, opts)
   end
 
   if group_name == "default" and not force then
-    vim.notify("Cannot delete the default group", vim.log.levels.ERROR)
+    require("marker-groups.feedback").notify("Cannot delete the default group", vim.log.levels.ERROR, {})
     return state.Result.error("Cannot delete the default group", "CANNOT_DELETE_DEFAULT")
   end
 
@@ -764,10 +768,10 @@ function M.delete_group_with_confirmation(group_name, opts)
     if choice == "Yes" then
       local result = M.delete_group(group_name, force)
       if not result.success then
-        vim.notify("Failed to delete group: " .. result.error, vim.log.levels.ERROR)
+        require("marker-groups.feedback").notify("Failed to delete group: " .. result.error, vim.log.levels.ERROR, {})
       end
     else
-      vim.notify("Group deletion cancelled", vim.log.levels.INFO)
+      require("marker-groups.feedback").notify("Group deletion cancelled", vim.log.levels.INFO, {})
     end
   end)
 
@@ -780,7 +784,7 @@ function M.select_group_for_deletion(opts)
   local groups_info = M.list_groups()
 
   if #groups_info == 0 then
-    vim.notify("No groups available to delete", vim.log.levels.WARN)
+    require("marker-groups.feedback").notify("No groups available to delete", vim.log.levels.WARN, {})
     return state.Result.error("No groups available", "NO_GROUPS")
   end
 
@@ -810,7 +814,7 @@ function M.select_group_for_deletion(opts)
   if #items == 0 then
     local message = opts.force and "No groups available to delete"
       or "No deletable groups (default group cannot be deleted)"
-    vim.notify(message, vim.log.levels.WARN)
+    require("marker-groups.feedback").notify(message, vim.log.levels.WARN, {})
     return state.Result.error("No deletable groups", "NO_DELETABLE_GROUPS")
   end
 
@@ -945,14 +949,15 @@ function M.batch_delete_groups(pattern, opts)
   end
 
   local total = #results.successful + #results.failed
-  vim.notify(
+  require("marker-groups.feedback").notify(
     string.format(
       "Batch delete completed: %d successful, %d failed out of %d",
       #results.successful,
       #results.failed,
       total
     ),
-    vim.log.levels.INFO
+    vim.log.levels.INFO,
+    {}
   )
 
   return state.Result.ok {

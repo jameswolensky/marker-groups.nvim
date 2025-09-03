@@ -26,7 +26,7 @@ function M.show_groups(opts)
   opts = opts or {}
   local ok, pick = pcall(require, "mini.pick")
   if not ok or not pick or type(pick.start) ~= "function" then
-    vim.notify("mini.pick not available", vim.log.levels.WARN)
+    require("marker-groups.feedback").notify("mini.pick not available", vim.log.levels.WARN, {})
     return
   end
 
@@ -42,7 +42,7 @@ function M.show_groups(opts)
   end
 
   if #items == 0 then
-    vim.notify(utils.empty_groups_message(opts), vim.log.levels.WARN)
+    require("marker-groups.feedback").notify(utils.empty_groups_message(opts), vim.log.levels.WARN, {})
     return
   end
 
@@ -67,10 +67,18 @@ function M.show_groups(opts)
       else
         groups.delete_group(name, true)
       end
-      utils.show_notification("Deleted group: " .. tostring(name), vim.log.levels.INFO, 5000)
+      require("marker-groups.feedback").notify(
+        "Deleted group: " .. tostring(name),
+        vim.log.levels.INFO,
+        { timeout = 5000 }
+      )
     else
       groups.select_group(name)
-      utils.show_notification("Selected group: " .. tostring(name), vim.log.levels.INFO, 3000)
+      require("marker-groups.feedback").notify(
+        "Selected group: " .. tostring(name),
+        vim.log.levels.INFO,
+        { timeout = 3000 }
+      )
     end
     pick.stop()
     return true
@@ -83,13 +91,13 @@ function M.show_markers(opts)
   opts = opts or {}
   local ok, pick = pcall(require, "mini.pick")
   if not ok or not pick or type(pick.start) ~= "function" then
-    vim.notify("mini.pick not available", vim.log.levels.WARN)
+    require("marker-groups.feedback").notify("mini.pick not available", vim.log.levels.WARN, {})
     return
   end
 
   local active = state.get_active_group()
   if not active then
-    vim.notify("No active group selected", vim.log.levels.WARN)
+    require("marker-groups.feedback").notify("No active group selected", vim.log.levels.WARN, {})
     return
   end
 

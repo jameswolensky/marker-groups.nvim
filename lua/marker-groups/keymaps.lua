@@ -4,18 +4,22 @@ local function safe_call(func, operation)
   return function()
     local ok, result = pcall(func)
     if not ok then
-      vim.notify(operation .. " failed: " .. tostring(result), vim.log.levels.ERROR)
+      require("marker-groups.feedback").notify(operation .. " failed: " .. tostring(result), vim.log.levels.ERROR, {})
       return
     end
 
     local result_type = type(result)
     if result_type == "table" then
       if result.success == false then
-        vim.notify(operation .. " failed: " .. tostring(result.error), vim.log.levels.ERROR)
+        require("marker-groups.feedback").notify(
+          operation .. " failed: " .. tostring(result.error),
+          vim.log.levels.ERROR,
+          {}
+        )
       end
     elseif result_type == "boolean" then
       if result == false then
-        vim.notify(operation .. " failed", vim.log.levels.ERROR)
+        require("marker-groups.feedback").notify(operation .. " failed", vim.log.levels.ERROR, {})
       end
     end
   end
@@ -128,9 +132,9 @@ function M.setup()
       local info = groups.get_active_group_info()
       if info then
         local formatted = groups.format_group_info(info, "long")
-        vim.notify(formatted, vim.log.levels.INFO)
+        require("marker-groups.feedback").notify(formatted, vim.log.levels.INFO, {})
       else
-        vim.notify("No active group information available", vim.log.levels.WARN)
+        require("marker-groups.feedback").notify("No active group information available", vim.log.levels.WARN, {})
       end
     end, "Group info"),
     "Show active group info"
@@ -161,9 +165,13 @@ function M.setup()
             if input and input ~= "" then
               local result = markers.add_marker_range(range.lstart, range.lend, input)
               if not result.success then
-                vim.notify("Failed to add marker: " .. result.error, vim.log.levels.ERROR)
+                require("marker-groups.feedback").notify(
+                  "Failed to add marker: " .. result.error,
+                  vim.log.levels.ERROR,
+                  {}
+                )
               else
-                vim.notify("Added marker: " .. input, vim.log.levels.INFO)
+                require("marker-groups.feedback").notify("Added marker: " .. input, vim.log.levels.INFO, {})
               end
             end
           end
@@ -179,7 +187,7 @@ function M.setup()
     safe_call(function()
       local current_markers = markers.get_current_buffer_markers()
       if #current_markers == 0 then
-        vim.notify("No markers in current buffer", vim.log.levels.INFO)
+        require("marker-groups.feedback").notify("No markers in current buffer", vim.log.levels.INFO, {})
       else
         local lines = { "Markers in current buffer:" }
         for _, marker in ipairs(current_markers) do
@@ -187,7 +195,7 @@ function M.setup()
             or string.format("Lines %d-%d", marker.start_line, marker.end_line)
           table.insert(lines, string.format("  %s: %s", line_info, marker.annotation))
         end
-        vim.notify(table.concat(lines, "\n"), vim.log.levels.INFO)
+        require("marker-groups.feedback").notify(table.concat(lines, "\n"), vim.log.levels.INFO, {})
       end
     end, "Marker listing"),
     "List markers in buffer"
@@ -200,12 +208,13 @@ function M.setup()
     safe_call(function()
       local marker = markers.get_marker_at_cursor()
       if marker then
-        vim.notify(
+        require("marker-groups.feedback").notify(
           string.format("Marker: %s (Lines %d-%d)", marker.annotation, marker.start_line, marker.end_line),
-          vim.log.levels.INFO
+          vim.log.levels.INFO,
+          {}
         )
       else
-        vim.notify("No marker at cursor", vim.log.levels.INFO)
+        require("marker-groups.feedback").notify("No marker at cursor", vim.log.levels.INFO, {})
       end
     end, "Marker info"),
     "Show marker at cursor"
@@ -218,14 +227,14 @@ function M.setup()
     safe_call(function()
       local marker = markers.get_marker_at_cursor()
       if not marker then
-        vim.notify("No marker found at cursor position", vim.log.levels.WARN)
+        require("marker-groups.feedback").notify("No marker found at cursor position", vim.log.levels.WARN, {})
         return
       end
       local result = markers.delete_marker(marker.id)
       if not result.success then
-        vim.notify("Failed to remove marker: " .. result.error, vim.log.levels.ERROR)
+        require("marker-groups.feedback").notify("Failed to remove marker: " .. result.error, vim.log.levels.ERROR, {})
       else
-        vim.notify("Removed marker: " .. marker.annotation, vim.log.levels.INFO)
+        require("marker-groups.feedback").notify("Removed marker: " .. marker.annotation, vim.log.levels.INFO, {})
       end
     end, "Marker deletion"),
     "Delete marker at cursor"
@@ -238,7 +247,7 @@ function M.setup()
     safe_call(function()
       local marker = markers.get_marker_at_cursor()
       if not marker then
-        vim.notify("No marker found at cursor position", vim.log.levels.WARN)
+        require("marker-groups.feedback").notify("No marker found at cursor position", vim.log.levels.WARN, {})
         return
       end
       local input_ui = require "marker-groups.ui.input"
@@ -249,9 +258,13 @@ function M.setup()
           if input and input ~= "" then
             local result = markers.edit_marker(marker.id, input)
             if not result.success then
-              vim.notify("Failed to edit marker: " .. result.error, vim.log.levels.ERROR)
+              require("marker-groups.feedback").notify(
+                "Failed to edit marker: " .. result.error,
+                vim.log.levels.ERROR,
+                {}
+              )
             else
-              vim.notify("Updated marker annotation: " .. input, vim.log.levels.INFO)
+              require("marker-groups.feedback").notify("Updated marker annotation: " .. input, vim.log.levels.INFO, {})
             end
           end
         end
@@ -357,9 +370,9 @@ function M.defaults()
       local info = groups.get_active_group_info()
       if info then
         local formatted = groups.format_group_info(info, "long")
-        vim.notify(formatted, vim.log.levels.INFO)
+        require("marker-groups.feedback").notify(formatted, vim.log.levels.INFO, {})
       else
-        vim.notify("No active group information available", vim.log.levels.WARN)
+        require("marker-groups.feedback").notify("No active group information available", vim.log.levels.WARN, {})
       end
     end, "Group info"),
     "Show active group info"
@@ -388,9 +401,13 @@ function M.defaults()
             if input and input ~= "" then
               local result = markers.add_marker_range(range.lstart, range.lend, input)
               if not result.success then
-                vim.notify("Failed to add marker: " .. result.error, vim.log.levels.ERROR)
+                require("marker-groups.feedback").notify(
+                  "Failed to add marker: " .. result.error,
+                  vim.log.levels.ERROR,
+                  {}
+                )
               else
-                vim.notify("Added marker: " .. input, vim.log.levels.INFO)
+                require("marker-groups.feedback").notify("Added marker: " .. input, vim.log.levels.INFO, {})
               end
             end
           end)
@@ -409,7 +426,7 @@ function M.defaults()
     safe_call(function()
       local current_markers = markers.get_current_buffer_markers()
       if #current_markers == 0 then
-        vim.notify("No markers in current buffer", vim.log.levels.INFO)
+        require("marker-groups.feedback").notify("No markers in current buffer", vim.log.levels.INFO, {})
       else
         local lines = { "Markers in current buffer:" }
         for _, marker in ipairs(current_markers) do
@@ -417,7 +434,7 @@ function M.defaults()
             or string.format("Lines %d-%d", marker.start_line, marker.end_line)
           table.insert(lines, string.format("  %s: %s", line_info, marker.annotation))
         end
-        vim.notify(table.concat(lines, "\n"), vim.log.levels.INFO)
+        require("marker-groups.feedback").notify(table.concat(lines, "\n"), vim.log.levels.INFO, {})
       end
     end, "Marker listing"),
     "List markers in buffer"
@@ -430,12 +447,13 @@ function M.defaults()
     safe_call(function()
       local marker = markers.get_marker_at_cursor()
       if marker then
-        vim.notify(
+        require("marker-groups.feedback").notify(
           string.format("Marker: %s (Lines %d-%d)", marker.annotation, marker.start_line, marker.end_line),
-          vim.log.levels.INFO
+          vim.log.levels.INFO,
+          {}
         )
       else
-        vim.notify("No marker at cursor", vim.log.levels.INFO)
+        require("marker-groups.feedback").notify("No marker at cursor", vim.log.levels.INFO, {})
       end
     end, "Marker info"),
     "Show marker at cursor"
@@ -448,14 +466,14 @@ function M.defaults()
     safe_call(function()
       local marker = markers.get_marker_at_cursor()
       if not marker then
-        vim.notify("No marker found at cursor position", vim.log.levels.WARN)
+        require("marker-groups.feedback").notify("No marker found at cursor position", vim.log.levels.WARN, {})
         return
       end
       local result = markers.delete_marker(marker.id)
       if not result.success then
-        vim.notify("Failed to remove marker: " .. result.error, vim.log.levels.ERROR)
+        require("marker-groups.feedback").notify("Failed to remove marker: " .. result.error, vim.log.levels.ERROR, {})
       else
-        vim.notify("Removed marker: " .. marker.annotation, vim.log.levels.INFO)
+        require("marker-groups.feedback").notify("Removed marker: " .. marker.annotation, vim.log.levels.INFO, {})
       end
     end, "Marker deletion"),
     "Delete marker at cursor"
@@ -468,16 +486,20 @@ function M.defaults()
     safe_call(function()
       local marker = markers.get_marker_at_cursor()
       if not marker then
-        vim.notify("No marker found at cursor position", vim.log.levels.WARN)
+        require("marker-groups.feedback").notify("No marker found at cursor position", vim.log.levels.WARN, {})
         return
       end
       vim.ui.input({ prompt = "Edit marker annotation: ", default = marker.annotation }, function(input)
         if input and input ~= "" then
           local result = markers.edit_marker(marker.id, input)
           if not result.success then
-            vim.notify("Failed to edit marker: " .. result.error, vim.log.levels.ERROR)
+            require("marker-groups.feedback").notify(
+              "Failed to edit marker: " .. result.error,
+              vim.log.levels.ERROR,
+              {}
+            )
           else
-            vim.notify("Updated marker annotation: " .. input, vim.log.levels.INFO)
+            require("marker-groups.feedback").notify("Updated marker annotation: " .. input, vim.log.levels.INFO, {})
           end
         end
       end)

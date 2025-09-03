@@ -98,19 +98,23 @@ function M.navigate_to_marker(marker)
     vim.cmd "normal! zz"
   end)
   if ok then
-    vim.notify(
+    require("marker-groups.feedback").notify(
       "Navigated to: " .. vim.fn.fnamemodify(marker.buffer_path, ":t") .. ":" .. marker.start_line,
-      vim.log.levels.INFO
+      vim.log.levels.INFO,
+      {}
     )
   else
-    vim.notify("Failed to navigate to marker: " .. tostring(err), vim.log.levels.ERROR)
+    require("marker-groups.feedback").notify(
+      "Failed to navigate to marker: " .. tostring(err),
+      vim.log.levels.ERROR,
+      {}
+    )
   end
 end
 
 function M.show_notification(message, level, duration)
   duration = duration or 5000
-  vim.notify(message, level or vim.log.levels.INFO)
-  vim.defer_fn(function() end, duration)
+  require("marker-groups.feedback").notify(message, level or vim.log.levels.INFO, { timeout = duration })
 end
 
 function M.generate_group_preview(group_info)
