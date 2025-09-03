@@ -3,13 +3,6 @@ if not vim.tbl_contains(vim.opt.runtimepath:get(), cwd) then
   vim.opt.runtimepath:append(cwd)
 end
 
-local vendored = cwd .. '/vendor/mini.nvim'
-if vim.fn.isdirectory(vendored) == 1 then
-  if not vim.tbl_contains(vim.opt.runtimepath:get(), vendored) then
-    vim.opt.runtimepath:append(vendored)
-  end
-end
-
 vim.cmd 'filetype plugin indent on'
 vim.o.hidden = true
 vim.o.swapfile = false
@@ -33,6 +26,15 @@ maybe_append(data .. '/site/pack/packer/opt/mini.nvim')
 maybe_append(data .. '/site/pack/lazy/start/mini.nvim')
 maybe_append(data .. '/site/pack/vendor/start/mini.nvim')
 maybe_append(data .. '/site/pack/testing/start/mini.nvim')
+
+if not pcall(require, 'mini.test') then
+  local target = data .. '/site/pack/testing/start/mini.nvim'
+  if vim.fn.isdirectory(target) == 0 then
+    vim.fn.mkdir(target, 'p')
+    vim.fn.system({ 'git', 'clone', '--depth=1', 'https://github.com/echasnovski/mini.nvim', target })
+  end
+  maybe_append(target)
+end
 
 vim.g.__mg_minimal_init = true
 

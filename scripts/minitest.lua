@@ -1,11 +1,5 @@
 vim.cmd('luafile ' .. vim.fn.fnamemodify(debug.getinfo(1, 'S').source:sub(2), ':h') .. '/minimal_init.lua')
 
-local vendor = vim.fn.getcwd() .. '/vendor/mini.nvim'
-if vim.fn.isdirectory(vendor) == 1 then
-  if not vim.tbl_contains(vim.opt.runtimepath:get(), vendor) then
-    vim.opt.runtimepath:append(vendor)
-  end
-end
 local MiniTest = require 'mini.test'
 
 local mode = vim.env.MODE or 'all'
