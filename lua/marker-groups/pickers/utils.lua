@@ -258,4 +258,27 @@ function M.generate_group_markers_code_preview(group_name, opts)
   return { content = out, filetype = "text" }
 end
 
+function M.filter_groups_for_action(groups_info, opts)
+  opts = opts or {}
+  local action = opts.action
+  if action ~= "delete" or opts.force then
+    return groups_info
+  end
+  local filtered = {}
+  for _, info in ipairs(groups_info or {}) do
+    if info.name ~= "default" then
+      table.insert(filtered, info)
+    end
+  end
+  return filtered
+end
+
+function M.empty_groups_message(opts)
+  local action = opts and opts.action or nil
+  if action == "delete" then
+    return "No groups available to delete"
+  end
+  return "No marker groups available"
+end
+
 return M

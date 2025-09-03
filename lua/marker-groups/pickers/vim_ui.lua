@@ -7,6 +7,7 @@ local utils = require "marker-groups.pickers.utils"
 function M.show_groups(opts)
   opts = opts or {}
   local group_data = groups.list_groups()
+  group_data = utils.filter_groups_for_action(group_data, opts)
   local items, map = {}, {}
 
   for _, info in ipairs(group_data) do
@@ -16,7 +17,7 @@ function M.show_groups(opts)
   end
 
   if #items == 0 then
-    vim.notify("No marker groups available", vim.log.levels.WARN)
+    vim.notify(utils.empty_groups_message(opts), vim.log.levels.WARN)
     return
   end
 

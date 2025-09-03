@@ -31,6 +31,7 @@ function M.show_groups(opts)
   end
 
   local info = groups.list_groups()
+  info = utils.filter_groups_for_action(info, opts)
   local items = {}
   local by_name = {}
   for _, g in ipairs(info) do
@@ -41,7 +42,7 @@ function M.show_groups(opts)
   end
 
   if #items == 0 then
-    vim.notify("No marker groups available", vim.log.levels.WARN)
+    vim.notify(utils.empty_groups_message(opts), vim.log.levels.WARN)
     return
   end
 
