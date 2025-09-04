@@ -105,9 +105,9 @@ function M.log(level, message, notify_user)
   if should_notify then
     local vim_level = vim.log.levels[level:upper()]
     if vim_level then
-      vim.notify(message, vim_level)
+      require("marker-groups.feedback").notify(message, vim_level, {})
     else
-      vim.notify(message, vim.log.levels.INFO)
+      require("marker-groups.feedback").notify(message, vim.log.levels.INFO, {})
     end
   end
 end

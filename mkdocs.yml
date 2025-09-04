@@ -1,6 +1,6 @@
 site_name: Marker Groups.nvim
 site_url: https://marker-groups.jameswolensky.com
-site_description: Manage and persist marks in Neovim with groups, quick navigation, and Telescope integration.
+site_description: Manage and persist marks in Neovim with groups, quick navigation, and picker integrations.
 site_author: James Wolensky
 
 theme:

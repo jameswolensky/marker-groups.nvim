@@ -4,7 +4,7 @@ M.options = nil
 
 local INTERNAL = {
   max_group_name_chars = 100,
-  max_annotation_chars = 500,
+  max_annotation_chars = 100,
 }
 
 local defaults = {
@@ -26,7 +26,7 @@ local defaults = {
 
   drawer_config = {
     width = 60,
-    side = "right", -- "left" or "right"
+    side = "right",
     border = "rounded",
     title_pos = "center",
   },
@@ -61,16 +61,11 @@ local defaults = {
       view = {
         toggle = { suffix = "v", desc = "Toggle drawer marker viewer" },
       },
-
-      telescope = {
-        groups = { suffix = "tg", desc = "Telescope: marker groups" },
-        markers = { suffix = "tm", desc = "Telescope: markers in active group" },
-      },
     },
   },
 
   debug = false,
-  log_level = "info", -- "debug", "info", "warn", "error"
+  log_level = "info",
 }
 
 local function validate_config(config)
@@ -193,7 +188,7 @@ function M.update(updates)
 
   local valid, error_msg = validate_config(new_config)
   if not valid then
-    vim.notify("Configuration update failed: " .. error_msg, vim.log.levels.ERROR)
+    require("marker-groups.feedback").notify("Configuration update failed: " .. error_msg, vim.log.levels.ERROR, {})
     return false
   end
 

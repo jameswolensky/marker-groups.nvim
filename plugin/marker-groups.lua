@@ -19,6 +19,9 @@ end, {
 vim.api.nvim_create_autocmd('VimEnter', {
   once = true,
   callback = function()
+    if vim.g.__mg_minimal_init == true then
+      return
+    end
     if not vim.g.marker_groups_setup_called then
       require('marker-groups').setup()
     end

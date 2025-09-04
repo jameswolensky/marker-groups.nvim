@@ -26,7 +26,8 @@ code with grouped markers. It allows you to:
 - Organize markers into logical groups (features, bugs, todos, etc.)
 - View markers with visual indicators in your code
 - Browse markers in a right-side drawer viewer with code context
-- Search markers with Telescope integration
+- Search markers with multiple pickers: mini.pick, Snacks, Telescope, fzf-lua,
+  or builtin vim.ui
 - Persist markers across Neovim sessions
 
 ==============================================================================
@@ -37,7 +38,10 @@ Using lazy.nvim: >
       "jameswolensky/marker-groups.nvim",
       dependencies = {
         "nvim-lua/plenary.nvim",
-        "nvim-telescope/telescope.nvim", -- Optional
+        "folke/snacks.nvim",              -- Optional
+        "ibhagwan/fzf-lua",               -- Optional
+        -- "nvim-mini/mini.nvim",         -- Optional, for mini.pick
+        -- "nvim-telescope/telescope.nvim",-- Optional, for Telescope
       },
       config = function()
         require("marker-groups").setup()
@@ -96,13 +100,9 @@ Viewing & Navigation:
     Open the drawer viewer showing all markers in the active group. The viewer
     opens as a right-side vertical split by default.
 
- 
+:MarkerGroupsPickerStatus                            *:MarkerGroupsPickerStatus*
+    Show current picker backend, available backends, and their status.
 
-:MarkerGroupsTelescope                               *:MarkerGroupsTelescope*
-    Open Telescope group picker (if telescope.nvim is installed).
-
-:MarkerGroupsTelescopeMarkers                        *:MarkerGroupsTelescopeMarkers*
-    Open Telescope picker for markers in the active group.
 
 :MarkerGroupsHealth                                  *:MarkerGroupsHealth*
     Run health checks to verify plugin status.
@@ -110,18 +110,12 @@ Viewing & Navigation:
 :MarkerGroupsInfo                                    *:MarkerGroupsInfo*
     Show information about the active marker group.
 
- 
-
-
 Drawer Controls:
 :MarkerGroupsCloseDrawer                             *:MarkerGroupsCloseDrawer*
-    Close all open drawer viewer windows.
+    Close all open drawer marker viewer windows.
 
 :MarkerGroupsDrawerWidth [width]                     *:MarkerGroupsDrawerWidth*
     Get or set drawer width (30-120 columns).
-
-Development:
- 
 
 ==============================================================================
 5. KEYBINDINGS                                    *marker-groups-keybindings*
@@ -135,8 +129,8 @@ Default keybindings (customizable):
 <leader>mgs                 Select/switch group
 <leader>mgr                 Rename current group
 <leader>mgd                 Delete group
-<leader>mtg                 Telescope marker groups
-<leader>mtm                 Telescope markers in active group
+<leader>mtg                 Picker: marker groups (if configured)
+<leader>mtm                 Picker: markers in active group (if configured)
 
 Drawer Window Navigation (buffer-local):
 j/k or ↑/↓                  Navigate between markers
@@ -152,11 +146,11 @@ Default configuration: >
     require("marker-groups").setup({
       -- Persistence
       data_dir = vim.fn.stdpath("data") .. "/marker-groups",
-
+      
       -- Logging
       debug = false,
       log_level = "info",
-
+      
       -- Drawer viewer
       drawer_config = {
         width = 60,       -- 30..120
@@ -164,13 +158,13 @@ Default configuration: >
         border = "rounded",
         title_pos = "center",
       },
-
+      
       -- Context shown around markers in viewer/preview
       context_lines = 2,
-
+      
       -- Virtual text display
        max_annotation_display = 50,
-
+      
        -- Highlight groups used for rendering (override names to integrate with colorschemes)
        highlight_groups = {
          marker = "MarkerGroupsMarker",
@@ -179,7 +173,7 @@ Default configuration: >
          multiline_start = "MarkerGroupsMultilineStart",
          multiline_end = "MarkerGroupsMultilineEnd",
        },
-
+      
       -- Keybinding configuration (declarative)
       keymaps = {
         enabled = true,
@@ -190,7 +184,6 @@ Default configuration: >
             edit = { suffix = "e", desc = "Edit marker at cursor" },
             delete = { suffix = "d", desc = "Delete marker at cursor" },
             list = { suffix = "l", desc = "List markers in buffer" },
-            info = { suffix = "j", desc = "Show marker at cursor" },
           },
           group = {
             create = { suffix = "gc", desc = "Create marker group" },
@@ -198,11 +191,7 @@ Default configuration: >
             list = { suffix = "gl", desc = "List marker groups" },
             rename = { suffix = "gr", desc = "Rename marker group" },
             delete = { suffix = "gd", desc = "Delete marker group" },
-            info = { suffix = "gi", desc = "Show active group info" },
-            -- next/prev/toggle_last/cleanup removed
-            from_branch = { suffix = "gb", desc = "Create group from git branch" },
           },
-          persistence = false,
           view = {
             toggle = { suffix = "v", desc = "Toggle drawer marker viewer" },
           },
@@ -212,6 +201,10 @@ Default configuration: >
           },
         },
       },
+      -- Picker backend (default: 'vim')
+      -- Accepted values: 'vim' | 'snacks' | 'fzf-lua' | 'mini.pick' | 'telescope'
+      -- Invalid values fall back to 'vim'.
+      picker = 'vim',
     })
 <
 
@@ -237,18 +230,19 @@ require("marker-groups.state").get_state()           *marker-groups.state.get_st
 
 Common issues and solutions:
 
+Problem: Pickers not found
+Solution: Ensure the chosen backend is installed and configured. For mini.pick, call `require('mini.pick').setup()` in your config. For Telescope, install `nvim-telescope/telescope.nvim`.
+
 Problem: Markers not persisting across sessions
-Solution: Check data directory permissions and ensure auto-save is enabled.
+Solution: Persistence is always enabled. Check data directory permissions and path
+(`:echo stdpath('data') .. '/marker-groups'`). Ensure Neovim can write to this
+location.
 
 Problem: Virtual text not showing
 Solution: Ensure the plugin is initialized and there are markers in the active
-group. If you previously disabled display, you can re-enable it via:
->lua
-    require('marker-groups.ui.virtual_text').toggle_display(true)
+group. If you previously disabled display, you can re-enable it via: >
+    :lua require('marker-groups.ui.virtual_text').toggle_display(true)
 <
-
-Problem: Telescope integration not working
-Solution: Ensure telescope.nvim is installed and properly configured.
 
 Problem: Keybindings not working
 Solution: Check for conflicts and ensure keymaps.enabled = true.
