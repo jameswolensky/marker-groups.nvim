@@ -78,6 +78,7 @@ end
 
 function M.show_group_info(group_info, format)
   format = format or "long"
+
   if format == "short" then
     local msg = string.format("%s (%d markers)", group_info.name, group_info.marker_count or 0)
     M.notify(msg, M.levels.INFO, { title = "Group Info", important = true })
