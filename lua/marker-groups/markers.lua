@@ -175,9 +175,10 @@ function M.add_marker(annotation, group_name)
     marker.extmark_id = extmark_id
   else
     marker.extmark_id = nil
-    vim.notify(
+    require("marker-groups.feedback").notify(
       "Extmark creation failed, continuing without line tracking: " .. tostring(extmark_result),
-      vim.log.levels.DEBUG
+      vim.log.levels.DEBUG,
+      {}
     )
   end
 
@@ -198,9 +199,13 @@ function M.edit_marker(marker_id, new_annotation)
     return state.Result.error("Marker not found: " .. marker_id, "MARKER_NOT_FOUND")
   end
 
+  local now = os.time()
+  if now <= (marker.timestamp or 0) then
+    now = (marker.timestamp or 0) + 1
+  end
   local updated_data = vim.tbl_extend("force", {}, marker, {
     annotation = validated_annotation,
-    timestamp = os.time(),
+    timestamp = now,
   })
 
   local remove_result = state.remove_marker(marker_id)
@@ -559,7 +564,6 @@ function M.sync_extmarks(buf)
           local updated_marker_data = vim.tbl_extend("force", {}, marker, {
             start_line = new_start_line,
             end_line = new_end_line,
-            timestamp = os.time(),
           })
 
           local remove_result = state.remove_marker(marker.id)
@@ -567,7 +571,7 @@ function M.sync_extmarks(buf)
             local add_result = state.add_marker(updated_marker_data)
             if add_result.success then
               sync_results.updated = sync_results.updated + 1
-              vim.notify(
+              require("marker-groups.feedback").notify(
                 string.format(
                   "Marker '%s' moved from line %d-%d to %d-%d",
                   marker.annotation:sub(1, 20),
@@ -576,7 +580,8 @@ function M.sync_extmarks(buf)
                   new_start_line,
                   new_end_line
                 ),
-                vim.log.levels.DEBUG
+                vim.log.levels.DEBUG,
+                {}
               )
             else
               sync_results.failed = sync_results.failed + 1
@@ -593,11 +598,16 @@ function M.sync_extmarks(buf)
             state.update_marker(marker.id, { extmark_id = recreated_id })
           end)
           sync_results.updated = sync_results.updated + 1
-          vim.notify(string.format("Marker '%s' extmark recreated", marker.annotation:sub(1, 20)), vim.log.levels.DEBUG)
+          require("marker-groups.feedback").notify(
+            string.format("Marker '%s' extmark recreated", marker.annotation:sub(1, 20)),
+            vim.log.levels.DEBUG,
+            {}
+          )
         else
-          vim.notify(
+          require("marker-groups.feedback").notify(
             string.format("Marker '%s' extmark missing and could not be recreated", marker.annotation:sub(1, 20)),
-            vim.log.levels.DEBUG
+            vim.log.levels.DEBUG,
+            {}
           )
         end
       end
@@ -738,17 +748,19 @@ function M.handle_buffer_change(buf, change_type, change_data)
     local insert_line = change_data.line or 1
     local line_count = change_data.count or 1
 
-    vim.notify(
+    require("marker-groups.feedback").notify(
       string.format("Lines added at %d (count: %d), updating %d markers", insert_line, line_count, #markers),
-      vim.log.levels.DEBUG
+      vim.log.levels.DEBUG,
+      {}
     )
   elseif change_type == "lines_deleted" and change_data then
     local delete_line = change_data.line or 1
     local line_count = change_data.count or 1
 
-    vim.notify(
+    require("marker-groups.feedback").notify(
       string.format("Lines deleted at %d (count: %d), updating %d markers", delete_line, line_count, #markers),
-      vim.log.levels.DEBUG
+      vim.log.levels.DEBUG,
+      {}
     )
   end
 

@@ -18,7 +18,6 @@ local T = MiniTest.new_set {
   },
 }
 
--- Helpers
 local expect_truthy = MiniTest.new_expectation("truthy", function(x)
   return not not x
 end, function(x)
@@ -37,7 +36,6 @@ end, function(x, t)
   return string.format("Expected %s, got %s. Object: %s", t, type(x), vim.inspect(x))
 end)
 
--- drawer width management
 T["drawer width management / should have drawer width functions"] = function()
   local drawer = require "marker-groups.ui.drawer"
   expect_type(drawer.set_drawer_width, "function")
@@ -76,7 +74,6 @@ T["drawer width management / should clamp drawer width to valid range"] = functi
   drawer.set_drawer_width(original_width)
 end
 
--- navigation functions
 T["navigation functions / should have navigation functions"] = function()
   local drawer = require "marker-groups.ui.drawer"
   expect_type(drawer.navigate_to_next_marker, "function")
@@ -95,7 +92,6 @@ T["navigation functions / should handle navigation with empty marker list"] = fu
   end)
 end
 
--- window management
 T["window management / should have window calculation functions"] = function()
   local drawer = require "marker-groups.ui.drawer"
   expect_type(drawer.calculate_window_config, "function")
@@ -111,7 +107,6 @@ T["window management / should have debug functions"] = function()
   expect_type(drawer.debug_info, "function")
 end
 
--- toggle functionality
 T["toggle functionality / should have toggle_drawer function"] = function()
   local drawer = require "marker-groups.ui.drawer"
   expect_type(drawer.toggle_drawer, "function")
@@ -152,7 +147,6 @@ T["toggle functionality / should handle toggle when windows are open"] = functio
   drawer.close_all = original_close_all
 end
 
--- delete functionality
 T["delete functionality / should have delete_current_marker function"] = function()
   local drawer = require "marker-groups.ui.drawer"
   expect_type(drawer.delete_current_marker, "function")
@@ -233,7 +227,6 @@ T["delete functionality / should handle delete failure gracefully"] = function()
   markers.delete_marker = original_delete
 end
 
--- annotation display handling
 T["annotation display handling / should handle long annotation display"] = function()
   local config = require "marker-groups.config"
   local max_display = config.get_value("max_annotation_display", 50)

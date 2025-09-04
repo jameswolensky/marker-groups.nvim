@@ -9,6 +9,10 @@ function M.setup(opts)
 
   local config = require("marker-groups.config").setup(opts)
 
+  pcall(function()
+    require("marker-groups.pickers").setup(config)
+  end)
+
   require("marker-groups.state").initialize(config)
 
   require("marker-groups.commands").setup()
@@ -45,13 +49,18 @@ end
 function M.reload()
   _initialized = false
 
+  local current_config = nil
+  pcall(function()
+    current_config = require("marker-groups.config").get()
+  end)
+
   for name, _ in pairs(package.loaded) do
     if name:match "^marker%-groups" then
       package.loaded[name] = nil
     end
   end
 
-  require("marker-groups").setup {}
+  require("marker-groups").setup(current_config or {})
 end
 
 function M.version()

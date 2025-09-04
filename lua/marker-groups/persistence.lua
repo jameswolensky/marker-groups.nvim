@@ -4,6 +4,16 @@ local config = require "marker-groups.config"
 local feedback = require "marker-groups.feedback"
 local versions = require "marker-groups.version"
 
+local function should_persist()
+  if vim.g.__mg_force_persist == true then
+    return true
+  end
+  if vim.g.__mg_minimal_init == true then
+    return false
+  end
+  return true
+end
+
 local function get_data_dir()
   local data_dir = config.get_value "data_dir"
 
@@ -159,6 +169,9 @@ local function validate_loaded_data(data)
 end
 
 function M.save()
+  if not should_persist() then
+    return { success = false, code = "PERSIST_DISABLED" }
+  end
   local data_file = get_data_file()
 
   local data = prepare_data_for_serialization()
@@ -201,6 +214,9 @@ function M.save()
 end
 
 function M.load()
+  if not should_persist() then
+    return { success = true, source = "persistence_disabled" }
+  end
   local state = require "marker-groups.state"
   local data_file = get_data_file()
 
@@ -275,6 +291,7 @@ function M.load()
     }
   end
 
+  vim.g.__marker_groups_hydrating = true
   for group_name, group_data in pairs(data.marker_groups) do
     if group_name ~= "default" then
       local create_result = state.create_group(group_name)
@@ -282,6 +299,7 @@ function M.load()
         feedback.warning("Persistence", "Failed to create group: " .. group_name)
         goto continue_group_loop
       end
+      state.emit("group_loaded", { group_name = group_name })
     end
 
     for _, marker_data in ipairs(group_data.markers) do
@@ -310,6 +328,10 @@ function M.load()
     virtual_text.update_all_buffers()
   end
 
+  vim.defer_fn(function()
+    vim.g.__marker_groups_hydrating = false
+  end, 300)
+
   return {
     success = true,
     source = source_file,
@@ -321,6 +343,9 @@ function M.load()
 end
 
 function M.setup_auto_save()
+  if not should_persist() then
+    return false
+  end
   local augroup = vim.api.nvim_create_augroup("MarkerGroupsAutoSave", { clear = true })
 
   vim.api.nvim_create_autocmd({ "VimLeavePre", "BufWritePost" }, {
@@ -345,7 +370,7 @@ function M.setup_auto_save()
       else
         local error_msg = ok and result.error or tostring(result)
         if config.get_value("debug", false) then
-          vim.notify("Auto-save failed: " .. error_msg, vim.log.levels.DEBUG)
+          require("marker-groups.feedback").notify("Auto-save failed: " .. error_msg, vim.log.levels.DEBUG, {})
         end
       end
     end)

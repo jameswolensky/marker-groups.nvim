@@ -53,8 +53,6 @@ T["marker commands / MarkerAdd adds marker to current buffer"] = function()
   end)
 end
 
--- Additional coverage migrated from commands_spec
-
 T["group management / MarkerGroupsRename truncates long arg names"] = function()
   with_child(function(child)
     child.lua [[require('marker-groups').setup({ data_dir = vim.fn.tempname() .. '_mg_it_cmd3', log_level = 'error' })]]

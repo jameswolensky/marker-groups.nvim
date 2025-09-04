@@ -1,30 +1,36 @@
 # Makefile for marker-groups.nvim testing and development
 
-.PHONY: test test-unit test-integration test-watch test-file lint format format-check pre-commit clean install-deps help
+.PHONY: test test-unit test-integration test-file lint format format-check pre-commit clean help
 
 # Default target
 all: test
 
+# Helper: run tests in sandboxed XDG with ephemeral plugin deps
+define RUN_TESTS
+	@TMP_XDG=$$(mktemp -d 2>/dev/null || mktemp -d -t xdgdata); \
+	PACK_START="$$TMP_XDG/nvim/site/pack/testing/start"; PACK_OPT="$$TMP_XDG/nvim/site/pack/testing/opt"; \
+	mkdir -p "$$PACK_START" "$$PACK_OPT"; \
+	XDG_DATA_HOME="$$TMP_XDG" $(1); \
+	RC=$$?; rm -rf "$$TMP_XDG"; exit $$RC
+endef
+
 # Test commands
 test: ## Run all tests
 	@echo "Running all marker-groups tests (mini.test)..."
-	@nvim --headless -u NONE -l scripts/minitest.lua
+	$(call RUN_TESTS,nvim --headless -u NONE -l scripts/minitest.lua)
 
 test-unit: ## Run unit tests only
 	@echo "Running unit tests (mini.test)..."
-	@MODE=unit nvim --headless -u NONE -l scripts/minitest.lua
+	$(call RUN_TESTS,MODE=unit nvim --headless -u NONE -l scripts/minitest.lua)
 
 test-integration: ## Run integration tests only
 	@echo "Running integration tests (mini.test)..."
-	@MODE=integration nvim --headless -u NONE -l scripts/minitest.lua
+	$(call RUN_TESTS,MODE=integration nvim --headless -u NONE -l scripts/minitest.lua)
 
-test-file: ## Run specific test file (usage: make test-file FILE=tests/unit/test_config.lua)
+test-file: ## Run specific test file (usage: make test-file FILE=tests/mini/unit/test_config.lua)
 	@echo "Running test file: $(FILE)"
-	@TEST_FILE=$(FILE) nvim --headless -u NONE -l scripts/minitest.lua
+	$(call RUN_TESTS,TEST_FILE=$(FILE) nvim --headless -u NONE -l scripts/minitest.lua)
 
-test-watch: ## Watch tests and re-run on changes
-	@echo "Starting test watcher..."
-	@nvim --headless -c "lua require('tests.test_runner').watch('all')"
 
 # Development commands
 lint: ## Run linter (lua language server)
@@ -72,22 +78,11 @@ clean: ## Clean test artifacts and temporary files
 	@echo "Cleanup complete"
 
 # Dependency management
-install-deps: ## Install test dependencies
-	@echo "Checking dependencies..."
-	@echo "Required: mini.nvim (mini.test) for testing"
-	@echo "Optional: telescope.nvim for full functionality"
+install-deps: ## Install optional local tools (formatters/linters)
+	@echo "Checking optional developer tools..."
 	@echo "Optional: stylua for code formatting"
 	@echo "Optional: lua-language-server for linting"
-	@echo ""
-	@echo "Installing vendored mini.nvim for tests (if not present)..."
-	@mkdir -p vendor
-	@if [ ! -d vendor/mini.nvim ]; then \
-		git clone --depth=1 https://github.com/echasnovski/mini.nvim.git vendor/mini.nvim; \
-		echo "Cloned mini.nvim into vendor/mini.nvim"; \
-	else \
-		cd vendor/mini.nvim && git fetch --depth=1 origin && git reset --hard origin/master >/dev/null 2>&1 || true; \
-		echo "Updated vendor/mini.nvim"; \
-	fi
+	@echo "mini.nvim (mini.test) is auto-bootstrapped by scripts/minimal_init.lua"
 
 # Utility commands
 check-health: ## Run health check
@@ -101,10 +96,10 @@ debug-state: ## Show debug state information
 # CI/CD helpers
 ci-test: ## Run tests in CI environment
 	@echo "Running tests in CI mode (mini.test)..."
-	@nvim --headless -u NONE -l scripts/minitest.lua
+	$(call RUN_TESTS,nvim --headless -u NONE -l scripts/minitest.lua)
 
 # Development setup
-dev-setup: install-deps ## Set up development environment
+dev-setup: ## Set up development environment
 	@echo "Setting up development environment..."
 	@mkdir -p tests/fixtures
 	@echo "Development setup complete"
@@ -112,7 +107,6 @@ dev-setup: install-deps ## Set up development environment
 	@echo "Quick start:"
 	@echo "  make test          # Run all tests"
 	@echo "  make test-unit     # Run unit tests"
-	@echo "  make test-watch    # Watch and re-run tests"
 	@echo "  make lint          # Check code quality"
 	@echo "  make format        # Format code"
 
@@ -124,6 +118,5 @@ help: ## Show this help message
 	@echo ""
 	@echo "Examples:"
 	@echo "  make test                                    # Run all tests"
-	@echo "  make test-file FILE=tests/unit/config_spec.lua  # Run specific test"
-	@echo "  make test-watch                              # Watch mode"
+	@echo "  make test-file FILE=tests/mini/unit/test_config.lua  # Run specific test"
 

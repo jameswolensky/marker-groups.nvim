@@ -15,7 +15,7 @@ function M.setup()
     else
       local result = groups.create_group(name)
       if not result.success then
-        vim.notify("Failed to create group: " .. result.error, vim.log.levels.ERROR)
+        require("marker-groups.feedback").notify("Failed to create group: " .. result.error, vim.log.levels.ERROR, {})
       end
     end
   end, {
@@ -33,7 +33,7 @@ function M.setup()
     else
       local result = groups.select_group(name)
       if not result.success then
-        vim.notify("Failed to select group: " .. result.error, vim.log.levels.ERROR)
+        require("marker-groups.feedback").notify("Failed to select group: " .. result.error, vim.log.levels.ERROR, {})
       end
     end
   end, {
@@ -63,12 +63,13 @@ function M.setup()
       local new_name = vim.fn.strcharpart(vim.trim(parts[2] or ""), 0, config.get_internal "max_group_name_chars")
       local result = groups.rename_group(parts[1], new_name)
       if not result.success then
-        vim.notify("Failed to rename group: " .. result.error, vim.log.levels.ERROR)
+        require("marker-groups.feedback").notify("Failed to rename group: " .. result.error, vim.log.levels.ERROR, {})
       end
     else
-      vim.notify(
+      require("marker-groups.feedback").notify(
         "Usage: MarkerGroupsRename [old_name] [new_name] or just MarkerGroupsRename for interactive",
-        vim.log.levels.WARN
+        vim.log.levels.WARN,
+        {}
       )
     end
   end, {
@@ -167,7 +168,11 @@ function M.setup()
             end
             result = result or markers.add_marker(input)
             if not result.success then
-              vim.notify("Failed to add marker: " .. result.error, vim.log.levels.ERROR)
+              require("marker-groups.feedback").notify(
+                "Failed to add marker: " .. result.error,
+                vim.log.levels.ERROR,
+                {}
+              )
             else
               require("marker-groups.feedback").success("Marker Added", input)
             end
@@ -182,7 +187,7 @@ function M.setup()
         result = markers.add_marker(annotation)
       end
       if not result.success then
-        vim.notify("Failed to add marker: " .. result.error, vim.log.levels.ERROR)
+        require("marker-groups.feedback").notify("Failed to add marker: " .. result.error, vim.log.levels.ERROR, {})
       else
         require("marker-groups.feedback").success("Marker Added", annotation)
       end
@@ -204,7 +209,7 @@ function M.setup()
           or string.format("Lines %d-%d", marker.start_line, marker.end_line)
         table.insert(lines, string.format("  %s: %s", line_info, marker.annotation))
       end
-      vim.notify(table.concat(lines, "\n"), vim.log.levels.INFO)
+      require("marker-groups.feedback").notify(table.concat(lines, "\n"), vim.log.levels.INFO, {})
     end
   end, {
     desc = "List markers in current buffer",
@@ -213,7 +218,7 @@ function M.setup()
   vim.api.nvim_create_user_command("MarkerRemove", function()
     local marker = markers.get_marker_at_cursor()
     if not marker then
-      vim.notify("No marker found at cursor position", vim.log.levels.WARN)
+      require("marker-groups.feedback").notify("No marker found at cursor position", vim.log.levels.WARN, {})
       return
     end
 
@@ -221,7 +226,7 @@ function M.setup()
 
     local result = markers.delete_marker(marker.id)
     if not result.success then
-      vim.notify("Failed to remove marker: " .. result.error, vim.log.levels.ERROR)
+      require("marker-groups.feedback").notify("Failed to remove marker: " .. result.error, vim.log.levels.ERROR, {})
       return
     end
 
@@ -242,7 +247,7 @@ function M.setup()
   vim.api.nvim_create_user_command("MarkerEdit", function(args)
     local marker = markers.get_marker_at_cursor()
     if not marker then
-      vim.notify("No marker found at cursor position", vim.log.levels.WARN)
+      require("marker-groups.feedback").notify("No marker found at cursor position", vim.log.levels.WARN, {})
       return
     end
 
@@ -259,7 +264,11 @@ function M.setup()
           if input and input ~= "" then
             local result = markers.edit_marker(marker.id, input)
             if not result.success then
-              vim.notify("Failed to edit marker: " .. result.error, vim.log.levels.ERROR)
+              require("marker-groups.feedback").notify(
+                "Failed to edit marker: " .. result.error,
+                vim.log.levels.ERROR,
+                {}
+              )
             else
               require("marker-groups.feedback").success("Marker Edited", input)
             end
@@ -269,7 +278,7 @@ function M.setup()
     else
       local result = markers.edit_marker(marker.id, new_annotation)
       if not result.success then
-        vim.notify("Failed to edit marker: " .. result.error, vim.log.levels.ERROR)
+        require("marker-groups.feedback").notify("Failed to edit marker: " .. result.error, vim.log.levels.ERROR, {})
       else
         require("marker-groups.feedback").success("Marker Edited", new_annotation)
       end
@@ -283,9 +292,9 @@ function M.setup()
     local info = groups.get_active_group_info()
     if info then
       local formatted = groups.format_group_info(info, "long")
-      vim.notify(formatted, vim.log.levels.INFO)
+      require("marker-groups.feedback").notify(formatted, vim.log.levels.INFO, {})
     else
-      vim.notify("No active group information available", vim.log.levels.WARN)
+      require("marker-groups.feedback").notify("No active group information available", vim.log.levels.WARN, {})
     end
   end, {
     desc = "Show information about active marker group",
@@ -305,37 +314,38 @@ function M.setup()
     desc = "Close all drawer marker viewer windows",
   })
 
-  vim.api.nvim_create_user_command("MarkerGroupsTelescope", function()
-    local telescope = require "marker-groups.telescope"
-    telescope.show_groups()
-  end, {
-    desc = "Open Telescope picker for marker groups",
-  })
-
-  vim.api.nvim_create_user_command("MarkerGroupsTelescopeMarkers", function()
-    local telescope = require "marker-groups.telescope"
-    telescope.show_markers()
-  end, {
-    desc = "Open Telescope picker for markers in active group",
-  })
-
   vim.api.nvim_create_user_command("MarkerGroupsDrawerWidth", function(args)
     local drawer = require "marker-groups.ui.drawer"
 
     if args.args == "" then
       local current_width = drawer.get_drawer_width()
-      vim.notify("Current drawer width: " .. current_width .. " columns", vim.log.levels.INFO)
+      require("marker-groups.feedback").notify(
+        "Current drawer width: " .. current_width .. " columns",
+        vim.log.levels.INFO,
+        {}
+      )
     else
       local width = tonumber(args.args)
       if width then
         drawer.set_drawer_width(width)
       else
-        vim.notify("Invalid width: " .. args.args .. ". Please provide a number.", vim.log.levels.ERROR)
+        require("marker-groups.feedback").notify(
+          "Invalid width: " .. args.args .. ". Please provide a number.",
+          vim.log.levels.ERROR,
+          {}
+        )
       end
     end
   end, {
     nargs = "?",
     desc = "Get or set the drawer width (30-120 columns)",
+  })
+
+  vim.api.nvim_create_user_command("MarkerGroupsPickerStatus", function()
+    local pickers = require "marker-groups.pickers"
+    pickers.show_picker_status()
+  end, {
+    desc = "Show picker backend status and availability",
   })
 end
 

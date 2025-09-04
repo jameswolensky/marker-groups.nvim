@@ -90,7 +90,7 @@ local function extract_marker_context(marker, context_lines, max_width)
     local line_num_str = string.format("%" .. line_num_width .. "d", line_num)
     local line_content = file_lines[line_num] or ""
 
-    local available_width = max_width - string.len(prefix) - line_num_width - 3 -- ": " + some padding
+    local available_width = max_width - string.len(prefix) - line_num_width - 3
     if string.len(line_content) > available_width then
       line_content = string.sub(line_content, 1, available_width - 3) .. "..."
     end
@@ -394,11 +394,6 @@ function M.show_markers()
       _drawer_windows[win] = nil
     end,
   })
-
-  feedback.success(
-    "Drawer Viewer",
-    "Opened viewer for group '" .. active_group .. "' with " .. #group.markers .. " markers"
-  )
   return buf, win
 end
 
@@ -863,7 +858,6 @@ end
 function M.toggle_drawer()
   if M.has_open_windows() then
     M.close_all()
-    feedback.success("Drawer Viewer", "Closed marker drawer")
     return nil, nil
   else
     return M.show_markers()
@@ -922,7 +916,7 @@ function M.navigate_to_next_marker(win_id, marker_positions, direction)
     if not target_line then
       target_line = marker_lines[1]
     end
-  else -- direction == "up"
+  else
     for i = #marker_lines, 1, -1 do
       local line_num = marker_lines[i]
       if line_num < current_line then
