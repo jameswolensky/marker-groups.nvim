@@ -2,8 +2,6 @@ local M = {}
 
 local logger = require "marker-groups.utils.logger"
 
-local PRIORITY_ORDER = { "snacks", "fzf_lua", "mini_pick", "vim_ui" }
-
 local detected_backends_cache = nil
 local current_backend_name = nil
 
@@ -92,7 +90,7 @@ local function determine_backend(requested)
     end
   end
 
-  if normalized and normalized ~= "auto" then
+  if normalized then
     if available[normalized] and available[normalized].available then
       return normalized
     else

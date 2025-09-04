@@ -30,5 +30,5 @@ title: Commands
 Behavior
 - Group list: Enter deletes the selected group (5s notification confirms). ESC closes.
 - Marker list: Preview-only; shows code context around the marker; no jumping.
-- Backends: mini.pick, Snacks.nvim, fzf-lua, vim.ui (auto-detected with fallback).
+- Backends: mini.pick, Snacks.nvim, fzf-lua, vim.ui. Configure explicitly via `require('marker-groups').setup({ picker = '<name>' })`.
 
