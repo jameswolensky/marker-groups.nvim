@@ -203,8 +203,8 @@ Default configuration: >
         },
       },
       -- Picker backend (default: 'vim')
-      -- Strict options: 'vim' | 'snacks' | 'fzf-lua' | 'mini.pick'
-      -- Aliases: 'fzf_lua' and 'mini_pick' are also accepted; invalid values fall back to 'vim'.
+      -- Accepted values: 'vim' | 'snacks' | 'fzf-lua' | 'mini.pick'
+      -- Invalid values fall back to 'vim'.
       picker = 'vim',
     })
 <

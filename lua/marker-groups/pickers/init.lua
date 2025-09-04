@@ -85,7 +85,7 @@ local function determine_backend(requested)
       normalized = "vim_ui"
     elseif normalized == "fzf-lua" then
       normalized = "fzf_lua"
-    elseif normalized == "mini.pick" or normalized == "mini-pick" or normalized == "minipick" then
+    elseif normalized == "mini.pick" then
       normalized = "mini_pick"
     end
   end

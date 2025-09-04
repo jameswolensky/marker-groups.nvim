@@ -24,8 +24,8 @@ Configure the picker in `setup()`:
 
 ```lua
 require('marker-groups').setup({
-  -- Strict options: 'vim' | 'snacks' | 'fzf-lua' | 'mini.pick'
-  -- Aliases: 'fzf_lua' and 'mini_pick' are also accepted. Default is 'vim'.
+  -- Accepted values: 'vim' | 'snacks' | 'fzf-lua' | 'mini.pick'
+  -- Invalid values fall back to 'vim'.
   picker = 'vim',
 })
 ```

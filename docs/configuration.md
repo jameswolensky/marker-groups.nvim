@@ -44,8 +44,8 @@ require("marker-groups").setup({
     },
   },
   -- Picker backend (default: 'vim')
-  -- Strict options: 'vim' | 'snacks' | 'fzf-lua' | 'mini.pick'
-  -- Aliases: 'fzf_lua' and 'mini_pick' are also accepted. Invalid values fall back to 'vim'.
+  -- Accepted values: 'vim' | 'snacks' | 'fzf-lua' | 'mini.pick'
+  -- Invalid values fall back to 'vim'.
   picker = 'vim',
 })
 ```
