@@ -285,10 +285,8 @@ function M.format_group_info(group_info, format)
   format = format or "short"
 
   if format == "short" then
-    local count = tonumber(group_info.marker_count) or 0
-    local marker_text = count .. " marker" .. (count ~= 1 and "s" or "")
     local active_indicator = group_info.is_active and " *" or ""
-    return group_info.name .. " (" .. marker_text .. ")" .. active_indicator
+    return group_info.name .. active_indicator
   elseif format == "long" then
     local lines = {
       "Group: " .. group_info.name .. (group_info.is_active and " (active)" or ""),
