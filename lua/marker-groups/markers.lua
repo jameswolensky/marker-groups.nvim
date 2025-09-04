@@ -199,9 +199,13 @@ function M.edit_marker(marker_id, new_annotation)
     return state.Result.error("Marker not found: " .. marker_id, "MARKER_NOT_FOUND")
   end
 
+  local now = os.time()
+  if now <= (marker.timestamp or 0) then
+    now = (marker.timestamp or 0) + 1
+  end
   local updated_data = vim.tbl_extend("force", {}, marker, {
     annotation = validated_annotation,
-    timestamp = os.time(),
+    timestamp = now,
   })
 
   local remove_result = state.remove_marker(marker_id)
@@ -560,7 +564,6 @@ function M.sync_extmarks(buf)
           local updated_marker_data = vim.tbl_extend("force", {}, marker, {
             start_line = new_start_line,
             end_line = new_end_line,
-            timestamp = os.time(),
           })
 
           local remove_result = state.remove_marker(marker.id)
