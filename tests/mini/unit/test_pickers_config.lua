@@ -18,6 +18,12 @@ local function setup_with_picker(picker)
   return status.current_backend
 end
 
+local function telescope_available()
+  local ok1 = pcall(require, "telescope")
+  local ok2 = pcall(require, "telescope.pickers")
+  return ok1 and ok2
+end
+
 T["picker vim maps to vim_ui"] = function()
   local backend = setup_with_picker "vim"
   MiniTest.expect.equality(backend, "vim_ui")
@@ -31,6 +37,12 @@ end
 T["invalid picker falls back to vim_ui"] = function()
   local backend = setup_with_picker "not_a_real_picker"
   MiniTest.expect.equality(backend, "vim_ui")
+end
+
+T["picker telescope maps to telescope or falls back"] = function()
+  local backend = setup_with_picker "telescope"
+  local expected = telescope_available() and "telescope" or "vim_ui"
+  MiniTest.expect.equality(backend, expected)
 end
 
 return T

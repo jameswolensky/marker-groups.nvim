@@ -13,6 +13,7 @@ title: Installation
     -- "ibhagwan/fzf-lua",
     -- "folke/snacks.nvim",
     -- "nvim-mini/mini.nvim",
+    -- "nvim-telescope/telescope.nvim",
   },
   config = function()
     require("marker-groups").setup({
@@ -33,6 +34,7 @@ use {
     -- "ibhagwan/fzf-lua",
     -- "folke/snacks.nvim",
     -- "nvim-mini/mini.nvim",
+    -- "nvim-telescope/telescope.nvim",
   },
   config = function()
     require("marker-groups").setup()

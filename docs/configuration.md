@@ -44,7 +44,7 @@ require("marker-groups").setup({
     },
   },
   -- Picker backend (default: 'vim')
-  -- Accepted values: 'vim' | 'snacks' | 'fzf-lua' | 'mini.pick'
+  -- Accepted values: 'vim' | 'snacks' | 'fzf-lua' | 'mini.pick' | 'telescope'
   -- Invalid values fall back to 'vim'.
   picker = 'vim',
 })

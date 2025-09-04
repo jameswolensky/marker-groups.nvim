@@ -12,7 +12,7 @@ A powerful Neovim plugin for organizing and annotating code with grouped markers
 - **🗂️ Group Organization**: Organize markers into logical groups (features, bugs, todos, etc.)
 - **🎯 Visual Indicators**: See markers directly in your code with virtual text
 - **🪟 Drawer Viewer**: Right-side drawer to browse all markers with context
-- **🔎 Picker Integrations**: mini.pick, Snacks, fzf-lua, and built-in vim.ui
+- **🔎 Picker Integrations**: mini.pick, Snacks, Telescope, fzf-lua, and built-in vim.ui
 - **💾 Persistent Storage**: Markers survive Neovim restarts with automatic saving
 - **⌨️ Rich Keybindings**: Intuitive keymaps for all operations
 - **🔧 Configurable**: Extensive customization options
@@ -28,6 +28,7 @@ A powerful Neovim plugin for organizing and annotating code with grouped markers
     "nvim-lua/plenary.nvim", -- Required
     "ibhagwan/fzf-lua", -- Optional: fzf-lua picker
     "folke/snacks.nvim", -- Optional: Snacks picker
+    "nvim-telescope/telescope.nvim", -- Optional: Telescope picker
     -- mini.pick is part of mini.nvim; this plugin vendors mini.nvim for tests,
     -- but you can also install mini.nvim explicitly to use mini.pick system-wide
     -- "nvim-mini/mini.nvim",
@@ -35,7 +36,7 @@ A powerful Neovim plugin for organizing and annotating code with grouped markers
   config = function()
     require("marker-groups").setup({
       -- Default picker is 'vim' (built-in vim.ui)
-      -- Accepted values: 'vim' | 'snacks' | 'fzf-lua' | 'mini.pick'
+      -- Accepted values: 'vim' | 'snacks' | 'fzf-lua' | 'mini.pick' | 'telescope'
       picker = 'vim',
     })
   end,
@@ -51,6 +52,7 @@ use {
     "nvim-lua/plenary.nvim", -- Required
     "ibhagwan/fzf-lua", -- Optional
     "folke/snacks.nvim", -- Optional
+    "nvim-telescope/telescope.nvim", -- Optional
     -- "nvim-mini/mini.nvim", -- Optional
   },
   config = function()
@@ -174,7 +176,7 @@ require("marker-groups").setup({
   },
 
   -- Picker backend (default: 'vim')
-  -- Accepted values: 'vim' | 'snacks' | 'fzf-lua' | 'mini.pick'
+  -- Accepted values: 'vim' | 'snacks' | 'fzf-lua' | 'mini.pick' | 'telescope'
   -- Invalid values fall back to 'vim'.
   picker = 'vim',
 })

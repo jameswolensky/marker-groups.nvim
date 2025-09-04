@@ -26,7 +26,8 @@ code with grouped markers. It allows you to:
 - Organize markers into logical groups (features, bugs, todos, etc.)
 - View markers with visual indicators in your code
 - Browse markers in a right-side drawer viewer with code context
-- Search markers with multiple pickers: mini.pick, Snacks, fzf-lua, or builtin vim.ui
+- Search markers with multiple pickers: mini.pick, Snacks, Telescope, fzf-lua,
+  or builtin vim.ui
 - Persist markers across Neovim sessions
 
 ==============================================================================
@@ -39,9 +40,8 @@ Using lazy.nvim: >
         "nvim-lua/plenary.nvim",
         "folke/snacks.nvim",              -- Optional
         "ibhagwan/fzf-lua",               -- Optional
-        "folke/snacks.nvim",              -- Optional
-        "ibhagwan/fzf-lua",               -- Optional
         -- "nvim-mini/mini.nvim",         -- Optional, for mini.pick
+        -- "nvim-telescope/telescope.nvim",-- Optional, for Telescope
       },
       config = function()
         require("marker-groups").setup()
@@ -103,7 +103,6 @@ Viewing & Navigation:
 :MarkerGroupsPickerStatus                            *:MarkerGroupsPickerStatus*
     Show current picker backend, available backends, and their status.
 
-    
 
 :MarkerGroupsHealth                                  *:MarkerGroupsHealth*
     Run health checks to verify plugin status.
@@ -203,7 +202,7 @@ Default configuration: >
         },
       },
       -- Picker backend (default: 'vim')
-      -- Accepted values: 'vim' | 'snacks' | 'fzf-lua' | 'mini.pick'
+      -- Accepted values: 'vim' | 'snacks' | 'fzf-lua' | 'mini.pick' | 'telescope'
       -- Invalid values fall back to 'vim'.
       picker = 'vim',
     })
@@ -232,7 +231,7 @@ require("marker-groups.state").get_state()           *marker-groups.state.get_st
 Common issues and solutions:
 
 Problem: Pickers not found
-Solution: Ensure the chosen backend is installed and configured. For mini.pick, call `require('mini.pick').setup()` in your config.
+Solution: Ensure the chosen backend is installed and configured. For mini.pick, call `require('mini.pick').setup()` in your config. For Telescope, install `nvim-telescope/telescope.nvim`.
 
 Problem: Markers not persisting across sessions
 Solution: Persistence is always enabled. Check data directory permissions and path

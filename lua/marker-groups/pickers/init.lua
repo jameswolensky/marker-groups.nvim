@@ -33,6 +33,12 @@ local function is_vim_ui_available()
   return type(vim.ui) == "table" and type(vim.ui.select) == "function"
 end
 
+local function is_telescope_available()
+  local ok1 = pcall(require, "telescope")
+  local ok2 = pcall(require, "telescope.pickers")
+  return ok1 and ok2
+end
+
 local function detect_available_backends()
   if detected_backends_cache ~= nil then
     return detected_backends_cache
@@ -61,6 +67,14 @@ local function detect_available_backends()
         available = true,
         version = "unknown",
         backend = require "marker-groups.pickers.mini_pick",
+      }
+    or { available = false, error = "not available" }
+
+  backends.telescope = is_telescope_available()
+      and {
+        available = true,
+        version = "unknown",
+        backend = require "marker-groups.pickers.telescope",
       }
     or { available = false, error = "not available" }
 
