@@ -394,11 +394,6 @@ function M.show_markers()
       _drawer_windows[win] = nil
     end,
   })
-
-  feedback.success(
-    "Drawer Viewer",
-    "Opened viewer for group '" .. active_group .. "' with " .. #group.markers .. " markers"
-  )
   return buf, win
 end
 
@@ -863,7 +858,6 @@ end
 function M.toggle_drawer()
   if M.has_open_windows() then
     M.close_all()
-    feedback.success("Drawer Viewer", "Closed marker drawer")
     return nil, nil
   else
     return M.show_markers()
