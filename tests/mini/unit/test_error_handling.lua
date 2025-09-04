@@ -30,7 +30,6 @@ end, function(x, t)
   return string.format("Expected %s, got %s. Object: %s", t, type(x), vim.inspect(x))
 end)
 
--- input validation: annotation
 T["input validation / annotation / accepts valid annotations"] = function()
   local eh = require "marker-groups.error_handling"
   local v = "Valid annotation"
@@ -69,7 +68,6 @@ T["input validation / annotation / allows line breaks (current impl may reject)"
   for _, a in ipairs(cases) do
     local res = eh.validate_input(a, "annotation")
     MiniTest.add_note("annotation newline validation: " .. tostring(res.success) .. " err=" .. tostring(res.error))
-    -- Accept either behavior for now until unified policy across modules
     expect_type(res.success, "boolean")
   end
 end
@@ -115,7 +113,6 @@ T["input validation / annotation / counts trimmed length"] = function()
   MiniTest.expect.equality(string.rep("a", 98), res.value)
 end
 
--- input validation: group_name
 T["input validation / group_name / accepts valid names and unicode"] = function()
   local eh = require "marker-groups.error_handling"
   local v = "Valid Group Name"
@@ -159,7 +156,6 @@ T["input validation / group_name / enforces 100-char limit"] = function()
   end
 end
 
--- utilities
 T["utilities / ErrorCodes have essential entries"] = function()
   local eh = require "marker-groups.error_handling"
   expect_type(eh.ErrorCodes, "table")
@@ -192,7 +188,6 @@ T["utilities / safe_execute with errors"] = function()
   expect_type(res.error, "string")
 end
 
--- Result object validation
 T["result object / validates and rejects malformed"] = function()
   local eh = require "marker-groups.error_handling"
   MiniTest.expect.equality(true, eh.is_valid_result { success = true, value = "x" })

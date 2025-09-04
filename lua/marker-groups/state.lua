@@ -240,10 +240,11 @@ function M.add_marker(marker_data, group_name)
     end
   end
 
+  local hydrating = vim.g.__marker_groups_hydrating == true
   local marker = vim.tbl_extend("force", {}, marker_data, {
-    id = generate_uuid(),
-    timestamp = os.time(),
-    extmark_id = next_extmark_id,
+    id = marker_data.id or generate_uuid(),
+    timestamp = (hydrating and marker_data.timestamp) or os.time(),
+    extmark_id = marker_data.extmark_id or next_extmark_id,
   })
 
   next_extmark_id = next_extmark_id + 1

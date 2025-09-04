@@ -1,11 +1,7 @@
--- Project-specific runner for mini.test
-
--- Load minimal init
 vim.cmd('luafile ' .. vim.fn.fnamemodify(debug.getinfo(1, 'S').source:sub(2), ':h') .. '/minimal_init.lua')
 
 local MiniTest = require 'mini.test'
 
--- Configure collection to discover tests in tests/**/test_*.lua
 local mode = vim.env.MODE or 'all'
 local test_file = vim.env.TEST_FILE
 local base = 'tests/mini'

@@ -7,6 +7,7 @@ local feedback = require "marker-groups.feedback"
 local _cached_namespaces = {}
 
 local _update_timers = {}
+local _hydrating = false
 
 local function get_namespace(name)
   if not _cached_namespaces[name] then
@@ -172,9 +173,10 @@ function M.update_buffer_display(buf, markers)
     end)
 
     if not success and config.get().debug then
-      vim.notify(
+      require("marker-groups.feedback").notify(
         string.format("Failed to create virtual text for marker %s: %s", marker.id or "unknown", err),
-        vim.log.levels.WARN
+        vim.log.levels.WARN,
+        {}
       )
     end
   end
@@ -197,14 +199,14 @@ function M.toggle_display(enabled)
 
   if new_state then
     M.update_all_buffers()
-    vim.notify("Marker virtual text enabled", vim.log.levels.INFO)
+    require("marker-groups.feedback").notify("Marker virtual text enabled", vim.log.levels.INFO, {})
   else
     for _, buf in ipairs(api.nvim_list_bufs()) do
       if api.nvim_buf_is_loaded(buf) then
         M.clear_buffer_display(buf)
       end
     end
-    vim.notify("Marker virtual text disabled", vim.log.levels.INFO)
+    require("marker-groups.feedback").notify("Marker virtual text disabled", vim.log.levels.INFO, {})
   end
 end
 
@@ -366,7 +368,9 @@ function M.setup_auto_updates()
 
   state.on("group_created", function(data)
     vim.schedule(function()
-      feedback.notify("Group created: " .. data.group_name, feedback.levels.DEBUG)
+      -- Suppress noisy create notification to avoid confusion during hydration and normal use
+      -- Visual updates are handled elsewhere; no notification needed here.
+      return
     end)
   end)
 
@@ -381,6 +385,14 @@ function M.setup_auto_updates()
     vim.schedule(function()
       M.update_all_buffers()
       feedback.notify("Group deleted: " .. data.group_name, feedback.levels.DEBUG)
+    end)
+  end)
+
+  state.on("group_loaded", function(data)
+    vim.schedule(function()
+      if require("marker-groups.config").get_value("debug", false) then
+        feedback.notify("Group loaded: " .. data.group_name, feedback.levels.DEBUG)
+      end
     end)
   end)
 
@@ -399,6 +411,11 @@ function M.setup_auto_updates()
     vim.schedule(function()
       M.update_all_buffers()
       feedback.notify("Marker groups UI synchronized with state", feedback.levels.DEBUG)
+      -- Suppress noisy create logs briefly during hydration sequence
+      _hydrating = true
+      vim.defer_fn(function()
+        _hydrating = false
+      end, 600)
     end)
   end)
 

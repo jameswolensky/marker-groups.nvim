@@ -27,12 +27,6 @@ function M.check()
     error "nvim_open_win not available"
   end
 
-  if pcall(require, "telescope") then
-    ok "Telescope is available"
-  else
-    warn "Telescope not found (optional)"
-  end
-
   local marker_groups = require "marker-groups"
   if marker_groups.is_initialized() then
     ok "Plugin is initialized"
@@ -117,7 +111,11 @@ function M.register()
     local ok = pcall(vim.cmd, "checkhealth marker-groups")
     if not ok then
       M.check()
-      vim.notify("Health report generated. View it with :checkhealth marker-groups", vim.log.levels.INFO)
+      require("marker-groups.feedback").notify(
+        "Health report generated. View it with :checkhealth marker-groups",
+        vim.log.levels.INFO,
+        {}
+      )
     end
   end, {
     desc = "Run marker-groups health check",

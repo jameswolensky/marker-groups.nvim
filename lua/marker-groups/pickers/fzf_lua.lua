@@ -1,0 +1,112 @@
+local M = {}
+
+local groups = require "marker-groups.groups"
+local state = require "marker-groups.state"
+local utils = require "marker-groups.pickers.utils"
+
+function M.show_groups(opts)
+  opts = opts or {}
+  local ok, fzf = pcall(require, "fzf-lua")
+  if not ok or not fzf or type(fzf.fzf_exec) ~= "function" then
+    require("marker-groups.feedback").notify("fzf-lua not available", vim.log.levels.WARN, {})
+    return
+  end
+
+  local info = groups.list_groups()
+  info = utils.filter_groups_for_action(info, opts)
+  local items, map = {}, {}
+  for _, g in ipairs(info) do
+    local display = groups.format_group_info(g, "short")
+    table.insert(items, display)
+    map[display] = g.name
+  end
+
+  if #items == 0 then
+    require("marker-groups.feedback").notify(utils.empty_groups_message(opts), vim.log.levels.WARN, {})
+    return
+  end
+
+  fzf.fzf_exec(items, {
+    prompt = "Marker Groups> ",
+    preview = function(selected)
+      local display
+      if type(selected) == "table" then
+        display = selected[1]
+      elseif type(selected) == "string" then
+        display = selected
+      end
+      local name = display and map[display]
+      if not name then
+        return ""
+      end
+      local data = utils.generate_group_markers_code_preview(name, { max_width = 70 })
+      return table.concat(data.content, "\n")
+    end,
+    actions = {
+      ["default"] = function(selected)
+        local display = selected and selected[1]
+        local name = display and map[display]
+        if not name then
+          return
+        end
+        if opts.action == "delete" then
+          if groups.delete_group_with_confirmation then
+            groups.delete_group_with_confirmation(name, { skip_confirmation = true })
+          else
+            groups.delete_group(name, true)
+          end
+        else
+          groups.select_group(name)
+          require("marker-groups.feedback").notify("Selected group: " .. name, vim.log.levels.INFO, { timeout = 3000 })
+        end
+      end,
+    },
+  })
+end
+
+function M.show_markers(opts)
+  opts = opts or {}
+  local ok, fzf = pcall(require, "fzf-lua")
+  if not ok or not fzf or type(fzf.fzf_exec) ~= "function" then
+    require("marker-groups.feedback").notify("fzf-lua not available", vim.log.levels.WARN, {})
+    return
+  end
+
+  local active = state.get_active_group()
+  if not active then
+    require("marker-groups.feedback").notify("No active group selected", vim.log.levels.WARN, {})
+    return
+  end
+  local grp = state.get_group(active)
+  local markers = (grp and grp.markers) or {}
+
+  local items, map = {}, {}
+  for _, m in ipairs(markers) do
+    local file_name = vim.fn.fnamemodify(m.buffer_path, ":t")
+    local line_info = m.start_line ~= m.end_line and (m.start_line .. "-" .. m.end_line) or m.start_line
+    local display = string.format("%-20s %4s: %s", file_name, line_info, m.annotation)
+    table.insert(items, display)
+    map[display] = m
+  end
+
+  fzf.fzf_exec(items, {
+    prompt = "Markers - " .. active .. "> ",
+    preview = function(selected)
+      local display
+      if type(selected) == "table" then
+        display = selected[1]
+      elseif type(selected) == "string" then
+        display = selected
+      end
+      local m = display and map[display]
+      if not m then
+        return ""
+      end
+      local data = utils.generate_marker_preview(m)
+      return table.concat(data.content, "\n")
+    end,
+    actions = {},
+  })
+end
+
+return M

@@ -12,7 +12,7 @@ A powerful Neovim plugin for organizing and annotating code with grouped markers
 - **🗂️ Group Organization**: Organize markers into logical groups (features, bugs, todos, etc.)
 - **🎯 Visual Indicators**: See markers directly in your code with virtual text
 - **🪟 Drawer Viewer**: Right-side drawer to browse all markers with context
-- **🔍 Telescope Integration**: Fuzzy search through markers and groups
+- **🔎 Picker Integrations**: mini.pick, Snacks, Telescope, fzf-lua, and built-in vim.ui
 - **💾 Persistent Storage**: Markers survive Neovim restarts with automatic saving
 - **⌨️ Rich Keybindings**: Intuitive keymaps for all operations
 - **🔧 Configurable**: Extensive customization options
@@ -26,11 +26,18 @@ A powerful Neovim plugin for organizing and annotating code with grouped markers
   "jameswolensky/marker-groups.nvim",
   dependencies = {
     "nvim-lua/plenary.nvim", -- Required
-    "nvim-telescope/telescope.nvim", -- Optional: for fuzzy search
+    "ibhagwan/fzf-lua", -- Optional: fzf-lua picker
+    "folke/snacks.nvim", -- Optional: Snacks picker
+    "nvim-telescope/telescope.nvim", -- Optional: Telescope picker
+    -- mini.pick is part of mini.nvim; this plugin vendors mini.nvim for tests,
+    -- but you can also install mini.nvim explicitly to use mini.pick system-wide
+    -- "nvim-mini/mini.nvim",
   },
   config = function()
     require("marker-groups").setup({
-      -- Your configuration here
+      -- Default picker is 'vim' (built-in vim.ui)
+      -- Accepted values: 'vim' | 'snacks' | 'fzf-lua' | 'mini.pick' | 'telescope'
+      picker = 'vim',
     })
   end,
 }
@@ -43,7 +50,10 @@ use {
   "jameswolensky/marker-groups.nvim",
   requires = {
     "nvim-lua/plenary.nvim", -- Required
+    "ibhagwan/fzf-lua", -- Optional
+    "folke/snacks.nvim", -- Optional
     "nvim-telescope/telescope.nvim", -- Optional
+    -- "nvim-mini/mini.nvim", -- Optional
   },
   config = function()
     require("marker-groups").setup()
@@ -81,8 +91,8 @@ require("marker-groups").setup()
 | `<leader>mgs` | Select group | Switch to a different group |
 | `<leader>mgr` | Rename group | Rename the current group |
 | `<leader>mgd` | Delete group | Delete a marker group |
-| `<leader>mtg` | Telescope groups | Open Telescope marker groups picker |
-| `<leader>mtm` | Telescope markers | Open Telescope markers for active group |
+| `<leader>mtg` | Picker groups | Open configured picker for marker groups |
+| `<leader>mtm` | Picker markers | Open configured picker for markers in active group |
 | `J/K` in drawer | — | — |
 | `E` in drawer | Edit annotation | Edit the selected marker's annotation in the drawer |
 | `D` in drawer | Delete marker | Delete the selected marker in the drawer |
@@ -104,7 +114,7 @@ require("marker-groups").setup()
 
 ### Viewing & Navigation
 - `:MarkerGroupsView` - Open the drawer marker viewer
-- `:MarkerGroupsTelescope` - Open Telescope integration
+- `:MarkerGroupsPickerStatus` - Show current picker backend and availability
 - `:MarkerGroupsHealth` - Run health checks
 
 ## ⚙️ Configuration
@@ -131,8 +141,6 @@ require("marker-groups").setup({
 
   -- Virtual text display & highlight groups
   max_annotation_display = 50, -- truncate long annotations
-  -- Customize highlight groups (names). These will be used for rendering.
-  -- Provide your own groups to integrate with your colorscheme.
   highlight_groups = {
     marker = "MarkerGroupsMarker",
     annotation = "MarkerGroupsAnnotation",
@@ -152,7 +160,6 @@ require("marker-groups").setup({
         delete = { suffix = "d", desc = "Delete marker at cursor" },
         list = { suffix = "l", desc = "List markers in buffer" },
         info = { suffix = "i", desc = "Show marker at cursor" },
-        
       },
       group = {
         create = { suffix = "gc", desc = "Create marker group" },
@@ -161,18 +168,17 @@ require("marker-groups").setup({
         rename = { suffix = "gr", desc = "Rename marker group" },
         delete = { suffix = "gd", desc = "Delete marker group" },
         info = { suffix = "gi", desc = "Show active group info" },
-        -- next/prev/toggle_last/cleanup removed
         from_branch = { suffix = "gb", desc = "Create group from git branch" },
       },
-      view = {
-        toggle = { suffix = "v", desc = "Toggle drawer marker viewer" },
-      },
-      telescope = {
-        groups = { suffix = "tg", desc = "Telescope: marker groups" },
-        markers = { suffix = "tm", desc = "Telescope: markers in active group" },
-      },
+      view = { toggle = { suffix = "v", desc = "Toggle drawer marker viewer" } },
+      
     },
   },
+
+  -- Picker backend (default: 'vim')
+  -- Accepted values: 'vim' | 'snacks' | 'fzf-lua' | 'mini.pick' | 'telescope'
+  -- Invalid values fall back to 'vim'.
+  picker = 'vim',
 })
 ```
 
@@ -246,5 +252,5 @@ MIT License - see [LICENSE](LICENSE) file for details.
 ## 🙏 Acknowledgments
 
 - Built with [plenary.nvim](https://github.com/nvim-lua/plenary.nvim)
-- Telescope integration via [telescope.nvim](https://github.com/nvim-telescope/telescope.nvim)
+- Picker integrations with mini.pick, Snacks, [telescope.nvim](https://github.com/nvim-telescope/telescope.nvim), and [fzf-lua](https://github.com/ibhagwan/fzf-lua)
 - Inspired by various code annotation and marker plugins

@@ -3,7 +3,6 @@ local MiniTest = require "mini.test"
 local T = MiniTest.new_set {
   hooks = {
     pre_case = function()
-      -- Fresh setup per test
       package.loaded["marker-groups"] = nil
       package.loaded["marker-groups.config"] = nil
 
@@ -46,7 +45,6 @@ end, function(x, t)
   return string.format("Expected %s, got %s. Object: %s", t, type(x), vim.inspect(x))
 end)
 
--- get and set operations
 T["get and set operations / should get default values"] = function()
   local config = require "marker-groups.config"
   local data_dir = config.get_value "data_dir"
@@ -73,7 +71,6 @@ T["get and set operations / should get full config object"] = function()
   expect_truthy(full_config.data_dir ~= nil)
 end
 
--- configuration updates
 T["configuration updates / should update configuration values"] = function()
   local config = require "marker-groups.config"
   local new_config = vim.deepcopy(config.get())
@@ -92,7 +89,6 @@ T["configuration updates / should preserve existing values when updating"] = fun
   MiniTest.expect.equality(updated_data_dir, original_data_dir)
 end
 
--- validation
 T["validation / should validate log levels"] = function()
   local config = require "marker-groups.config"
   local valid_levels = { "debug", "info", "warn", "error" }
@@ -112,7 +108,6 @@ T["validation / should handle boolean values correctly (debug)"] = function()
   expect_truthy(config.get_value "debug")
 end
 
--- path handling
 T["path handling / should expand data directory path"] = function()
   local config = require "marker-groups.config"
   local data_dir = config.get_value "data_dir"
@@ -122,7 +117,6 @@ T["path handling / should expand data directory path"] = function()
   MiniTest.expect.equality(normalized_path, data_dir)
 end
 
--- drawer configuration
 T["drawer configuration / should have drawer_config in default configuration"] = function()
   local config = require "marker-groups.config"
   local current_config = config.get()
