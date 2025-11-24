@@ -4,6 +4,21 @@ local groups = require "marker-groups.groups"
 local state = require "marker-groups.state"
 local utils = require "marker-groups.pickers.utils"
 
+local function with_modifiable(buf, fn)
+  if not (buf and vim.api.nvim_buf_is_valid(buf)) then
+    return false
+  end
+  local prev = vim.bo[buf].modifiable
+  if not prev then
+    vim.bo[buf].modifiable = true
+  end
+  local ok, err = pcall(fn)
+  if not prev then
+    vim.bo[buf].modifiable = false
+  end
+  return ok, err
+end
+
 function M.show_groups(opts)
   opts = opts or {}
   local ok, snacks = pcall(require, "snacks")
@@ -47,21 +62,6 @@ function M.show_groups(opts)
       end
     end
     return nil
-  end
-
-  local function with_modifiable(buf, fn)
-    if not (buf and vim.api.nvim_buf_is_valid(buf)) then
-      return false
-    end
-    local prev = vim.bo[buf].modifiable
-    if not prev then
-      vim.bo[buf].modifiable = true
-    end
-    local ok, err = pcall(fn)
-    if not prev then
-      vim.bo[buf].modifiable = false
-    end
-    return ok, err
   end
 
   snacks.picker {
@@ -144,12 +144,22 @@ function M.show_markers(opts)
   for _, m in ipairs(markers) do
     local file_name = vim.fn.fnamemodify(m.buffer_path, ":t")
     local line_info = m.start_line ~= m.end_line and (m.start_line .. "-" .. m.end_line) or m.start_line
-    table.insert(items, { text = string.format("%-20s %4s: %s", file_name, line_info, m.annotation), marker = m })
+    table.insert(items, {
+      text = string.format("%-20s %4s: %s", file_name, line_info, m.annotation),
+      file = m.buffer_path,
+      marker = m,
+    })
   end
 
   snacks.picker {
-    source = { name = "marker_list", items = items },
+    source = "marker_list",
+    items = items,
     prompt = "Markers - " .. active .. "> ",
+    format = function(item)
+      local ret = {}
+      ret[#ret + 1] = { item.text }
+      return ret
+    end,
     preview = function(ctx)
       local m = ctx.item and ctx.item.marker
       if not m then
@@ -162,7 +172,18 @@ function M.show_markers(opts)
       end)
       return true
     end,
-    actions = {},
+    actions = {
+      confirm = function(picker, item)
+        local m = item and item.marker
+        if not m then
+          return
+        end
+        utils.navigate_to_marker(m)
+        if picker and picker.close then
+          picker:close()
+        end
+      end,
+    },
   }
 end
 
