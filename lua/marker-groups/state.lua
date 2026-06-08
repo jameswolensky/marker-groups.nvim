@@ -401,14 +401,19 @@ function M.reset()
   next_extmark_id = 1
 end
 
+local function count_all_markers(groups)
+  local lists = vim.tbl_values(vim.tbl_map(function(g)
+    return g.markers
+  end, groups))
+  return vim.tbl_count(vim.iter(lists):flatten():totable())
+end
+
 function M.debug_info()
   return {
     state_initialized = state ~= nil,
     active_group = state and state.active_group or nil,
     group_count = state and vim.tbl_count(state.marker_groups) or 0,
-    total_markers = state and vim.tbl_count(vim.tbl_flatten(vim.tbl_map(function(g)
-      return g.markers
-    end, state.marker_groups))) or 0,
+    total_markers = state and count_all_markers(state.marker_groups) or 0,
     event_listener_count = vim.tbl_count(event_listeners),
     next_extmark_id = next_extmark_id,
   }
