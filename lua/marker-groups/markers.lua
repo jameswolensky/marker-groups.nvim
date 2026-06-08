@@ -6,8 +6,8 @@ local error_handling = require "marker-groups.error_handling"
 
 local ns_id = api.nvim_create_namespace "marker_groups"
 
-local function get_current_buffer_info()
-  local buf = api.nvim_get_current_buf()
+local function get_current_buffer_info(buf)
+  buf = buf or api.nvim_get_current_buf()
   local path = api.nvim_buf_get_name(buf)
 
   if path and path ~= "" and not vim.startswith(path, "/") then
@@ -22,8 +22,8 @@ local function get_line_range()
   return selection.lstart, selection.lend
 end
 
-function M.add_marker_range(start_line, end_line, annotation, group_name)
-  local buf, path = get_current_buffer_info()
+function M.add_marker_range(start_line, end_line, annotation, group_name, target_buf)
+  local buf, path = get_current_buffer_info(target_buf)
 
   if not api.nvim_buf_is_valid(buf) then
     return state.Result.error("Invalid buffer", "INVALID_BUFFER")
@@ -115,8 +115,8 @@ local function validate_buffer(buf, path)
   return true, nil
 end
 
-function M.add_marker(annotation, group_name)
-  local buf, path = get_current_buffer_info()
+function M.add_marker(annotation, group_name, target_buf)
+  local buf, path = get_current_buffer_info(target_buf)
 
   local valid, error_msg = validate_buffer(buf, path)
   if not valid then
