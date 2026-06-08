@@ -154,6 +154,7 @@ function M.setup()
     local has_range = args.line1 and args.line2 and args.line1 ~= args.line2
     local range_start = has_range and math.min(args.line1, args.line2) or nil
     local range_end = has_range and math.max(args.line1, args.line2) or nil
+    local target_buf = vim.api.nvim_get_current_buf()
 
     if annotation == "" then
       local input_ui = require "marker-groups.ui.input"
@@ -164,9 +165,9 @@ function M.setup()
           if input and input ~= "" then
             local result
             if range_start and range_end then
-              result = markers.add_marker_range(range_start, range_end, input)
+              result = markers.add_marker_range(range_start, range_end, input, nil, target_buf)
             end
-            result = result or markers.add_marker(input)
+            result = result or markers.add_marker(input, nil, target_buf)
             if not result.success then
               require("marker-groups.feedback").notify(
                 "Failed to add marker: " .. result.error,
@@ -182,9 +183,9 @@ function M.setup()
     else
       local result
       if range_start and range_end then
-        result = markers.add_marker_range(range_start, range_end, annotation)
+        result = markers.add_marker_range(range_start, range_end, annotation, nil, target_buf)
       else
-        result = markers.add_marker(annotation)
+        result = markers.add_marker(annotation, nil, target_buf)
       end
       if not result.success then
         require("marker-groups.feedback").notify("Failed to add marker: " .. result.error, vim.log.levels.ERROR, {})

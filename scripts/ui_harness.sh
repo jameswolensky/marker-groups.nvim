@@ -88,20 +88,21 @@ scenario_snacks_markers() {
     echo "NOTE: snacks show_markers produced no visible list (PR #12 territory)"
     cap
   fi
-  send Escape; send Escape
+  send Escape; sleep_ms 300; send Escape; sleep_ms 300
 }
 scenario_split_targeting() {
-  send Escape; send ":only" Enter
+  send Escape; sleep_ms 300
+  send ":only" Enter
   send ":vsplit scripts/ui_sandbox/init.lua" Enter
   wait_for "init.lua" 40
-  send "l"
   send ":wincmd l" Enter
-  send ":5" Enter
-  send ":MarkerAdd right window mark" Enter
-  wait_for "right window mark" 40
-  send ":lua vim.api.nvim_put({ '<<'..vim.api.nvim_buf_get_name(0):match('[^/]+$') }, 'c', true, false)" Enter
+  send ":3" Enter
+  send ":MarkerAdd focused split mark" Enter
+  wait_for "focused split mark" 40
+  send ":lua vim.api.nvim_put({'MGFILE='..vim.fn.fnamemodify(((require('marker-groups.markers').get_current_buffer_markers()[1] or {}).buffer_path or 'none'), ':t')}, 'l', true, false)" Enter
   send Escape
-  assert_screen "marker added in focused (right) buffer" "<<init.lua"
+  wait_for "MGFILE=fixture.lua" 40
+  assert_screen "marker recorded in focused buffer" "MGFILE=fixture.lua"
 }
 if [ "${1:-}" = "run" ] || [ -z "${BASH_SOURCE[1]:-}" ]; then
   start_nvim
