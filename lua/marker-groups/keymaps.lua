@@ -222,6 +222,26 @@ function M.setup()
   )
 
   map(
+    km.picker and km.picker.groups,
+    "n",
+    compute_lhs(prefix, km.picker and km.picker.groups),
+    safe_call(function()
+      return require("marker-groups.pickers").show_groups()
+    end, "Picker groups"),
+    "Open picker for marker groups"
+  )
+
+  map(
+    km.picker and km.picker.markers,
+    "n",
+    compute_lhs(prefix, km.picker and km.picker.markers),
+    safe_call(function()
+      return require("marker-groups.pickers").show_markers()
+    end, "Picker markers"),
+    "Open picker for markers"
+  )
+
+  map(
     km.marker and km.marker.delete,
     "n",
     compute_lhs(prefix, km.marker and km.marker.delete),
@@ -458,6 +478,26 @@ function M.defaults()
       end
     end, "Marker info"),
     "Show marker at cursor"
+  )
+
+  add(
+    km.picker and km.picker.groups,
+    "n",
+    compute_lhs(prefix, km.picker and km.picker.groups),
+    safe_call(function()
+      return require("marker-groups.pickers").show_groups()
+    end, "Picker groups"),
+    "Open picker for marker groups"
+  )
+
+  add(
+    km.picker and km.picker.markers,
+    "n",
+    compute_lhs(prefix, km.picker and km.picker.markers),
+    safe_call(function()
+      return require("marker-groups.pickers").show_markers()
+    end, "Picker markers"),
+    "Open picker for markers"
   )
 
   add(
