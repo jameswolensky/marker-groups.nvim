@@ -387,4 +387,21 @@ T["core functionality verification / can delete all markers in a marker group an
   vim.api.nvim_buf_delete(test_buf, { force = true })
 end
 
+T["debug_info total_markers avoids deprecated tbl_flatten"] = function()
+  local state = require "marker-groups.state"
+  state.create_group "g2"
+  state.add_marker({ buffer_path = "/tmp/a.lua", start_line = 1, end_line = 1, annotation = "a" }, "default")
+  state.add_marker({ buffer_path = "/tmp/b.lua", start_line = 2, end_line = 2, annotation = "b" }, "g2")
+  local seen = false
+  local orig = vim.deprecate
+  vim.deprecate = function(...)
+    seen = true
+    return orig(...)
+  end
+  local info = state.debug_info()
+  vim.deprecate = orig
+  MiniTest.expect.equality(2, info.total_markers)
+  MiniTest.expect.equality(false, seen)
+end
+
 return T
