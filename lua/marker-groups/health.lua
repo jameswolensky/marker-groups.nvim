@@ -9,10 +9,10 @@ function M.check()
 
   start "marker-groups.nvim health check"
 
-  if vim.fn.has "nvim-0.8" == 1 then
-    ok "Neovim version is >= 0.8.0"
+  if vim.fn.has "nvim-0.10" == 1 then
+    ok "Neovim version is >= 0.10"
   else
-    error "Neovim >= 0.8.0 required"
+    error "Neovim >= 0.10 required"
   end
 
   if vim.api.nvim_buf_set_extmark then

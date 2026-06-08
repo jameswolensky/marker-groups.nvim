@@ -19,7 +19,7 @@ local function term(keys)
 end
 
 local function press(keys)
-  vim.api.nvim_feedkeys(term(keys), "nx", false)
+  vim.api.nvim_feedkeys(term(keys), "mx", false)
   vim.wait(20)
 end
 
