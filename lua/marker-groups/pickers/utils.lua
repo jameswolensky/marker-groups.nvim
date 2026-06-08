@@ -94,8 +94,10 @@ end
 function M.navigate_to_marker(marker)
   local ok, err = pcall(function()
     vim.cmd("edit " .. vim.fn.fnameescape(marker.buffer_path))
-    vim.api.nvim_win_set_cursor(0, { marker.start_line, 0 })
-    vim.cmd "normal! zz"
+    vim.schedule(function()
+      vim.api.nvim_win_set_cursor(0, { marker.start_line, 0 })
+      vim.cmd "normal! zz"
+    end)
   end)
   if ok then
     require("marker-groups.feedback").notify(
