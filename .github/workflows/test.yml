@@ -13,9 +13,11 @@ jobs:
   test:
     name: Run Tests
     runs-on: ubuntu-latest
+    continue-on-error: ${{ matrix.neovim_version == 'nightly' }}
     strategy:
+      fail-fast: false
       matrix:
-        neovim_version: ['v0.8.0', 'v0.9.0', 'v0.10.0', 'stable']
+        neovim_version: ['v0.10.0', 'v0.11.0', 'stable', 'nightly']
     
     steps:
     - name: Checkout code

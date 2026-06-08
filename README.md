@@ -19,6 +19,8 @@ A powerful Neovim plugin for organizing and annotating code with grouped markers
 
 ## 📦 Installation
 
+**Requires Neovim 0.10 or higher.**
+
 ### Using [lazy.nvim](https://github.com/folke/lazy.nvim)
 
 ```lua
