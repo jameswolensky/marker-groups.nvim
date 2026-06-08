@@ -46,6 +46,11 @@ local defaults = {
         info = { suffix = "i", desc = "Show marker at cursor" },
       },
 
+      picker = {
+        groups = { suffix = "tg", desc = "Open picker for marker groups" },
+        markers = { suffix = "tm", desc = "Open picker for markers" },
+      },
+
       group = {
         create = { suffix = "gc", desc = "Create marker group" },
         select = { suffix = "gs", desc = "Select marker group" },

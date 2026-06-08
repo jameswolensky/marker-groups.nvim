@@ -45,4 +45,16 @@ T["picker telescope maps to telescope or falls back"] = function()
   MiniTest.expect.equality(backend, expected)
 end
 
+T["telescope selected when its modules are present"] = function()
+  local had = telescope_available()
+  package.loaded["telescope"] = package.loaded["telescope"] or {}
+  package.loaded["telescope.pickers"] = package.loaded["telescope.pickers"] or {}
+  local backend = setup_with_picker "telescope"
+  if not had then
+    package.loaded["telescope"] = nil
+    package.loaded["telescope.pickers"] = nil
+  end
+  MiniTest.expect.equality(backend, "telescope")
+end
+
 return T

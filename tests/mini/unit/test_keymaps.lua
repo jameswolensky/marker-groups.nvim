@@ -72,4 +72,32 @@ T["expected group keymaps exist"] = function()
   MiniTest.expect.equality(true, have[term "<leader>mgb"])
 end
 
+T["<leader>mtm triggers pickers.show_markers"] = function()
+  local called = { markers = false, groups = false }
+  package.loaded["marker-groups.pickers"] = {
+    show_markers = function()
+      called.markers = true
+    end,
+    show_groups = function()
+      called.groups = true
+    end,
+    delete_groups = function() end,
+  }
+  press "<leader>mtm"
+  MiniTest.expect.equality(true, called.markers)
+end
+
+T["<leader>mtg triggers pickers.show_groups"] = function()
+  local called = { markers = false, groups = false }
+  package.loaded["marker-groups.pickers"] = {
+    show_markers = function() end,
+    show_groups = function()
+      called.groups = true
+    end,
+    delete_groups = function() end,
+  }
+  press "<leader>mtg"
+  MiniTest.expect.equality(true, called.groups)
+end
+
 return T
