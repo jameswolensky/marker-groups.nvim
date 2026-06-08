@@ -332,13 +332,15 @@ function M.load()
     vim.g.__marker_groups_hydrating = false
   end, 300)
 
+  local marker_lists = vim.tbl_values(vim.tbl_map(function(g)
+    return g.markers
+  end, data.marker_groups))
+
   return {
     success = true,
     source = source_file,
     groups_loaded = vim.tbl_count(data.marker_groups),
-    markers_loaded = vim.tbl_count(vim.tbl_flatten(vim.tbl_map(function(g)
-      return g.markers
-    end, data.marker_groups))),
+    markers_loaded = vim.tbl_count(vim.iter(marker_lists):flatten():totable()),
   }
 end
 
