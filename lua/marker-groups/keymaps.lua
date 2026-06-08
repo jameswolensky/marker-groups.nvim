@@ -158,12 +158,13 @@ function M.setup()
         local ls = require "marker-groups.line_selection"
         local input_ui = require "marker-groups.ui.input"
         local range = ls.make_range()
+        local target_buf = vim.api.nvim_get_current_buf()
         input_ui.prompt_multiline(
           { title = "Marker annotation", default = "" },
           require("marker-groups.config").get_internal "max_annotation_chars",
           function(input)
             if input and input ~= "" then
-              local result = markers.add_marker_range(range.lstart, range.lend, input)
+              local result = markers.add_marker_range(range.lstart, range.lend, input, nil, target_buf)
               if not result.success then
                 require("marker-groups.feedback").notify(
                   "Failed to add marker: " .. result.error,
